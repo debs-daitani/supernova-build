@@ -70,6 +70,7 @@ router.get('/:subdomain/:slug?', async (req, res) => {
 function renderPage(website, page) {
   const theme = website.theme || {};
   const content = page.content || { blocks: [] };
+  const mode = content.mode || 'block'; // 'block' or 'freeform'
 
   // Generate CSS from theme
   const css = `
@@ -98,11 +99,27 @@ function renderPage(website, page) {
       }
       .btn:hover { opacity: 0.9; }
       img { max-width: 100%; height: auto; }
+
+      /* Freeform canvas styles */
+      .freeform-canvas {
+        position: relative;
+        width: 100%;
+        min-height: ${content.canvas?.height || '1000px'};
+        background-color: ${content.canvas?.backgroundColor || theme.colors?.background || '#FFFFFF'};
+      }
+      .freeform-element {
+        position: absolute;
+      }
     </style>
   `;
 
-  // Render blocks recursively
-  const bodyHTML = renderBlocks(content.blocks || []);
+  // Render content based on mode
+  let bodyHTML;
+  if (mode === 'freeform') {
+    bodyHTML = renderFreeformCanvas(content);
+  } else {
+    bodyHTML = renderBlocks(content.blocks || []);
+  }
 
   // Complete HTML page
   return `
@@ -130,6 +147,131 @@ function renderPage(website, page) {
     </body>
     </html>
   `;
+}
+
+/**
+ * Render freeform canvas with absolutely positioned elements
+ */
+function renderFreeformCanvas(content) {
+  const elements = content.elements || [];
+
+  if (elements.length === 0) {
+    return '<div class="freeform-canvas"></div>';
+  }
+
+  // Sort by z-index
+  const sortedElements = [...elements].sort((a, b) =>
+    (a.position?.zIndex || 0) - (b.position?.zIndex || 0)
+  );
+
+  const elementsHTML = sortedElements.map(element => {
+    const pos = element.position || { x: 0, y: 0, width: 300, height: 'auto', zIndex: 1 };
+
+    const elementStyle = {
+      left: `${pos.x}px`,
+      top: `${pos.y}px`,
+      width: typeof pos.width === 'number' ? `${pos.width}px` : pos.width,
+      height: typeof pos.height === 'number' ? `${pos.height}px` : pos.height,
+      zIndex: pos.zIndex || 1
+    };
+
+    const styleStr = Object.entries(elementStyle)
+      .filter(([_, v]) => v)
+      .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+      .join('; ');
+
+    // Render the element content (without recursive blocks, just single element)
+    const elementContent = renderElement(element);
+
+    return `<div class="freeform-element" style="${styleStr}">${elementContent}</div>`;
+  }).join('\n');
+
+  return `<div class="freeform-canvas">${elementsHTML}</div>`;
+}
+
+/**
+ * Render a single element (used in freeform mode)
+ */
+function renderElement(element) {
+  const props = element.props || {};
+  const children = element.children || [];
+
+  switch (element.type) {
+    case 'section':
+      const sectionStyles = {
+        backgroundColor: props.backgroundColor,
+        padding: props.padding,
+        textAlign: props.textAlign
+      };
+      const sectionStyleStr = Object.entries(sectionStyles)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+        .join('; ');
+      return `<div style="${sectionStyleStr}">${renderBlocks(children)}</div>`;
+
+    case 'heading':
+      const level = props.level || 'h2';
+      const headingStyles = {
+        color: props.color,
+        fontSize: props.fontSize,
+        fontWeight: props.fontWeight,
+        textAlign: props.textAlign
+      };
+      const headingStyleStr = Object.entries(headingStyles)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+        .join('; ');
+      return `<${level} style="${headingStyleStr}">${props.text || ''}</${level}>`;
+
+    case 'paragraph':
+      const pStyles = {
+        color: props.color,
+        fontSize: props.fontSize,
+        textAlign: props.textAlign
+      };
+      const pStyleStr = Object.entries(pStyles)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+        .join('; ');
+      return `<p style="${pStyleStr}">${props.text || ''}</p>`;
+
+    case 'button':
+      const btnText = props.text || 'Click Me';
+      const btnLink = props.link || '#';
+      const btnStyles = {
+        display: 'inline-block',
+        padding: '12px 24px',
+        backgroundColor: props.backgroundColor || '#FF1493',
+        color: props.color || '#FFFFFF',
+        textDecoration: 'none',
+        borderRadius: '6px',
+        fontWeight: '600'
+      };
+      const btnStyleStr = Object.entries(btnStyles)
+        .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+        .join('; ');
+      return `<a href="${btnLink}" style="${btnStyleStr}">${btnText}</a>`;
+
+    case 'image':
+      const imgSrc = props.src || '';
+      const imgAlt = props.alt || '';
+      const imgStyles = {
+        width: props.width,
+        height: props.height,
+        borderRadius: props.borderRadius
+      };
+      const imgStyleStr = Object.entries(imgStyles)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${v}`)
+        .join('; ');
+      return `<img src="${imgSrc}" alt="${imgAlt}" style="${imgStyleStr}">`;
+
+    case 'divider':
+      return `<hr style="margin: ${props.margin || '20px 0'}; border: none; border-top: 1px solid #E5E7EB;">`;
+
+    default:
+      return '';
+  }
 }
 
 /**
