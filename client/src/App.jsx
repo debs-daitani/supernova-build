@@ -117,6 +117,9 @@ import VideoProjects from './pages/video-editor/VideoProjects';
 // Phase 2AF - PDF Editor
 import PDFDashboard from './pages/pdf-editor/PDFDashboard';
 
+// Phase 2AG - Document Editor
+import DocumentsDashboard from './pages/docs/DocumentsDashboard';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -244,6 +247,9 @@ function App() {
 
         {/* Phase 2AF - PDF Editor */}
         <Route path="/pdf-editor" element={<PDFDashboard />} />
+
+        {/* Phase 2AG - Document Editor */}
+        <Route path="/docs" element={<DocumentsDashboard />} />
       </Route>
 
       {/* Redirects */}

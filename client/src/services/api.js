@@ -914,4 +914,63 @@ export const pdfTemplates = {
   createFromTemplate: (data) => api.post('/pdf-editor/create-from-template', data),
 };
 
+// ============================================================================
+// PHASE 2AG - DOCUMENT EDITOR
+// ============================================================================
+
+// Documents
+export const documents = {
+  create: (data) => api.post('/docs', data),
+  list: (params) => api.get('/docs', { params }),
+  get: (id) => api.get(`/docs/${id}`),
+  update: (id, data) => api.patch(`/docs/${id}`, data),
+  delete: (id) => api.delete(`/docs/${id}`),
+  copy: (id) => api.post(`/docs/${id}/copy`),
+  move: (id, data) => api.post(`/docs/${id}/move`, data),
+};
+
+// Document Folders
+export const documentFolders = {
+  create: (data) => api.post('/docs/folders', data),
+  list: () => api.get('/docs/folders'),
+  update: (id, data) => api.patch(`/docs/folders/${id}`, data),
+  delete: (id) => api.delete(`/docs/folders/${id}`),
+};
+
+// Document Sharing
+export const documentSharing = {
+  share: (id, data) => api.post(`/docs/${id}/share`, data),
+  generateLink: (id) => api.post(`/docs/${id}/share-link`),
+  updatePermissions: (id, data) => api.patch(`/docs/${id}/permissions`, data),
+  removeCollaborator: (id, userId) => api.delete(`/docs/${id}/collaborators/${userId}`),
+};
+
+// Document Comments
+export const documentComments = {
+  add: (id, data) => api.post(`/docs/${id}/comments`, data),
+  list: (id, params) => api.get(`/docs/${id}/comments`, { params }),
+  update: (docId, commentId, data) => api.patch(`/docs/${docId}/comments/${commentId}`, data),
+  delete: (docId, commentId) => api.delete(`/docs/${docId}/comments/${commentId}`),
+  resolve: (docId, commentId) => api.post(`/docs/${docId}/comments/${commentId}/resolve`),
+};
+
+// Document Versions
+export const documentVersions = {
+  list: (id) => api.get(`/docs/${id}/versions`),
+  restore: (id, versionId) => api.post(`/docs/${id}/restore/${versionId}`),
+};
+
+// Document Export
+export const documentExport = {
+  pdf: (id) => api.get(`/docs/${id}/export/pdf`),
+  docx: (id) => api.get(`/docs/${id}/export/docx`),
+  txt: (id) => api.get(`/docs/${id}/export/txt`),
+};
+
+// Document Templates
+export const documentTemplates = {
+  list: (params) => api.get('/docs/templates', { params }),
+  createFromTemplate: (templateId, data) => api.post(`/docs/from-template/${templateId}`, data),
+};
+
 export default api;

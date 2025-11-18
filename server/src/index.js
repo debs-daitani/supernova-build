@@ -79,6 +79,9 @@ import videoEditorRoutes from './routes/video-editor.js';
 // Phase 2AF - PDF Editor
 import pdfEditorRoutes from './routes/pdf-editor.js';
 
+// Phase 2AG - Document Editor
+import docsRoutes from './routes/docs.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -177,6 +180,9 @@ app.use('/api/video-editor', videoEditorRoutes);
 
 // Phase 2AF - PDF Editor
 app.use('/api/pdf-editor', pdfEditorRoutes);
+
+// Phase 2AG - Document Editor
+app.use('/api/docs', docsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

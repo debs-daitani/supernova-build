@@ -140,6 +140,13 @@ model User {
   pdfAnnotations      PDFAnnotation[]
   pdfSignatures       PDFSignature[]
 
+  // Phase 2AG - Document Editor
+  documents           Document[]
+  documentFolders     DocumentFolder[]
+  documentCollaborations DocumentCollaborator[]
+  documentComments    DocumentComment[]
+  documentVersions    DocumentVersion[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -3005,6 +3012,161 @@ model PDFTemplate {
 
   // Fields (if form template)
   fields        Json?         // Form field definitions
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+}
+
+// ============================================================================
+// PHASE 2AG - DOCUMENT EDITOR
+// ============================================================================
+
+model Document {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Document info
+  title         String        @default("Untitled Document")
+
+  // Content (stored as JSON - Delta format or ProseMirror)
+  content       Json
+
+  // Metadata
+  wordCount     Int           @default(0)
+  characterCount Int          @default(0)
+
+  // Sharing
+  isPublic      Boolean       @default(false)
+  shareLink     String?       @unique
+
+  // Folder organization
+  folderId      String?
+  folder        DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastViewedAt  DateTime      @default(now())
+
+  // Relations
+  collaborators DocumentCollaborator[]
+  comments      DocumentComment[]
+  versions      DocumentVersion[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([updatedAt])
+}
+
+model DocumentFolder {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  color         String?
+
+  parentId      String?
+  parent        DocumentFolder? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders    DocumentFolder[] @relation("FolderHierarchy")
+
+  documents     Document[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model DocumentCollaborator {
+  id            String        @id @default(cuid())
+  documentId    String
+  document      Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Permission level
+  permission    String        // "view", "comment", "edit", "owner"
+
+  // Activity
+  lastViewedAt  DateTime      @default(now())
+
+  invitedAt     DateTime      @default(now())
+  invitedBy     String
+
+  @@unique([documentId, userId])
+  @@index([documentId])
+  @@index([userId])
+}
+
+model DocumentComment {
+  id            String        @id @default(cuid())
+  documentId    String
+  document      Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Comment content
+  content       String        @db.Text
+
+  // Position in document
+  anchor        Json          // {start: index, end: index}
+
+  // Status
+  resolved      Boolean       @default(false)
+  resolvedAt    DateTime?
+  resolvedBy    String?
+
+  // Thread
+  parentId      String?
+  parent        DocumentComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       DocumentComment[] @relation("CommentReplies")
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([documentId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model DocumentVersion {
+  id            String        @id @default(cuid())
+  documentId    String
+  document      Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Version info
+  versionNumber Int
+  content       Json
+
+  // Author
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  changesSummary String?      @db.Text
+
+  createdAt     DateTime      @default(now())
+
+  @@index([documentId])
+  @@index([userId])
+}
+
+model DocumentTemplate {
+  id            String        @id @default(cuid())
+
+  name          String
+  description   String?       @db.Text
+  category      String        // "business", "academic", "personal", "creative"
+
+  content       Json          // Template content
+  thumbnail     String?
 
   featured      Boolean       @default(false)
   usageCount    Int           @default(0)
