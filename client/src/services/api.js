@@ -817,4 +817,38 @@ export const imageAssets = {
   use: (id) => api.post(`/image-editor/assets/${id}/use`),
 };
 
+// ============================================================================
+// PHASE 2AE - VIDEO EDITOR
+// ============================================================================
+
+// Video Projects
+export const videoProjects = {
+  create: (data) => api.post('/video-editor/projects', data),
+  list: () => api.get('/video-editor/projects'),
+  get: (id) => api.get(`/video-editor/projects/${id}`),
+  update: (id, data) => api.patch(`/video-editor/projects/${id}`, data),
+  delete: (id) => api.delete(`/video-editor/projects/${id}`),
+  duplicate: (id) => api.post(`/video-editor/projects/${id}/duplicate`),
+};
+
+// Video Clips
+export const videoClips = {
+  upload: (data) => api.post('/video-editor/clips', data),
+  list: () => api.get('/video-editor/clips'),
+  delete: (id) => api.delete(`/video-editor/clips/${id}`),
+};
+
+// Video Render
+export const videoRender = {
+  start: (data) => api.post('/video-editor/render', data),
+  checkProgress: (jobId) => api.get(`/video-editor/render/${jobId}`),
+  download: (jobId) => api.get(`/video-editor/render/${jobId}/download`),
+};
+
+// Stock Library
+export const stockLibrary = {
+  searchVideos: (params) => api.get('/video-editor/stock/videos', { params }),
+  searchAudio: (params) => api.get('/video-editor/stock/audio', { params }),
+};
+
 export default api;

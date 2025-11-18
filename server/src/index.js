@@ -73,6 +73,9 @@ import launchRoutes from './routes/launch.js';
 // Phase 2AC - Image Editor
 import imageEditorRoutes from './routes/image-editor.js';
 
+// Phase 2AE - Video Editor
+import videoEditorRoutes from './routes/video-editor.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -165,6 +168,9 @@ app.use('/api', launchRoutes);
 
 // Phase 2AC - Image Editor
 app.use('/api/image-editor', imageEditorRoutes);
+
+// Phase 2AE - Video Editor
+app.use('/api/video-editor', videoEditorRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

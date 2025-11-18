@@ -111,6 +111,9 @@ import LaunchChecklist from './pages/launch/LaunchChecklist';
 // Phase 2AC - Image Editor
 import ImageProjects from './pages/image-editor/ImageProjects';
 
+// Phase 2AE - Video Editor
+import VideoProjects from './pages/video-editor/VideoProjects';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -232,6 +235,9 @@ function App() {
 
         {/* Phase 2AC - Image Editor */}
         <Route path="/image-editor" element={<ImageProjects />} />
+
+        {/* Phase 2AE - Video Editor */}
+        <Route path="/video-editor" element={<VideoProjects />} />
       </Route>
 
       {/* Redirects */}

@@ -131,6 +131,10 @@ model User {
   imageProjects       ImageProject[]
   imageAssets         ImageAsset[]
 
+  // Phase 2AE - Video Editor
+  videoProjects       VideoProject[]
+  videoClips          VideoClip[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2834,4 +2838,62 @@ model ImageAsset {
 
   @@index([userId])
   @@index([assetType])
+}
+
+// ============================================================================
+// Phase 2AE - Video Editor (Premiere Pro Killer)
+// ============================================================================
+
+model VideoProject {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Project info
+  name          String
+
+  // Settings
+  resolution    String        @default("1920x1080")  // 1080p, 720p, 4K
+  frameRate     Int           @default(30)  // fps
+  aspectRatio   String        @default("16:9")  // 16:9, 9:16, 1:1, 4:3
+
+  // Project data
+  timeline      Json          // All clips, tracks, effects
+
+  // Preview
+  thumbnail     String?
+  duration      Int?          // Total duration in seconds
+
+  // Export
+  lastRender    String?       // URL to last exported video
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model VideoClip {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Clip info
+  name          String
+
+  // File
+  videoUrl      String
+  duration      Int           // Seconds
+
+  // Metadata
+  resolution    String
+  fileSize      Int
+  format        String        // mp4, mov, avi
+
+  // Thumbnail
+  thumbnail     String?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
 }

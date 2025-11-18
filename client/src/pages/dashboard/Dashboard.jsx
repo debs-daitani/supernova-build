@@ -33,6 +33,7 @@ export default function Dashboard() {
     { name: 'Legal Templates', href: '/legal', description: 'Contracts, T&Cs & policies', icon: '⚖️' },
     { name: 'Launch Planner', href: '/launch', description: 'Plan successful launches', icon: '🚀' },
     { name: 'Image Editor', href: '/image-editor', description: 'Photo editing & design', icon: '🎨' },
+    { name: 'Video Editor', href: '/video-editor', description: 'Professional video editing', icon: '🎬' },
   ];
 
   return (
