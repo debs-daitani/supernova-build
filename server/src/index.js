@@ -63,6 +63,9 @@ import contentAIRoutes from './routes/content-ai.js';
 // Phase 2AS - Messaging Platform
 import platformMessagesRoutes from './routes/platformMessages.js';
 
+// Phase 2J - Events Platform
+import eventsRoutes from './routes/events.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -145,6 +148,9 @@ app.use('/api/content-ai', contentAIRoutes);
 
 // Phase 2AS - Messaging Platform
 app.use('/api/platform-messages', platformMessagesRoutes);
+
+// Phase 2J - Events Platform
+app.use('/api', eventsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

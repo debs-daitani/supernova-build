@@ -714,4 +714,33 @@ export const platformCalls = {
   history: () => api.get('/platform-messages/calls/history'),
 };
 
+// ============================================================================
+// Phase 2J - Events Platform
+// ============================================================================
+
+// Events
+export const events = {
+  list: (params) => api.get('/events', { params }),
+  get: (slug) => api.get(`/events/${slug}`),
+  create: (data) => api.post('/events', data),
+  update: (id, data) => api.patch(`/events/${id}`, data),
+  delete: (id) => api.delete(`/events/${id}`),
+  publish: (id) => api.post(`/events/${id}/publish`),
+  duplicate: (id) => api.post(`/events/${id}/duplicate`),
+};
+
+// Event Registrations
+export const eventRegistrations = {
+  register: (eventId, data) => api.post(`/events/${eventId}/register`, data),
+  list: (eventId) => api.get(`/events/${eventId}/registrations`),
+  update: (eventId, regId, data) => api.patch(`/events/${eventId}/registrations/${regId}`, data),
+  checkIn: (eventId, regId) => api.post(`/events/${eventId}/registrations/${regId}/check-in`),
+  cancel: (eventId, regId) => api.post(`/events/${eventId}/registrations/${regId}/cancel`),
+};
+
+// Event Analytics
+export const eventAnalytics = {
+  get: (eventId) => api.get(`/events/${eventId}/analytics`),
+};
+
 export default api;

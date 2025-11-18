@@ -120,6 +120,9 @@ model User {
   blockedUsers        BlockedUser[]     @relation("UserBlocks")
   blockedBy           BlockedUser[]     @relation("UserBlockedBy")
 
+  // Phase 2J - Events Platform
+  events              Event[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2476,4 +2479,178 @@ model BlockedUser {
 
   @@unique([userId, blockedUserId])
   @@index([userId])
+}
+
+// ============================================
+// PHASE 2J - EVENTS PLATFORM
+// ============================================
+
+model Event {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  coverImage    String?
+
+  // Type
+  eventType     String        // "in_person", "virtual", "hybrid"
+  category      String        // "workshop", "webinar", "meetup", "conference", "networking"
+
+  // Date & time
+  startDateTime DateTime
+  endDateTime   DateTime
+  timezone      String
+
+  // Location (for in-person/hybrid)
+  venueName     String?
+  venueAddress  String?
+  venueCity     String?
+  venuePostcode String?
+  venueCountry  String?
+
+  // Virtual (for virtual/hybrid)
+  streamUrl     String?       // Meeting link or stream URL
+  streamPlatform String?      // "zoom", "teams", "youtube", "custom"
+
+  // Capacity
+  maxAttendees  Int?
+  unlimitedCapacity Boolean   @default(false)
+
+  // Registration
+  requiresApproval Boolean    @default(false)
+  registrationDeadline DateTime?
+
+  // Visibility
+  isPublic      Boolean       @default(true)
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
+
+  // Recurring
+  isRecurring   Boolean       @default(false)
+  recurrence    Json?         // {frequency: "weekly", interval: 1, endDate: ...}
+
+  // Settings
+  allowWaitlist Boolean       @default(false)
+  sendReminders Boolean       @default(true)
+  collectAttendeeInfo Json?   // Custom fields to collect
+
+  // Tickets
+  isFree        Boolean       @default(true)
+
+  // SEO
+  seoTitle      String?
+  seoDescription String?      @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  tickets       EventTicket[]
+  registrations EventRegistration[]
+  sessions      EventSession[]
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([category])
+  @@index([startDateTime])
+  @@index([isPublished])
+}
+
+model EventTicket {
+  id            String        @id @default(cuid())
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Ticket info
+  name          String        // "General Admission", "VIP", "Early Bird"
+  description   String?       @db.Text
+
+  // Pricing
+  price         Float
+  currency      String        @default("GBP")
+
+  // Availability
+  quantity      Int?          // null = unlimited
+  sold          Int           @default(0)
+
+  // Sales period
+  salesStart    DateTime?
+  salesEnd      DateTime?
+
+  // Settings
+  minPerOrder   Int           @default(1)
+  maxPerOrder   Int           @default(10)
+
+  @@index([eventId])
+}
+
+model EventRegistration {
+  id            String        @id @default(cuid())
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Attendee info
+  attendeeName  String
+  attendeeEmail String
+  attendeePhone String?
+  userId        String?       // If registered user
+
+  // Ticket
+  ticketId      String?
+  ticketName    String?
+
+  // Payment
+  orderTotal    Float         @default(0)
+  paymentStatus String        @default("pending")  // pending, paid, refunded
+  paymentId     String?
+
+  // Status
+  status        String        @default("confirmed")  // confirmed, cancelled, waitlist, checked_in
+
+  // Check-in
+  checkedIn     Boolean       @default(false)
+  checkedInAt   DateTime?
+
+  // Custom fields
+  customData    Json?
+
+  // Communication
+  confirmationSent Boolean    @default(false)
+  reminderSent  Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([eventId])
+  @@index([attendeeEmail])
+  @@index([status])
+}
+
+model EventSession {
+  id            String        @id @default(cuid())
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Session info (for multi-session events)
+  title         String
+  description   String?       @db.Text
+
+  // Time
+  startTime     DateTime
+  endTime       DateTime
+
+  // Speaker
+  speakerName   String?
+  speakerBio    String?       @db.Text
+  speakerPhoto  String?
+
+  // Location (if different from main event)
+  location      String?
+
+  order         Int           @default(0)
+
+  @@index([eventId])
 }

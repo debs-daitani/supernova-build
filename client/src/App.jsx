@@ -97,6 +97,10 @@ import WritingAssistant from './pages/content-ai/WritingAssistant';
 // Phase 2AS - Messaging Platform
 import MessagingDashboard from './pages/messaging/MessagingDashboard';
 
+// Phase 2J - Events Platform
+import EventsDashboard from './pages/events/EventsDashboard';
+import EventCalendar from './pages/events/EventCalendar';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -204,6 +208,10 @@ function App() {
 
         {/* Phase 2AS - Messaging Platform */}
         <Route path="/messaging" element={<MessagingDashboard />} />
+
+        {/* Phase 2J - Events Platform */}
+        <Route path="/events" element={<EventsDashboard />} />
+        <Route path="/events/calendar" element={<EventCalendar />} />
       </Route>
 
       {/* Redirects */}
