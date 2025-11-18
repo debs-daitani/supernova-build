@@ -82,6 +82,11 @@ import Goals from './pages/tasks/Goals';
 // Phase 2E - Content Creation Suite
 import ContentDashboard from './pages/content/ContentDashboard';
 
+// Phase 2M - Video Tools Suite
+import VideoDashboard from './pages/video/VideoDashboard';
+import ScriptGenerator from './pages/video/ScriptGenerator';
+import VideoLibrary from './pages/video/VideoLibrary';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -173,7 +178,12 @@ function App() {
         <Route path="/tasks/goals" element={<Goals />} />
 
         {/* Phase 2E - Content Creation Suite */}
-        <Route path="/content" element={<ContentDashboard />} />
+        <Route path="/content-creation" element={<ContentDashboard />} />
+
+        {/* Phase 2M - Video Tools Suite */}
+        <Route path="/video" element={<VideoDashboard />} />
+        <Route path="/video/script-generator" element={<ScriptGenerator />} />
+        <Route path="/video/library" element={<VideoLibrary />} />
       </Route>
 
       {/* Redirects */}

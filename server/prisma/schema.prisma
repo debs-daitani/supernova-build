@@ -106,6 +106,10 @@ model User {
   contentIdeas        ContentIdea[]
   brandAssets         BrandAsset[]
 
+  // Phase 2M - Video Tools Suite
+  videoScripts        VideoScript[]
+  videos              Video[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2130,4 +2134,104 @@ model BrandAsset {
 
   @@index([userId])
   @@index([assetType])
+}
+
+// ============================================
+// PHASE 2M - VIDEO TOOLS SUITE
+// ============================================
+
+model VideoScript {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Script details
+  title         String
+  topic         String
+  duration      Int?          // Target duration in seconds
+  tone          String?       // "professional", "casual", "educational", "entertaining"
+
+  // Generated content
+  script        String        @db.Text
+  hooks         String[]      // Opening hooks
+  ctas          String[]      // Call-to-actions
+
+  // Structure
+  sections      Json?         // Intro, main points, outro with timestamps
+
+  // Video link (if script used for actual video)
+  videoId       String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model Video {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Video details
+  title         String
+  description   String?       @db.Text
+
+  // File
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int?          // Seconds
+  fileSize      Int?          // Bytes
+
+  // Processing
+  status        String        @default("processing")  // processing, ready, failed
+
+  // Subtitles
+  hasSubtitles  Boolean       @default(false)
+  subtitlesUrl  String?       // SRT file URL
+
+  // SEO
+  seoTitle      String?
+  seoDescription String?      @db.Text
+  tags          String[]
+
+  // Platform info (if published)
+  platforms     Json?         // {youtube: {id, url}, tiktok: {id, url}}
+
+  // Analytics
+  views         Int           @default(0)
+  likes         Int           @default(0)
+  comments      Int           @default(0)
+  shares        Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model VideoTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  description   String?       @db.Text
+  category      String        // "intro", "outro", "tutorial", "promotional", "educational"
+
+  // Structure
+  structure     Json          // Template structure with placeholders
+
+  // Duration
+  duration      Int           // Typical duration in seconds
+
+  // Preview
+  thumbnail     String?
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
 }

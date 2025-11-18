@@ -54,6 +54,9 @@ import tasksRoutes from './routes/tasks.js';
 // Phase 2E - Content Creation Suite
 import contentCreationRoutes from './routes/contentCreation.js';
 
+// Phase 2M - Video Tools Suite
+import videoRoutes from './routes/video.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -127,6 +130,9 @@ app.use('/api/tasks', tasksRoutes);
 
 // Phase 2E - Content Creation Suite
 app.use('/api/content-creation', contentCreationRoutes);
+
+// Phase 2M - Video Tools Suite
+app.use('/api/video', videoRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

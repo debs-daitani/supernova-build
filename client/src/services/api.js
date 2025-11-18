@@ -571,4 +571,44 @@ export const contentStats = {
   get: () => api.get('/content-creation/stats'),
 };
 
+// ============================================================================
+// Phase 2M - Video Tools Suite
+// ============================================================================
+
+// Video Scripts
+export const videoScripts = {
+  generate: (data) => api.post('/video/scripts/generate', data),
+  list: () => api.get('/video/scripts'),
+  get: (id) => api.get(`/video/scripts/${id}`),
+  update: (id, data) => api.patch(`/video/scripts/${id}`, data),
+  delete: (id) => api.delete(`/video/scripts/${id}`),
+};
+
+// Videos
+export const videos = {
+  list: (params) => api.get('/video/videos', { params }),
+  create: (data) => api.post('/video/videos', data),
+  get: (id) => api.get(`/video/videos/${id}`),
+  update: (id, data) => api.patch(`/video/videos/${id}`, data),
+  delete: (id) => api.delete(`/video/videos/${id}`),
+};
+
+// Video SEO
+export const videoSEO = {
+  generateTitles: (data) => api.post('/video/seo/title', data),
+  generateDescription: (data) => api.post('/video/seo/description', data),
+  generateTags: (data) => api.post('/video/seo/tags', data),
+};
+
+// Video Templates
+export const videoTemplates = {
+  list: (params) => api.get('/video/templates', { params }),
+  get: (id) => api.get(`/video/templates/${id}`),
+};
+
+// Video Stats
+export const videoStats = {
+  get: () => api.get('/video/stats'),
+};
+
 export default api;
