@@ -88,6 +88,9 @@ import sheetsRoutes from './routes/sheets.js';
 // Phase 2AI - Presentation Editor
 import presentationsRoutes from './routes/presentations.js';
 
+// Phase 2AJ - Forms Builder
+import formsRoutes from './routes/forms.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -195,6 +198,9 @@ app.use('/api/sheets', sheetsRoutes);
 
 // Phase 2AI - Presentation Editor
 app.use('/api/presentations', presentationsRoutes);
+
+// Phase 2AJ - Forms Builder
+app.use('/api/forms', formsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

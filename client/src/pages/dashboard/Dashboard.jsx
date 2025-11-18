@@ -38,6 +38,7 @@ export default function Dashboard() {
     { name: 'Documents', href: '/docs', description: 'Write & collaborate in real-time', icon: '📝' },
     { name: 'Spreadsheets', href: '/sheets', description: 'Data analysis & formulas', icon: '📊' },
     { name: 'Presentations', href: '/presentations', description: 'Create stunning slide decks', icon: '🎤' },
+    { name: 'Forms', href: '/forms', description: 'Surveys, quizzes & data collection', icon: '📋' },
   ];
 
   return (

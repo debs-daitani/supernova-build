@@ -162,6 +162,10 @@ model User {
   presentationVersions PresentationVersion[]
   presentationThemes  PresentationTheme[]
 
+  // Phase 2AJ - Forms Builder
+  forms               Form[]
+  formFolders         FormFolder[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -3484,4 +3488,107 @@ model PresentationTheme {
   updatedAt     DateTime      @updatedAt
 
   @@index([userId])
+}
+
+// ============================================
+// Phase 2AJ: Forms Builder (Google Forms Killer)
+// ============================================
+
+model Form {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+
+  questions     Json          // Array of question objects
+
+  isPublished   Boolean       @default(false)
+  acceptingResponses Boolean   @default(true)
+  requiresLogin Boolean       @default(false)
+  allowMultiple Boolean       @default(true)
+  shuffleQuestions Boolean    @default(false)
+
+  theme         Json?         // Colors, logo, background
+
+  confirmationMessage String?  @db.Text
+  redirectUrl   String?
+
+  emailNotification Boolean   @default(false)
+  notificationEmail String?
+
+  folderId      String?
+  folder        FormFolder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  shareLink     String?       @unique
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  responses     FormResponse[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([isPublished])
+}
+
+model FormFolder {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  color         String?
+
+  parentId      String?
+  parent        FormFolder?   @relation("FormFolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders    FormFolder[]  @relation("FormFolderHierarchy")
+
+  forms         Form[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model FormResponse {
+  id            String        @id @default(cuid())
+  formId        String
+  form          Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  email         String?
+
+  answers       Json          // {questionId: answer}
+
+  ipAddress     String?
+  userAgent     String?
+  completionTime Int?         // Seconds
+
+  submittedAt   DateTime      @default(now())
+
+  @@index([formId])
+  @@index([userId])
+  @@index([submittedAt])
+}
+
+model FormTemplate {
+  id            String        @id @default(cuid())
+
+  name          String
+  description   String?       @db.Text
+  category      String        // "survey", "registration", "feedback", "quiz", "contact"
+
+  questions     Json
+  theme         Json?
+  thumbnail     String?
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
 }

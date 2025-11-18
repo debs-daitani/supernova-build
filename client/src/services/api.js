@@ -1101,4 +1101,49 @@ export const presentationThemes = {
   delete: (id) => api.delete(`/presentations/themes/${id}`),
 };
 
+// ============================================
+// Phase 2AJ: Forms Builder
+// ============================================
+
+// Forms
+export const forms = {
+  list: (params) => api.get('/forms', { params }),
+  get: (id) => api.get(`/forms/${id}`),
+  create: (data) => api.post('/forms', data),
+  update: (id, data) => api.patch(`/forms/${id}`, data),
+  delete: (id) => api.delete(`/forms/${id}`),
+  copy: (id) => api.post(`/forms/${id}/copy`),
+  getPublic: (shareLink) => api.get(`/forms/public/${shareLink}`),
+  submit: (id, data) => api.post(`/forms/${id}/submit`, data),
+};
+
+// Form Folders
+export const formFolders = {
+  list: () => api.get('/forms/folders/list'),
+  create: (data) => api.post('/forms/folders/create', data),
+  update: (id, data) => api.patch(`/forms/folders/${id}`, data),
+  delete: (id) => api.delete(`/forms/folders/${id}`),
+};
+
+// Form Responses
+export const formResponses = {
+  list: (formId) => api.get(`/forms/${formId}/responses`),
+  get: (formId, responseId) => api.get(`/forms/${formId}/responses/${responseId}`),
+  delete: (formId, responseId) => api.delete(`/forms/${formId}/responses/${responseId}`),
+  exportCSV: (formId) => api.get(`/forms/${formId}/responses/export/csv`),
+  exportXLSX: (formId) => api.get(`/forms/${formId}/responses/export/xlsx`),
+  exportPDF: (formId) => api.get(`/forms/${formId}/responses/export/pdf`),
+};
+
+// Form Analytics
+export const formAnalytics = {
+  get: (formId) => api.get(`/forms/${formId}/analytics`),
+};
+
+// Form Templates
+export const formTemplates = {
+  list: (params) => api.get('/forms/templates/list', { params }),
+  get: (id) => api.get(`/forms/templates/${id}`),
+};
+
 export default api;
