@@ -123,6 +123,9 @@ import DocumentsDashboard from './pages/docs/DocumentsDashboard';
 // Phase 2AH - Spreadsheet Editor
 import SpreadsheetsDashboard from './pages/sheets/SpreadsheetsDashboard';
 
+// Phase 2AI - Presentation Editor
+import PresentationsDashboard from './pages/presentations/PresentationsDashboard';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -256,6 +259,9 @@ function App() {
 
         {/* Phase 2AH - Spreadsheet Editor */}
         <Route path="/sheets" element={<SpreadsheetsDashboard />} />
+
+        {/* Phase 2AI - Presentation Editor */}
+        <Route path="/presentations" element={<PresentationsDashboard />} />
       </Route>
 
       {/* Redirects */}

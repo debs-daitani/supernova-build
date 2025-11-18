@@ -37,6 +37,7 @@ export default function Dashboard() {
     { name: 'PDF Editor', href: '/pdf-editor', description: 'Edit, sign & convert PDFs', icon: '📄' },
     { name: 'Documents', href: '/docs', description: 'Write & collaborate in real-time', icon: '📝' },
     { name: 'Spreadsheets', href: '/sheets', description: 'Data analysis & formulas', icon: '📊' },
+    { name: 'Presentations', href: '/presentations', description: 'Create stunning slide decks', icon: '🎤' },
   ];
 
   return (

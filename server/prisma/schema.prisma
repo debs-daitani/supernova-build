@@ -154,6 +154,14 @@ model User {
   spreadsheetComments SpreadsheetComment[]
   spreadsheetVersions SpreadsheetVersion[]
 
+  // Phase 2AI - Presentation Editor
+  presentations       Presentation[]
+  presentationFolders PresentationFolder[]
+  presentationCollaborations PresentationCollaborator[]
+  presentationComments PresentationComment[]
+  presentationVersions PresentationVersion[]
+  presentationThemes  PresentationTheme[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -3324,4 +3332,156 @@ model SpreadsheetTemplate {
   createdAt     DateTime      @default(now())
 
   @@index([category])
+}
+
+// ============================================
+// Phase 2AI: Presentation Editor (Google Slides Killer)
+// ============================================
+
+model Presentation {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String        @default("Untitled Presentation")
+  slides        Json          // Array of slide objects
+  theme         String        @default("default")
+  themeId       String?
+  customTheme   PresentationTheme? @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  settings      Json?         // Slide size, animations settings, etc.
+
+  isPublic      Boolean       @default(false)
+  shareLink     String?       @unique
+  folderId      String?
+  folder        PresentationFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastViewedAt  DateTime      @default(now())
+
+  collaborators PresentationCollaborator[]
+  comments      PresentationComment[]
+  versions      PresentationVersion[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([updatedAt])
+}
+
+model PresentationFolder {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  color         String?
+  parentId      String?
+  parent        PresentationFolder? @relation("PresentationFolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders    PresentationFolder[] @relation("PresentationFolderHierarchy")
+
+  presentations Presentation[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model PresentationCollaborator {
+  id              String        @id @default(cuid())
+  presentationId  String
+  presentation    Presentation  @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permission      String        // "view", "comment", "edit"
+
+  createdAt       DateTime      @default(now())
+
+  @@unique([presentationId, userId])
+  @@index([presentationId])
+  @@index([userId])
+}
+
+model PresentationComment {
+  id              String        @id @default(cuid())
+  presentationId  String
+  presentation    Presentation  @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  slideIndex      Int           // Which slide (0-based)
+  content         String        @db.Text
+  position        Json?         // {x, y} position on slide
+
+  resolved        Boolean       @default(false)
+  resolvedBy      String?
+  resolvedAt      DateTime?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([presentationId])
+  @@index([userId])
+}
+
+model PresentationVersion {
+  id              String        @id @default(cuid())
+  presentationId  String
+  presentation    Presentation  @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  versionNumber   Int
+  slides          Json          // Snapshot of slides
+  theme           String
+  settings        Json?
+
+  changesSummary  String?       @db.Text
+
+  createdAt       DateTime      @default(now())
+
+  @@index([presentationId])
+  @@index([userId])
+}
+
+model PresentationTemplate {
+  id            String        @id @default(cuid())
+
+  name          String
+  description   String?       @db.Text
+  category      String        // "pitch", "business", "education", "marketing", "creative"
+
+  slides        Json          // Template slides
+  theme         String        @default("default")
+  thumbnail     String?
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+}
+
+model PresentationTheme {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  colors        Json          // {primary, secondary, accent, background, text}
+  fonts         Json          // {heading, body}
+  masterSlides  Json          // Array of master slide layouts
+
+  isPublic      Boolean       @default(false)
+  isDefault     Boolean       @default(false)
+
+  presentations Presentation[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
 }

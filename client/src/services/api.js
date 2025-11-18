@@ -1034,4 +1034,71 @@ export const spreadsheetTemplates = {
   createFromTemplate: (templateId, data) => api.post(`/sheets/from-template/${templateId}`, data),
 };
 
+// ============================================
+// Phase 2AI: Presentation Editor
+// ============================================
+
+// Presentations
+export const presentations = {
+  list: (params) => api.get('/presentations', { params }),
+  get: (id) => api.get(`/presentations/${id}`),
+  create: (data) => api.post('/presentations', data),
+  update: (id, data) => api.put(`/presentations/${id}`, data),
+  delete: (id) => api.delete(`/presentations/${id}`),
+};
+
+// Presentation Folders
+export const presentationFolders = {
+  list: () => api.get('/presentations/folders/list'),
+  create: (data) => api.post('/presentations/folders/create', data),
+  update: (id, data) => api.put(`/presentations/folders/${id}`, data),
+  delete: (id) => api.delete(`/presentations/folders/${id}`),
+};
+
+// Presentation Sharing
+export const presentationSharing = {
+  generateShareLink: (id) => api.post(`/presentations/${id}/share`),
+  removeShareLink: (id) => api.delete(`/presentations/${id}/share`),
+  getShared: (shareLink) => api.get(`/presentations/shared/${shareLink}`),
+  addCollaborator: (id, data) => api.post(`/presentations/${id}/collaborators`, data),
+  updateCollaborator: (id, collaboratorId, data) => api.put(`/presentations/${id}/collaborators/${collaboratorId}`, data),
+  removeCollaborator: (id, collaboratorId) => api.delete(`/presentations/${id}/collaborators/${collaboratorId}`),
+};
+
+// Presentation Comments
+export const presentationComments = {
+  list: (id) => api.get(`/presentations/${id}/comments`),
+  create: (id, data) => api.post(`/presentations/${id}/comments`, data),
+  resolve: (id, commentId, resolved) => api.put(`/presentations/${id}/comments/${commentId}/resolve`, { resolved }),
+  delete: (id, commentId) => api.delete(`/presentations/${id}/comments/${commentId}`),
+};
+
+// Presentation Versions
+export const presentationVersions = {
+  list: (id) => api.get(`/presentations/${id}/versions`),
+  create: (id, data) => api.post(`/presentations/${id}/versions`, data),
+  restore: (id, versionId) => api.post(`/presentations/${id}/versions/${versionId}/restore`),
+};
+
+// Presentation Export
+export const presentationExport = {
+  exportPDF: (id) => api.post(`/presentations/${id}/export/pdf`),
+  exportPPTX: (id) => api.post(`/presentations/${id}/export/pptx`),
+  exportImages: (id, format) => api.post(`/presentations/${id}/export/images`, { format }),
+};
+
+// Presentation Templates
+export const presentationTemplates = {
+  list: (params) => api.get('/presentations/templates/list', { params }),
+  get: (id) => api.get(`/presentations/templates/${id}`),
+};
+
+// Presentation Themes
+export const presentationThemes = {
+  list: () => api.get('/presentations/themes/list'),
+  create: (data) => api.post('/presentations/themes/create', data),
+  update: (id, data) => api.put(`/presentations/themes/${id}`, data),
+  delete: (id) => api.delete(`/presentations/themes/${id}`),
+};
+
 export default api;
