@@ -41,6 +41,10 @@ import siteRoutes from './routes/site.js';
 import aiImagesRoutes from './routes/ai-images.js';
 import aiVideosRoutes from './routes/ai-videos.js';
 
+// Phase 2H - CRM + Accounting
+import crmRoutes from './routes/crm.js';
+import accountingRoutes from './routes/accounting.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -101,6 +105,10 @@ app.use('/site', siteRoutes); // Public website hosting
 // Phase 2Q + 2R - AI Generation
 app.use('/api/ai', aiImagesRoutes);
 app.use('/api/ai', aiVideosRoutes);
+
+// Phase 2H - CRM + Accounting
+app.use('/api/crm', crmRoutes);
+app.use('/api/accounting', accountingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -20,6 +20,9 @@ export default function Dashboard() {
     { name: 'Chatbot Builder', href: '/tools/chatbot-dashboard', description: 'Automated conversations', icon: '🤖' },
     { name: 'Social Automation', href: '/tools/social-automation', description: 'Instagram & Facebook DMs', icon: '📱' },
     { name: 'Website Builder', href: '/tools/websites', description: 'Drag-and-drop websites', icon: '🌐' },
+    { name: 'CRM', href: '/tools/crm', description: 'Manage contacts & deals', icon: '👥' },
+    { name: 'Accounting', href: '/tools/accounting', description: 'Invoices & expenses', icon: '💰' },
+    { name: 'Calculators', href: '/tools/accounting/calculators', description: 'Financial tools', icon: '🧮' },
   ];
 
   return (

@@ -317,4 +317,83 @@ export const aiVideos = {
   delete: (id) => api.delete(`/ai/videos/${id}`),
 };
 
+// Phase 2H - CRM + Accounting + Financial Tools
+
+// CRM - Contacts
+export const crmContacts = {
+  list: (params) => api.get('/crm/contacts', { params }),
+  create: (data) => api.post('/crm/contacts', data),
+  get: (id) => api.get(`/crm/contacts/${id}`),
+  update: (id, data) => api.patch(`/crm/contacts/${id}`, data),
+  delete: (id) => api.delete(`/crm/contacts/${id}`),
+};
+
+// CRM - Deals
+export const crmDeals = {
+  list: (params) => api.get('/crm/deals', { params }),
+  create: (data) => api.post('/crm/deals', data),
+  get: (id) => api.get(`/crm/deals/${id}`),
+  update: (id, data) => api.patch(`/crm/deals/${id}`, data),
+  delete: (id) => api.delete(`/crm/deals/${id}`),
+};
+
+// CRM - Tasks
+export const crmTasks = {
+  list: (params) => api.get('/crm/tasks', { params }),
+  create: (data) => api.post('/crm/tasks', data),
+  get: (id) => api.get(`/crm/tasks/${id}`),
+  update: (id, data) => api.patch(`/crm/tasks/${id}`, data),
+  delete: (id) => api.delete(`/crm/tasks/${id}`),
+  complete: (id) => api.patch(`/crm/tasks/${id}/complete`),
+};
+
+// CRM - Activities
+export const crmActivities = {
+  list: (params) => api.get('/crm/activities', { params }),
+  create: (data) => api.post('/crm/activities', data),
+};
+
+// CRM - Stats
+export const crmStats = {
+  get: () => api.get('/crm/stats'),
+};
+
+// Accounting - Invoices
+export const accountingInvoices = {
+  list: (params) => api.get('/accounting/invoices', { params }),
+  create: (data) => api.post('/accounting/invoices', data),
+  get: (id) => api.get(`/accounting/invoices/${id}`),
+  update: (id, data) => api.patch(`/accounting/invoices/${id}`, data),
+  delete: (id) => api.delete(`/accounting/invoices/${id}`),
+  markPaid: (id) => api.post(`/accounting/invoices/${id}/mark-paid`),
+};
+
+// Accounting - Expenses
+export const accountingExpenses = {
+  list: (params) => api.get('/accounting/expenses', { params }),
+  create: (data) => api.post('/accounting/expenses', data),
+  get: (id) => api.get(`/accounting/expenses/${id}`),
+  update: (id, data) => api.patch(`/accounting/expenses/${id}`, data),
+  delete: (id) => api.delete(`/accounting/expenses/${id}`),
+};
+
+// Accounting - Income
+export const accountingIncome = {
+  list: (params) => api.get('/accounting/income', { params }),
+  create: (data) => api.post('/accounting/income', data),
+  get: (id) => api.get(`/accounting/income/${id}`),
+  delete: (id) => api.delete(`/accounting/income/${id}`),
+};
+
+// Accounting - Reports
+export const accountingReports = {
+  profitLoss: (params) => api.get('/accounting/reports/profit-loss', { params }),
+  tax: (params) => api.get('/accounting/reports/tax', { params }),
+};
+
+// Accounting - Stats
+export const accountingStats = {
+  get: () => api.get('/accounting/stats'),
+};
+
 export default api;

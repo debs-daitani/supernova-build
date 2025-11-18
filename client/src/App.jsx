@@ -56,6 +56,19 @@ import WebsitesDashboard from './pages/tools/WebsitesDashboard';
 import WebsiteBuilder from './pages/tools/WebsiteBuilder';
 import WebsiteSettings from './pages/tools/WebsiteSettings';
 
+// Phase 2H - CRM + Accounting + Financial Tools
+import CRMDashboard from './pages/tools/CRMDashboard';
+import Contacts from './pages/tools/Contacts';
+import ContactDetail from './pages/tools/ContactDetail';
+import Pipeline from './pages/tools/Pipeline';
+import Tasks from './pages/tools/Tasks';
+import AccountingDashboard from './pages/tools/AccountingDashboard';
+import Invoices from './pages/tools/Invoices';
+import CreateInvoice from './pages/tools/CreateInvoice';
+import Expenses from './pages/tools/Expenses';
+import Reports from './pages/tools/Reports';
+import Calculators from './pages/tools/Calculators';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -118,6 +131,20 @@ function App() {
         <Route path="/tools/websites" element={<WebsitesDashboard />} />
         <Route path="/tools/websites/:websiteId/builder" element={<WebsiteBuilder />} />
         <Route path="/tools/websites/:websiteId/settings" element={<WebsiteSettings />} />
+
+        {/* Phase 2H - CRM + Accounting + Financial Tools */}
+        <Route path="/tools/crm" element={<CRMDashboard />} />
+        <Route path="/tools/crm/contacts" element={<Contacts />} />
+        <Route path="/tools/crm/contacts/:id" element={<ContactDetail />} />
+        <Route path="/tools/crm/pipeline" element={<Pipeline />} />
+        <Route path="/tools/crm/tasks" element={<Tasks />} />
+        <Route path="/tools/accounting" element={<AccountingDashboard />} />
+        <Route path="/tools/accounting/invoices" element={<Invoices />} />
+        <Route path="/tools/accounting/invoices/new" element={<CreateInvoice />} />
+        <Route path="/tools/accounting/invoices/:id" element={<CreateInvoice />} />
+        <Route path="/tools/accounting/expenses" element={<Expenses />} />
+        <Route path="/tools/accounting/reports" element={<Reports />} />
+        <Route path="/tools/accounting/calculators" element={<Calculators />} />
       </Route>
 
       {/* Redirects */}

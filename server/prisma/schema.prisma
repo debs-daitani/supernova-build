@@ -77,6 +77,15 @@ model User {
   generatedImages     GeneratedImage[]
   generatedVideos     GeneratedVideo[]
 
+  // Phase 2H - CRM + Accounting
+  contacts            Contact[]
+  deals               Deal[]
+  tasks               Task[]
+  activities          Activity[]
+  invoices            Invoice[]
+  expenses            Expense[]
+  incomeEntries       IncomeEntry[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -1210,4 +1219,245 @@ model GeneratedVideo {
   @@index([conversationId])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================
+// PHASE 2H - CRM + ACCOUNTING
+// ============================================
+
+// CRM Models
+
+model Contact {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  firstName     String?
+  lastName      String?
+  email         String?
+  phone         String?
+  company       String?
+  jobTitle      String?
+
+  // Address
+  address       String?
+  city          String?
+  postcode      String?
+  country       String?
+
+  // Social
+  instagram     String?
+  facebook      String?
+  linkedin      String?
+  website       String?
+
+  // CRM fields
+  source        String?       // How they found you
+  status        String        @default("lead")  // lead, prospect, customer, inactive
+  leadScore     Int           @default(0)
+  tags          String[]
+
+  // Custom fields
+  customFields  Json?
+
+  // Notes
+  notes         String?       @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  deals         Deal[]
+  tasks         Task[]
+  activities    Activity[]
+  invoices      Invoice[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+}
+
+model Deal {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId     String
+  contact       Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  // Deal info
+  title         String
+  value         Float
+  currency      String        @default("GBP")
+
+  // Pipeline
+  stage         String        @default("lead")  // lead, qualified, proposal, negotiation, closed_won, closed_lost
+  probability   Int           @default(0)       // 0-100%
+
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+
+  // Details
+  description   String?       @db.Text
+  products      Json?         // Products/services included
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([stage])
+}
+
+model Task {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId     String?
+  contact       Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // Task info
+  title         String
+  description   String?       @db.Text
+  dueDate       DateTime?
+  completed     Boolean       @default(false)
+  completedAt   DateTime?
+
+  priority      String        @default("medium")  // low, medium, high, urgent
+  type          String        @default("todo")    // todo, call, email, meeting, follow_up
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([dueDate])
+  @@index([completed])
+}
+
+model Activity {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId     String
+  contact       Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  // Activity details
+  type          String        // email_sent, call_made, meeting_held, note_added, deal_created, etc.
+  title         String
+  description   String?       @db.Text
+
+  metadata      Json?         // Additional data
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([type])
+}
+
+// Accounting Models
+
+model Invoice {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId     String?
+  contact       Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // Invoice details
+  invoiceNumber String        @unique
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+
+  // Items
+  lineItems     Json          // Array of {description, quantity, price}
+
+  // Totals
+  subtotal      Float
+  tax           Float         @default(0)
+  total         Float
+
+  currency      String        @default("GBP")
+
+  // Payment
+  status        String        @default("unpaid")  // unpaid, paid, overdue, cancelled
+  paidDate      DateTime?
+  paymentMethod String?
+
+  // Notes
+  notes         String?       @db.Text
+  terms         String?       @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
+  @@index([invoiceNumber])
+}
+
+model Expense {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Expense details
+  description   String
+  amount        Float
+  currency      String        @default("GBP")
+  category      String        // software, marketing, office, travel, etc.
+
+  date          DateTime      @default(now())
+
+  // Receipt
+  receiptUrl    String?
+  receiptOCR    Json?         // Extracted data from receipt
+
+  // Tax
+  taxDeductible Boolean       @default(true)
+  vatAmount     Float?
+
+  // Payment
+  paymentMethod String?       // card, cash, bank_transfer
+
+  notes         String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([date])
+}
+
+model IncomeEntry {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Income details
+  description   String
+  amount        Float
+  currency      String        @default("GBP")
+  category      String        // service, product, affiliate, other
+
+  date          DateTime      @default(now())
+
+  // Source
+  invoiceId     String?
+  source        String?       // client name, platform, etc.
+
+  notes         String?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([category])
+  @@index([date])
 }
