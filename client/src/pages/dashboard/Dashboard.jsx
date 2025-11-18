@@ -25,6 +25,7 @@ export default function Dashboard() {
     { name: 'Accounting', href: '/tools/accounting', description: 'Invoices & expenses', icon: '💰' },
     { name: 'Calculators', href: '/tools/accounting/calculators', description: 'Financial tools', icon: '🧮' },
     { name: 'Task Manager', href: '/tasks', description: 'Projects, habits & goals', icon: '✅' },
+    { name: 'Content Creation', href: '/content', description: 'Create & schedule posts', icon: '🎨' },
   ];
 
   return (

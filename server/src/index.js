@@ -51,6 +51,9 @@ import shopRoutes from './routes/shop.js';
 // Phase 2P - Task & Project Management
 import tasksRoutes from './routes/tasks.js';
 
+// Phase 2E - Content Creation Suite
+import contentCreationRoutes from './routes/contentCreation.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -121,6 +124,9 @@ app.use('/api/shop', shopRoutes);
 
 // Phase 2P - Task & Project Management
 app.use('/api/tasks', tasksRoutes);
+
+// Phase 2E - Content Creation Suite
+app.use('/api/content-creation', contentCreationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

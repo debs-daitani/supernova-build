@@ -512,4 +512,63 @@ export const taskStats = {
   get: () => api.get('/tasks/stats'),
 };
 
+// ============================================================================
+// Phase 2E - Content Creation Suite
+// ============================================================================
+
+// Design Templates
+export const designTemplates = {
+  list: (params) => api.get('/content-creation/templates', { params }),
+  get: (id) => api.get(`/content-creation/templates/${id}`),
+};
+
+// Saved Designs
+export const savedDesigns = {
+  list: (params) => api.get('/content-creation/designs', { params }),
+  create: (data) => api.post('/content-creation/designs', data),
+  get: (id) => api.get(`/content-creation/designs/${id}`),
+  update: (id, data) => api.patch(`/content-creation/designs/${id}`, data),
+  delete: (id) => api.delete(`/content-creation/designs/${id}`),
+};
+
+// Content Posts
+export const contentPosts = {
+  list: (params) => api.get('/content-creation/posts', { params }),
+  create: (data) => api.post('/content-creation/posts', data),
+  get: (id) => api.get(`/content-creation/posts/${id}`),
+  update: (id, data) => api.patch(`/content-creation/posts/${id}`, data),
+  schedule: (id, data) => api.post(`/content-creation/posts/${id}/schedule`, data),
+  publish: (id) => api.post(`/content-creation/posts/${id}/publish`),
+  duplicate: (id) => api.post(`/content-creation/posts/${id}/duplicate`),
+  delete: (id) => api.delete(`/content-creation/posts/${id}`),
+};
+
+// Content Ideas
+export const contentIdeas = {
+  list: (params) => api.get('/content-creation/ideas', { params }),
+  create: (data) => api.post('/content-creation/ideas', data),
+  update: (id, data) => api.patch(`/content-creation/ideas/${id}`, data),
+  delete: (id) => api.delete(`/content-creation/ideas/${id}`),
+};
+
+// Brand Assets
+export const brandAssets = {
+  list: (params) => api.get('/content-creation/brand-assets', { params }),
+  create: (data) => api.post('/content-creation/brand-assets', data),
+  update: (id, data) => api.patch(`/content-creation/brand-assets/${id}`, data),
+  delete: (id) => api.delete(`/content-creation/brand-assets/${id}`),
+};
+
+// AI Tools
+export const contentAI = {
+  generateCaption: (data) => api.post('/content-creation/generate-caption', data),
+  generateHashtags: (data) => api.post('/content-creation/generate-hashtags', data),
+  generateIdeas: (data) => api.post('/content-creation/generate-ideas', data),
+};
+
+// Content Stats
+export const contentStats = {
+  get: () => api.get('/content-creation/stats'),
+};
+
 export default api;

@@ -100,6 +100,12 @@ model User {
   habits              Habit[]
   goals               Goal[]
 
+  // Phase 2E - Content Creation Suite
+  savedDesigns        SavedDesign[]
+  contentPosts        ContentPost[]
+  contentIdeas        ContentIdea[]
+  brandAssets         BrandAsset[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -1987,4 +1993,141 @@ model Goal {
 
   @@index([userId])
   @@index([status])
+}
+
+// ============================================
+// PHASE 2E - CONTENT CREATION SUITE
+// ============================================
+
+model DesignTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  category      String        // "social_post", "story", "email_header", "logo", "flyer"
+  platform      String?       // "instagram", "facebook", "linkedin", "pinterest"
+
+  // Dimensions
+  width         Int
+  height        Int
+
+  // Preview
+  thumbnail     String
+
+  // Template data (JSON structure)
+  template      Json          // Layers, elements, text, images
+
+  // Usage
+  isPremium     Boolean       @default(false)
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+  @@index([platform])
+}
+
+model ContentPost {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Post content
+  caption       String        @db.Text
+  mediaUrls     String[]      // Images/videos
+
+  // Platforms
+  platforms     String[]      // ["instagram", "facebook", "linkedin"]
+
+  // Scheduling
+  scheduledFor  DateTime?
+  publishedAt   DateTime?
+  status        String        @default("draft")  // draft, scheduled, published, failed
+
+  // Hashtags
+  hashtags      String[]
+
+  // Performance (if published)
+  likes         Int?
+  comments      Int?
+  shares        Int?
+  reach         Int?
+
+  // Design (if created from template)
+  designId      String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model SavedDesign {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  category      String
+
+  // Design data
+  width         Int
+  height        Int
+  designData    Json          // All layers, elements, etc.
+
+  // Preview
+  thumbnail     String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([category])
+}
+
+model ContentIdea {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Idea
+  title         String
+  description   String?       @db.Text
+  category      String?       // "educational", "promotional", "entertaining", "inspirational"
+
+  // Status
+  status        String        @default("idea")  // idea, in_progress, completed
+
+  // Related content
+  contentPostId String?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+model BrandAsset {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Asset type
+  assetType     String        // "logo", "color", "font", "image", "icon"
+
+  // Asset data
+  name          String
+  value         String        // URL for images, hex for colors, font name, etc.
+
+  // Metadata
+  category      String?
+  tags          String[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([assetType])
 }

@@ -79,6 +79,9 @@ import Projects from './pages/tasks/Projects';
 import Habits from './pages/tasks/Habits';
 import Goals from './pages/tasks/Goals';
 
+// Phase 2E - Content Creation Suite
+import ContentDashboard from './pages/content/ContentDashboard';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -168,6 +171,9 @@ function App() {
         <Route path="/tasks/projects/:projectId" element={<Projects />} />
         <Route path="/tasks/habits" element={<Habits />} />
         <Route path="/tasks/goals" element={<Goals />} />
+
+        {/* Phase 2E - Content Creation Suite */}
+        <Route path="/content" element={<ContentDashboard />} />
       </Route>
 
       {/* Redirects */}
