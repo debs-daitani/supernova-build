@@ -1,0 +1,256 @@
+name: CD - Deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+        default: 'staging'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy-development:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development')
+    environment:
+      name: development
+      url: https://dev.supernova-ai.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_DEV }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -k k8s/overlays/development
+          kubectl rollout status deployment/supernova-app -n supernova-dev
+
+      - name: Run smoke tests
+        run: |
+          kubectl run smoke-test --rm -i --restart=Never --image=curlimages/curl:latest -- \
+            curl -f https://dev.supernova-ai.example.com/health || exit 1
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.supernova-ai.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install supernova ./helm/supernova \
+            --namespace supernova-staging \
+            --create-namespace \
+            --set image.tag=${{ github.sha }} \
+            --set environment=staging \
+            --values helm/supernova/values-staging.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/supernova-app -n supernova-staging
+          kubectl get pods -n supernova-staging
+
+      - name: Run smoke tests
+        run: |
+          sleep 30
+          curl -f https://staging.supernova-ai.example.com/health || exit 1
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://supernova-ai.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_PROD }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Create backup
+        run: |
+          kubectl exec -n supernova deployment/postgres -- \
+            pg_dump -U supernova supernova_db > backup-$(date +%Y%m%d-%H%M%S).sql
+          # Upload backup to S3 or similar
+
+      - name: Deploy with Helm (Blue-Green)
+        run: |
+          # Deploy new version (green)
+          helm upgrade --install supernova-green ./helm/supernova \
+            --namespace supernova \
+            --set image.tag=${{ github.ref_name }} \
+            --set environment=production \
+            --set deployment.name=supernova-app-green \
+            --values helm/supernova/values-production.yaml \
+            --wait \
+            --timeout 15m
+
+      - name: Run production smoke tests
+        run: |
+          # Test green deployment
+          kubectl run smoke-test --rm -i --restart=Never --image=curlimages/curl:latest -- \
+            curl -f http://supernova-service-green/health || exit 1
+
+      - name: Switch traffic to green
+        run: |
+          # Update service to point to green deployment
+          kubectl patch service supernova-service -n supernova \
+            -p '{"spec":{"selector":{"deployment":"supernova-app-green"}}}'
+
+      - name: Monitor new deployment
+        run: |
+          sleep 60
+          # Check for errors
+          ERROR_COUNT=$(kubectl logs -n supernova -l deployment=supernova-app-green --since=2m | grep -i error | wc -l)
+          if [ $ERROR_COUNT -gt 10 ]; then
+            echo "Too many errors detected, rolling back..."
+            exit 1
+          fi
+
+      - name: Cleanup old deployment
+        if: success()
+        run: |
+          # Delete blue deployment after successful green deployment
+          helm delete supernova-blue -n supernova || true
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          # Switch back to blue
+          kubectl patch service supernova-service -n supernova \
+            -p '{"spec":{"selector":{"deployment":"supernova-app-blue"}}}'
+          # Delete failed green deployment
+          helm delete supernova-green -n supernova
+
+  database-migrations:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Run migrations
+        run: |
+          # Copy migration files to pod
+          for file in infrastructure/database/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              kubectl cp "$file" supernova-staging/$(kubectl get pod -n supernova-staging -l app=postgres -o jsonpath='{.items[0].metadata.name}'):/tmp/
+              kubectl exec -n supernova-staging deployment/postgres -- \
+                psql -U supernova -d supernova_db -f /tmp/$(basename "$file")
+            fi
+          done
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "Deployment ${{ needs.deploy-production.result }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*SUPERNova AI Deployment*\n*Status:* ${{ needs.deploy-production.result }}\n*Version:* ${{ github.ref_name }}\n*Environment:* Production"
+                  }
+                }
+              ]
+            }
+        continue-on-error: true
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') && needs.deploy-production.result == 'success'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes in this Release
+            - Deployed to production
+            - Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+
+            ## Deployment Details
+            - Environment: Production
+            - Deployed at: ${{ github.event.head_commit.timestamp }}
+            - Commit: ${{ github.sha }}
+          draft: false
+          prerelease: false

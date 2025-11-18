@@ -1,0 +1,223 @@
+# Default values for supernova
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+
+# Application configuration
+app:
+  replicaCount: 3
+
+  image:
+    repository: ghcr.io/debs-daitani/supernova-build
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+    annotations: {}
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  env:
+    NODE_ENV: production
+    APP_PORT: "3000"
+    LOG_LEVEL: info
+    LOG_FORMAT: json
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+
+  image:
+    repository: postgres
+    tag: 15-alpine
+    pullPolicy: IfNotPresent
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  env:
+    POSTGRES_DB: supernova_db
+    POSTGRES_USER: supernova
+    # POSTGRES_PASSWORD set via secret
+
+  service:
+    type: ClusterIP
+    port: 5432
+
+# Redis configuration
+redis:
+  enabled: true
+
+  image:
+    repository: redis
+    tag: 7-alpine
+    pullPolicy: IfNotPresent
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  service:
+    type: ClusterIP
+    port: 6379
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+
+  hosts:
+    - host: supernova-ai.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls:
+    - secretName: supernova-tls
+      hosts:
+        - supernova-ai.example.com
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: false  # Requires Prometheus Operator
+    interval: 30s
+    path: /metrics
+
+# ConfigMap data
+config:
+  API_PREFIX: "/api/v1"
+  API_RATE_LIMIT: "100"
+  CACHE_SESSION_TTL: "300"
+  CACHE_USER_PREFS_TTL: "300"
+  MEMORY_RETENTION_DAYS: "90"
+  CONTEXT_WINDOW_SIZE: "50"
+  ENABLE_METRICS: "true"
+  ENABLE_SWAGGER: "true"
+
+# Secrets (should be provided externally)
+secrets:
+  DB_PASSWORD: ""
+  REDIS_PASSWORD: ""
+  JWT_SECRET: ""
+  SESSION_SECRET: ""
+  API_KEY: ""
+  OPENAI_API_KEY: ""
+  ANTHROPIC_API_KEY: ""
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+# Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+      - ALL
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Liveness and Readiness probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
