@@ -41,6 +41,7 @@ export default function Dashboard() {
     { name: 'Forms', href: '/forms', description: 'Surveys, quizzes & data collection', icon: '📋' },
     { name: 'Cloud Storage', href: '/storage', description: 'Store & access files anywhere', icon: '☁️' },
     { name: 'Social Network', href: '/social', description: 'Connect, share & engage', icon: '👥' },
+    { name: 'Video Platform', href: '/videos', description: 'Watch, upload & share videos', icon: '📹' },
   ];
 
   return (

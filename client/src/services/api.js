@@ -1279,4 +1279,66 @@ export const socialSearch = {
   posts: (params) => api.get('/social/search/posts', { params }),
 };
 
+// ============================================================================
+// Phase 2AM - Video Platform
+// ============================================================================
+
+// Channels
+export const videoChannels = {
+  create: (data) => api.post('/videos/channels', data),
+  get: (handle) => api.get(`/videos/channels/${handle}`),
+  getOwn: () => api.get('/videos/channels/me/info'),
+  update: (id, data) => api.patch(`/videos/channels/${id}`, data),
+  subscribe: (id, data) => api.post(`/videos/channels/${id}/subscribe`, data),
+  unsubscribe: (id) => api.delete(`/videos/channels/${id}/unsubscribe`),
+  getPlaylists: (id, params) => api.get(`/videos/channels/${id}/playlists`, { params }),
+};
+
+// Subscriptions
+export const videoSubscriptions = {
+  list: (params) => api.get('/videos/subscriptions', { params }),
+};
+
+// Videos
+export const videos = {
+  uploadInit: (data) => api.post('/videos/upload/init', data),
+  publish: (id) => api.post(`/videos/videos/${id}/publish`),
+  list: (params) => api.get('/videos/videos', { params }),
+  get: (id) => api.get(`/videos/videos/${id}`),
+  update: (id, data) => api.patch(`/videos/videos/${id}`, data),
+  delete: (id) => api.delete(`/videos/videos/${id}`),
+  like: (id, data) => api.post(`/videos/videos/${id}/like`, data),
+  unlike: (id) => api.delete(`/videos/videos/${id}/like`),
+  view: (id, data) => api.post(`/videos/videos/${id}/view`, data),
+};
+
+// Comments
+export const videoComments = {
+  add: (videoId, data) => api.post(`/videos/videos/${videoId}/comments`, data),
+  list: (videoId, params) => api.get(`/videos/videos/${videoId}/comments`, { params }),
+  delete: (id) => api.delete(`/videos/comments/${id}`),
+};
+
+// Playlists
+export const videoPlaylists = {
+  create: (data) => api.post('/videos/playlists', data),
+  get: (id) => api.get(`/videos/playlists/${id}`),
+  addVideo: (id, data) => api.post(`/videos/playlists/${id}/add`, data),
+  removeVideo: (id, videoId) => api.delete(`/videos/playlists/${id}/remove/${videoId}`),
+};
+
+// Discovery
+export const videoDiscovery = {
+  search: (params) => api.get('/videos/search', { params }),
+  recommendations: (params) => api.get('/videos/recommendations', { params }),
+  trending: (params) => api.get('/videos/trending', { params }),
+  shorts: (params) => api.get('/videos/shorts', { params }),
+};
+
+// Analytics
+export const videoAnalytics = {
+  channel: (id) => api.get(`/videos/analytics/channel/${id}`),
+  video: (id) => api.get(`/videos/analytics/video/${id}`),
+};
+
 export default api;

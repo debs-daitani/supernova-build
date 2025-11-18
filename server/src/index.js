@@ -94,6 +94,9 @@ import formsRoutes from './routes/forms.js';
 // Phase 2AK - Cloud Storage
 import storageRoutes from './routes/storage.js';
 
+// Phase 2AM - Video Platform
+import videosRoutes from './routes/videos.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -207,6 +210,9 @@ app.use('/api/forms', formsRoutes);
 
 // Phase 2AK - Cloud Storage
 app.use('/api/storage', storageRoutes);
+
+// Phase 2AM - Video Platform
+app.use('/api/videos', videosRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -186,6 +186,13 @@ model User {
   socialNotifications SocialNotification[] @relation("SocialNotifications")
   triggeredNotifications SocialNotification[] @relation("SocialNotificationActor")
 
+  // Phase 2AM - Video Platform
+  videoChannel        VideoChannel?
+  videoComments       VideoComment[]
+  videoLikes          VideoLike[]
+  videoViews          VideoView[]
+  videoSubscriptions  Subscription[] @relation("VideoSubscriptions")
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4042,4 +4049,208 @@ model SocialNotification {
   @@index([userId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// ============================================
+// PHASE 2AM - VIDEO PLATFORM
+// ============================================
+
+model VideoChannel {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  channelName   String
+  handle        String        @unique
+  description   String?       @db.Text
+
+  avatar        String?
+  banner        String?
+
+  subscribersCount Int        @default(0)
+  videosCount   Int           @default(0)
+  totalViews    Int           @default(0)
+
+  isVerified    Boolean       @default(false)
+  isMonetized   Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  videos        Video[]
+  subscribers   Subscription[]
+  playlists     Playlist[]
+
+  @@index([handle])
+  @@index([userId])
+}
+
+model Video {
+  id            String        @id @default(cuid())
+  channelId     String
+  channel       VideoChannel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+
+  videoUrl      String
+  thumbnailUrl  String
+  duration      Int
+
+  videoType     String
+
+  status        String        @default("processing")
+  resolution    String?
+
+  visibility    String        @default("public")
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
+
+  tags          String[]
+  category      String?
+
+  viewsCount    Int           @default(0)
+  likesCount    Int           @default(0)
+  dislikesCount Int           @default(0)
+  commentsCount Int           @default(0)
+  sharesCount   Int           @default(0)
+
+  avgWatchTime  Int?
+  watchedToEnd  Int           @default(0)
+
+  adsEnabled    Boolean       @default(false)
+  revenue       Float         @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  comments      VideoComment[]
+  likes         VideoLike[]
+  views         VideoView[]
+  playlistItems PlaylistItem[]
+
+  @@index([channelId])
+  @@index([videoType])
+  @@index([publishedAt])
+  @@index([viewsCount])
+  @@index([status])
+}
+
+model VideoComment {
+  id            String        @id @default(cuid())
+  videoId       String
+  video         Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content       String        @db.Text
+  timestamp     Int?
+
+  parentId      String?
+  parent        VideoComment? @relation("VideoCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       VideoComment[] @relation("VideoCommentReplies")
+
+  likesCount    Int           @default(0)
+  isPinned      Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model VideoLike {
+  id            String        @id @default(cuid())
+  videoId       String
+  video         Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  likeType      String
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([videoId, userId])
+  @@index([videoId])
+  @@index([userId])
+}
+
+model VideoView {
+  id            String        @id @default(cuid())
+  videoId       String
+  video         Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  watchTime     Int
+  completed     Boolean       @default(false)
+
+  ipAddress     String?
+  userAgent     String?
+  referrer      String?
+
+  viewedAt      DateTime      @default(now())
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([viewedAt])
+}
+
+model Subscription {
+  id            String        @id @default(cuid())
+
+  subscriberId  String
+  subscriber    User          @relation("VideoSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  channelId     String
+  channel       VideoChannel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  notificationLevel String    @default("all")
+
+  subscribedAt  DateTime      @default(now())
+
+  @@unique([subscriberId, channelId])
+  @@index([subscriberId])
+  @@index([channelId])
+}
+
+model Playlist {
+  id            String        @id @default(cuid())
+  channelId     String
+  channel       VideoChannel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+
+  visibility    String        @default("public")
+  thumbnailUrl  String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items         PlaylistItem[]
+
+  @@index([channelId])
+}
+
+model PlaylistItem {
+  id            String        @id @default(cuid())
+  playlistId    String
+  playlist      Playlist      @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  videoId       String
+  video         Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  order         Int
+
+  addedAt       DateTime      @default(now())
+
+  @@unique([playlistId, videoId])
+  @@index([playlistId])
+  @@index([videoId])
 }

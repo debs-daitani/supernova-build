@@ -135,6 +135,11 @@ import MyDrive from './pages/storage/MyDrive';
 // Phase 2AL - Social Media Platform
 import Feed from './pages/social/Feed';
 
+// Phase 2AM - Video Platform
+import VideoHome from './pages/videos/VideoHome';
+import Shorts from './pages/videos/Shorts';
+import Watch from './pages/videos/Watch';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -280,6 +285,11 @@ function App() {
 
         {/* Phase 2AL - Social Media Platform */}
         <Route path="/social" element={<Feed />} />
+
+        {/* Phase 2AM - Video Platform */}
+        <Route path="/videos" element={<VideoHome />} />
+        <Route path="/videos/shorts" element={<Shorts />} />
+        <Route path="/videos/watch/:id" element={<Watch />} />
       </Route>
 
       {/* Redirects */}
