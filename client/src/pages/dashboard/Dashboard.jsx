@@ -32,6 +32,7 @@ export default function Dashboard() {
     { name: 'Events Platform', href: '/events', description: 'Host & manage events', icon: '🎫' },
     { name: 'Legal Templates', href: '/legal', description: 'Contracts, T&Cs & policies', icon: '⚖️' },
     { name: 'Launch Planner', href: '/launch', description: 'Plan successful launches', icon: '🚀' },
+    { name: 'Image Editor', href: '/image-editor', description: 'Photo editing & design', icon: '🎨' },
   ];
 
   return (

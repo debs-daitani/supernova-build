@@ -127,6 +127,10 @@ model User {
   legalDocuments      LegalDocument[]
   launches            Launch[]
 
+  // Phase 2AC - Image Editor
+  imageProjects       ImageProject[]
+  imageAssets         ImageAsset[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2772,4 +2776,62 @@ model WaitlistEntry {
 
   @@index([launchId])
   @@index([email])
+}
+
+// ============================================================================
+// Phase 2AC - Image Editor (Photoshop Killer)
+// ============================================================================
+
+model ImageProject {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Project info
+  name          String
+
+  // Canvas settings
+  width         Int
+  height        Int
+
+  // Project data (layers, objects, history)
+  projectData   Json          // Complete editor state
+
+  // Preview
+  thumbnail     String?
+
+  // Export
+  lastExport    String?       // URL to last exported image
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ImageAsset {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Asset info
+  name          String
+  assetType     String        // "image", "brush", "texture", "pattern"
+
+  // File
+  fileUrl       String
+  fileSize      Int
+
+  // Metadata
+  width         Int?
+  height        Int?
+  format        String?       // "png", "jpg", "svg"
+
+  // Usage
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([assetType])
 }

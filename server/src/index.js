@@ -70,6 +70,9 @@ import eventsRoutes from './routes/events.js';
 import legalRoutes from './routes/legal.js';
 import launchRoutes from './routes/launch.js';
 
+// Phase 2AC - Image Editor
+import imageEditorRoutes from './routes/image-editor.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -159,6 +162,9 @@ app.use('/api', eventsRoutes);
 // Phase 2O - Legal Templates + Launch Toolkit
 app.use('/api/legal', legalRoutes);
 app.use('/api', launchRoutes);
+
+// Phase 2AC - Image Editor
+app.use('/api/image-editor', imageEditorRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

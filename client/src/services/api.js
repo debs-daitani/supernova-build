@@ -781,4 +781,40 @@ export const waitlist = {
   notify: (launchId, data) => api.post(`/launch/${launchId}/waitlist/notify`, data),
 };
 
+// ============================================================================
+// Phase 2AC - Image Editor
+// ============================================================================
+
+// Image Projects
+export const imageProjects = {
+  create: (data) => api.post('/image-editor/projects', data),
+  list: () => api.get('/image-editor/projects'),
+  get: (id) => api.get(`/image-editor/projects/${id}`),
+  update: (id, data) => api.patch(`/image-editor/projects/${id}`, data),
+  delete: (id) => api.delete(`/image-editor/projects/${id}`),
+  duplicate: (id) => api.post(`/image-editor/projects/${id}/duplicate`),
+};
+
+// Image Export
+export const imageExport = {
+  export: (data) => api.post('/image-editor/export', data),
+};
+
+// Image AI Tools
+export const imageAI = {
+  removeBackground: (imageUrl) => api.post('/image-editor/remove-bg', { imageUrl }),
+  removeObject: (imageUrl, maskData) => api.post('/image-editor/remove-object', { imageUrl, maskData }),
+  upscale: (imageUrl, scale) => api.post('/image-editor/upscale', { imageUrl, scale }),
+  enhance: (imageUrl) => api.post('/image-editor/enhance', { imageUrl }),
+  colorize: (imageUrl) => api.post('/image-editor/colorize', { imageUrl }),
+};
+
+// Image Assets
+export const imageAssets = {
+  upload: (data) => api.post('/image-editor/assets', data),
+  list: (params) => api.get('/image-editor/assets', { params }),
+  delete: (id) => api.delete(`/image-editor/assets/${id}`),
+  use: (id) => api.post(`/image-editor/assets/${id}/use`),
+};
+
 export default api;

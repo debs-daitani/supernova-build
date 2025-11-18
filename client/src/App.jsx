@@ -108,6 +108,9 @@ import LaunchDashboard from './pages/launch/LaunchDashboard';
 import CreateLaunch from './pages/launch/CreateLaunch';
 import LaunchChecklist from './pages/launch/LaunchChecklist';
 
+// Phase 2AC - Image Editor
+import ImageProjects from './pages/image-editor/ImageProjects';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -226,6 +229,9 @@ function App() {
         <Route path="/launch" element={<LaunchDashboard />} />
         <Route path="/launch/create" element={<CreateLaunch />} />
         <Route path="/launch/:id" element={<LaunchChecklist />} />
+
+        {/* Phase 2AC - Image Editor */}
+        <Route path="/image-editor" element={<ImageProjects />} />
       </Route>
 
       {/* Redirects */}
