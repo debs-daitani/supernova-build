@@ -92,6 +92,14 @@ model User {
   discountCodes       DiscountCode[]
   abandonedCarts      AbandonedCart[]
 
+  // Phase 2P - Task & Project Management
+  projects            Project[]
+  projectTasks        ProjectTask[]
+  taskComments        TaskComment[]
+  timeEntries         TimeEntry[]
+  habits              Habit[]
+  goals               Goal[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -1745,4 +1753,238 @@ model AbandonedCart {
 
   @@index([userId])
   @@index([customerEmail])
+}
+
+// ============================================
+// PHASE 2P - TASK & PROJECT MANAGEMENT
+// ============================================
+
+model Project {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  name          String
+  description   String?       @db.Text
+  color         String        @default("#FF1493")
+  icon          String?
+
+  // Settings
+  view          String        @default("list")
+  archived      Boolean       @default(false)
+
+  // Dates
+  startDate     DateTime?
+  dueDate       DateTime?
+
+  // Team
+  teamMembers   String[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  tasks         ProjectTask[]
+  sections      ProjectSection[]
+
+  @@index([userId])
+  @@index([archived])
+}
+
+model ProjectSection {
+  id            String        @id @default(cuid())
+  projectId     String
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name          String
+  order         Int           @default(0)
+  collapsed     Boolean       @default(false)
+
+  tasks         ProjectTask[]
+
+  @@index([projectId])
+}
+
+model ProjectTask {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId     String?
+  project       Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  sectionId     String?
+  section       ProjectSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  // Task details
+  title         String
+  description   String?       @db.Text
+
+  // Status
+  status        String        @default("todo")
+  completed     Boolean       @default(false)
+  completedAt   DateTime?
+
+  // Priority
+  priority      String        @default("medium")
+
+  // Dates
+  dueDate       DateTime?
+  startDate     DateTime?
+
+  // Assignment
+  assignedTo    String?
+
+  // Organization
+  tags          String[]
+  order         Int           @default(0)
+
+  // Time tracking
+  estimatedTime Int?
+  actualTime    Int?
+
+  // Dependencies
+  dependsOn     String[]
+  blockedBy     String[]
+
+  // Attachments
+  attachments   String[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  subtasks      Subtask[]
+  comments      TaskComment[]
+  timeEntries   TimeEntry[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([sectionId])
+  @@index([status])
+  @@index([completed])
+  @@index([dueDate])
+  @@index([assignedTo])
+}
+
+model Subtask {
+  id            String        @id @default(cuid())
+  taskId        String
+  task          ProjectTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  title         String
+  completed     Boolean       @default(false)
+  order         Int           @default(0)
+
+  @@index([taskId])
+}
+
+model TaskComment {
+  id            String        @id @default(cuid())
+  taskId        String
+  task          ProjectTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content       String        @db.Text
+  mentions      String[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TimeEntry {
+  id            String        @id @default(cuid())
+  taskId        String
+  task          ProjectTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Time tracking
+  startTime     DateTime
+  endTime       DateTime?
+  duration      Int?
+
+  description   String?
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model Habit {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+  icon          String?
+  color         String        @default("#FF1493")
+
+  // Frequency
+  frequency     String        @default("daily")
+  targetDays    String[]
+
+  // Tracking
+  streak        Int           @default(0)
+  longestStreak Int           @default(0)
+
+  // Settings
+  archived      Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  // Relations
+  completions   HabitCompletion[]
+
+  @@index([userId])
+}
+
+model HabitCompletion {
+  id            String        @id @default(cuid())
+  habitId       String
+  habit         Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  date          DateTime      @default(now())
+  notes         String?
+
+  @@unique([habitId, date])
+  @@index([habitId])
+}
+
+model Goal {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+
+  // Type
+  goalType      String
+
+  // Target
+  targetValue   Float
+  currentValue  Float         @default(0)
+  unit          String?
+
+  // Timeline
+  startDate     DateTime      @default(now())
+  targetDate    DateTime
+
+  // Status
+  status        String        @default("in_progress")
+  achievedAt    DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

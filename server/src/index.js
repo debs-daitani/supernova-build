@@ -48,6 +48,9 @@ import accountingRoutes from './routes/accounting.js';
 // Phase 2I - E-Commerce Shop
 import shopRoutes from './routes/shop.js';
 
+// Phase 2P - Task & Project Management
+import tasksRoutes from './routes/tasks.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -115,6 +118,9 @@ app.use('/api/accounting', accountingRoutes);
 
 // Phase 2I - E-Commerce Shop
 app.use('/api/shop', shopRoutes);
+
+// Phase 2P - Task & Project Management
+app.use('/api/tasks', tasksRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -73,6 +73,12 @@ import Calculators from './pages/tools/Calculators';
 import ShopDashboard from './pages/shop/ShopDashboard';
 import ShopProducts from './pages/shop/ShopProducts';
 
+// Phase 2P - Task & Project Management
+import TasksDashboard from './pages/tasks/TasksDashboard';
+import Projects from './pages/tasks/Projects';
+import Habits from './pages/tasks/Habits';
+import Goals from './pages/tasks/Goals';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -153,6 +159,15 @@ function App() {
         {/* Phase 2I - E-Commerce Shop */}
         <Route path="/shop" element={<ShopDashboard />} />
         <Route path="/shop/products" element={<ShopProducts />} />
+
+        {/* Phase 2P - Task & Project Management */}
+        <Route path="/tasks" element={<TasksDashboard />} />
+        <Route path="/tasks/inbox" element={<TasksDashboard />} />
+        <Route path="/tasks/today" element={<TasksDashboard />} />
+        <Route path="/tasks/projects" element={<Projects />} />
+        <Route path="/tasks/projects/:projectId" element={<Projects />} />
+        <Route path="/tasks/habits" element={<Habits />} />
+        <Route path="/tasks/goals" element={<Goals />} />
       </Route>
 
       {/* Redirects */}

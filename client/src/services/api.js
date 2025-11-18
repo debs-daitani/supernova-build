@@ -437,4 +437,79 @@ export const shopStats = {
   get: () => api.get('/shop/stats'),
 };
 
+// ============================================================================
+// Phase 2P - Task & Project Management
+// ============================================================================
+
+// Projects
+export const projects = {
+  list: (params) => api.get('/tasks/projects', { params }),
+  create: (data) => api.post('/tasks/projects', data),
+  get: (id) => api.get(`/tasks/projects/${id}`),
+  update: (id, data) => api.patch(`/tasks/projects/${id}`, data),
+  delete: (id) => api.delete(`/tasks/projects/${id}`),
+};
+
+// Sections
+export const projectSections = {
+  create: (data) => api.post('/tasks/sections', data),
+  update: (id, data) => api.patch(`/tasks/sections/${id}`, data),
+  delete: (id) => api.delete(`/tasks/sections/${id}`),
+};
+
+// Tasks
+export const tasks = {
+  list: (params) => api.get('/tasks', { params }),
+  create: (data) => api.post('/tasks', data),
+  get: (id) => api.get(`/tasks/${id}`),
+  update: (id, data) => api.patch(`/tasks/${id}`, data),
+  complete: (id) => api.patch(`/tasks/${id}/complete`),
+  delete: (id) => api.delete(`/tasks/${id}`),
+};
+
+// Subtasks
+export const subtasks = {
+  create: (taskId, data) => api.post(`/tasks/${taskId}/subtasks`, data),
+  complete: (id) => api.patch(`/tasks/subtasks/${id}/complete`),
+  delete: (id) => api.delete(`/tasks/subtasks/${id}`),
+};
+
+// Comments
+export const taskComments = {
+  create: (taskId, data) => api.post(`/tasks/${taskId}/comments`, data),
+  delete: (id) => api.delete(`/tasks/comments/${id}`),
+};
+
+// Time Tracking
+export const timeTracking = {
+  start: (taskId, data) => api.post(`/tasks/${taskId}/time/start`, data),
+  stop: (id) => api.patch(`/tasks/time/${id}/stop`),
+  log: (taskId, data) => api.post(`/tasks/${taskId}/time`, data),
+  list: (taskId) => api.get(`/tasks/${taskId}/time`),
+  active: () => api.get('/tasks/time/active'),
+  delete: (id) => api.delete(`/tasks/time/${id}`),
+};
+
+// Habits
+export const habits = {
+  list: (params) => api.get('/tasks/habits', { params }),
+  create: (data) => api.post('/tasks/habits', data),
+  update: (id, data) => api.patch(`/tasks/habits/${id}`, data),
+  complete: (id, data) => api.post(`/tasks/habits/${id}/complete`, data),
+  delete: (id) => api.delete(`/tasks/habits/${id}`),
+};
+
+// Goals
+export const goals = {
+  list: (params) => api.get('/tasks/goals', { params }),
+  create: (data) => api.post('/tasks/goals', data),
+  update: (id, data) => api.patch(`/tasks/goals/${id}`, data),
+  delete: (id) => api.delete(`/tasks/goals/${id}`),
+};
+
+// Task Stats
+export const taskStats = {
+  get: () => api.get('/tasks/stats'),
+};
+
 export default api;

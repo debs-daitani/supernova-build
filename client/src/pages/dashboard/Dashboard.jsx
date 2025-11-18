@@ -24,6 +24,7 @@ export default function Dashboard() {
     { name: 'CRM', href: '/tools/crm', description: 'Manage contacts & deals', icon: '👥' },
     { name: 'Accounting', href: '/tools/accounting', description: 'Invoices & expenses', icon: '💰' },
     { name: 'Calculators', href: '/tools/accounting/calculators', description: 'Financial tools', icon: '🧮' },
+    { name: 'Task Manager', href: '/tasks', description: 'Projects, habits & goals', icon: '✅' },
   ];
 
   return (
