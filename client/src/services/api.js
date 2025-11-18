@@ -203,4 +203,40 @@ export const brandHub = {
   getByUsername: (username) => api.get(`/brand-hub/u/${username}`),
 };
 
+// Phase 2F - Chatbot Builder
+
+// Chatbots
+export const chatbots = {
+  list: () => api.get('/chatbots'),
+  create: (data) => api.post('/chatbots', data),
+  get: (id) => api.get(`/chatbots/${id}`),
+  update: (id, data) => api.patch(`/chatbots/${id}`, data),
+  delete: (id) => api.delete(`/chatbots/${id}`),
+  // Flows
+  listFlows: (chatbotId) => api.get(`/chatbots/${chatbotId}/flows`),
+  getFlow: (chatbotId, flowId) => api.get(`/chatbots/${chatbotId}/flows/${flowId}`),
+  createFlow: (chatbotId, data) => api.post(`/chatbots/${chatbotId}/flows`, data),
+  updateFlow: (chatbotId, flowId, data) => api.patch(`/chatbots/${chatbotId}/flows/${flowId}`, data),
+  deleteFlow: (chatbotId, flowId) => api.delete(`/chatbots/${chatbotId}/flows/${flowId}`),
+  // Triggers
+  listTriggers: (chatbotId) => api.get(`/chatbots/${chatbotId}/triggers`),
+  createTrigger: (chatbotId, data) => api.post(`/chatbots/${chatbotId}/triggers`, data),
+  updateTrigger: (chatbotId, triggerId, data) => api.patch(`/chatbots/${chatbotId}/triggers/${triggerId}`, data),
+  deleteTrigger: (chatbotId, triggerId) => api.delete(`/chatbots/${chatbotId}/triggers/${triggerId}`),
+  // Analytics
+  getAnalytics: (chatbotId) => api.get(`/chatbots/${chatbotId}/analytics`),
+  getConversations: (chatbotId) => api.get(`/chatbots/${chatbotId}/conversations`),
+  getConversation: (chatbotId, convId) => api.get(`/chatbots/${chatbotId}/conversations/${convId}`),
+};
+
+// Chat Widget (Public API - no auth)
+export const chatWidget = {
+  start: (data) => api.post('/chat/start', data),
+  sendMessage: (conversationId, data) => api.post(`/chat/${conversationId}/message`, data),
+  getMessages: (conversationId) => api.get(`/chat/${conversationId}/messages`),
+  handoff: (conversationId) => api.post(`/chat/${conversationId}/handoff`),
+  complete: (conversationId) => api.post(`/chat/${conversationId}/complete`),
+  checkTrigger: (data) => api.post('/chat/check-trigger', data),
+};
+
 export default api;

@@ -42,6 +42,12 @@ import LinksPage from './pages/tools/LinksPage';
 import ShortLinks from './pages/tools/ShortLinks';
 import BrandHub from './pages/tools/BrandHub';
 
+// Phase 2F - Chatbot Builder
+import ChatbotDashboard from './pages/tools/ChatbotDashboard';
+import ChatbotBuilder from './pages/tools/ChatbotBuilder';
+import ChatbotSettings from './pages/tools/ChatbotSettings';
+import ChatbotAnalytics from './pages/tools/ChatbotAnalytics';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -90,6 +96,12 @@ function App() {
         <Route path="/tools/links-page" element={<LinksPage />} />
         <Route path="/tools/short-links" element={<ShortLinks />} />
         <Route path="/tools/brand-hub" element={<BrandHub />} />
+
+        {/* Phase 2F - Chatbot Builder */}
+        <Route path="/tools/chatbot-dashboard" element={<ChatbotDashboard />} />
+        <Route path="/tools/chatbot-builder/:id" element={<ChatbotBuilder />} />
+        <Route path="/tools/chatbot-settings/:id" element={<ChatbotSettings />} />
+        <Route path="/tools/chatbot-analytics/:id" element={<ChatbotAnalytics />} />
       </Route>
 
       {/* Redirects */}

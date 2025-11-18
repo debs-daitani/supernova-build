@@ -64,6 +64,9 @@ model User {
   shortLinks          ShortLink[]
   brandHub            BrandHub?
 
+  // Phase 2F - Chatbot Builder
+  chatbots            Chatbot[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -786,4 +789,130 @@ model BrandHub {
 
   @@index([username])
   @@index([published])
+}
+
+// ============================================
+// PHASE 2F - CHATBOT BUILDER (ManyChat Alternative)
+// ============================================
+
+model Chatbot {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?       @db.Text
+
+  // Where bot is deployed
+  deploymentType String       @default("website")  // "website", "facebook", "instagram" (future)
+  websiteUrl    String?
+
+  // Styling
+  primaryColor  String        @default("#FF1493")
+  avatar        String?       // Bot avatar image
+  welcomeMessage String?      @db.Text
+
+  // Settings
+  enabled       Boolean       @default(false)
+  aiHandoffEnabled Boolean    @default(false)  // Can hand off to SUPERNova
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  flows         ChatbotFlow[]
+  triggers      ChatbotTrigger[]
+  conversations ChatbotConversation[]
+
+  @@index([userId])
+}
+
+model ChatbotFlow {
+  id            String        @id @default(cuid())
+  chatbotId     String
+  chatbot       Chatbot       @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+
+  // Visual flow builder data (node positions, connections)
+  flowData      Json          // Stores entire flow structure
+
+  active        Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([chatbotId])
+}
+
+model ChatbotTrigger {
+  id            String        @id @default(cuid())
+  chatbotId     String
+  chatbot       Chatbot       @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  flowId        String        // Which flow to trigger
+
+  triggerType   String        // "keyword", "page_url", "time_delay", "user_action"
+
+  // Trigger conditions
+  keyword       String?       // If triggerType = "keyword"
+  pageUrl       String?       // If triggerType = "page_url"
+  delayMinutes  Int?          // If triggerType = "time_delay"
+
+  active        Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([chatbotId])
+  @@index([triggerType])
+}
+
+model ChatbotConversation {
+  id            String        @id @default(cuid())
+  chatbotId     String
+  chatbot       Chatbot       @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  // Visitor info
+  visitorId     String        // Anonymous ID (cookie-based)
+  visitorEmail  String?       // If captured
+  visitorName   String?       // If captured
+
+  // Flow tracking
+  currentFlowId String?
+  currentNodeId String?
+
+  // Captured variables
+  variables     Json          @default("{}")  // All captured data (name, email, custom fields)
+
+  // Status
+  status        String        @default("active")  // "active", "completed", "abandoned", "handed_off_to_ai"
+
+  startedAt     DateTime      @default(now())
+  lastMessageAt DateTime      @default(now())
+  completedAt   DateTime?
+
+  // Relations
+  messages      ChatbotMessage[]
+
+  @@index([chatbotId])
+  @@index([visitorId])
+}
+
+model ChatbotMessage {
+  id                    String              @id @default(cuid())
+  conversationId        String
+  conversation          ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  sender                String              // "bot" or "user"
+  messageType           String              // "text", "button", "image", "delay"
+  content               String?             @db.Text
+
+  // For button responses
+  buttonOptions         Json?
+  selectedButton        String?
+
+  createdAt             DateTime            @default(now())
+
+  @@index([conversationId])
 }

@@ -17,6 +17,7 @@ export default function Dashboard() {
     { name: 'Links Page', href: '/tools/links-page', description: 'Your link-in-bio page', icon: '🔗' },
     { name: 'Short Links', href: '/tools/short-links', description: 'Trackable short links', icon: '⚡' },
     { name: 'Brand Hub', href: '/tools/brand-hub', description: 'Your portfolio site', icon: '🎨' },
+    { name: 'Chatbot Builder', href: '/tools/chatbot-dashboard', description: 'Automated conversations', icon: '🤖' },
   ];
 
   return (
