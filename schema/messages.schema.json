@@ -1,0 +1,122 @@
+{
+  "collectionName": "SupernovaMessages",
+  "displayName": "Supernova Messages",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Admin",
+    "delete": "Admin"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "messageId",
+      "type": "text",
+      "required": true,
+      "description": "Custom message identifier"
+    },
+    {
+      "name": "conversationId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Conversations.conversationId"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Users.userId"
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": true,
+      "description": "Message role (user, assistant, system)"
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "required": true,
+      "description": "Message content"
+    },
+    {
+      "name": "timestamp",
+      "type": "date",
+      "required": true,
+      "description": "Message timestamp"
+    },
+    {
+      "name": "tokenCount",
+      "type": "number",
+      "required": false,
+      "description": "Approximate token count"
+    },
+    {
+      "name": "metadata",
+      "type": "object",
+      "required": false,
+      "description": "Additional message metadata"
+    },
+    {
+      "name": "embedding",
+      "type": "array",
+      "required": false,
+      "description": "Vector embedding (for semantic search)"
+    },
+    {
+      "name": "attachments",
+      "type": "array",
+      "required": false,
+      "description": "File attachments or references"
+    },
+    {
+      "name": "inReplyTo",
+      "type": "text",
+      "required": false,
+      "description": "Reference to parent message (threading)"
+    },
+    {
+      "name": "edited",
+      "type": "boolean",
+      "required": false,
+      "description": "Whether message was edited"
+    },
+    {
+      "name": "editedAt",
+      "type": "date",
+      "required": false,
+      "description": "Edit timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "messageId_unique",
+      "fields": ["messageId"],
+      "unique": true
+    },
+    {
+      "name": "conversationId_index",
+      "fields": ["conversationId"],
+      "unique": false
+    },
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "timestamp_index",
+      "fields": ["timestamp"],
+      "unique": false
+    },
+    {
+      "name": "conversationId_timestamp_composite",
+      "fields": ["conversationId", "timestamp"],
+      "unique": false
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "collectionName": "SupernovaKnowledge",
+  "displayName": "Supernova Knowledge",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Admin",
+    "delete": "Admin"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "knowledgeId",
+      "type": "text",
+      "required": true,
+      "description": "Custom knowledge identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Users.userId"
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true,
+      "description": "Knowledge category (fact, preference, goal, etc.)"
+    },
+    {
+      "name": "key",
+      "type": "text",
+      "required": true,
+      "description": "Knowledge key/identifier"
+    },
+    {
+      "name": "value",
+      "type": "text",
+      "required": true,
+      "description": "Knowledge value/content"
+    },
+    {
+      "name": "confidence",
+      "type": "number",
+      "required": false,
+      "description": "Confidence score (0-1)"
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "required": false,
+      "description": "Source (conversation ID or manual)"
+    },
+    {
+      "name": "learnedAt",
+      "type": "date",
+      "required": true,
+      "description": "When knowledge was acquired"
+    },
+    {
+      "name": "lastConfirmedAt",
+      "type": "date",
+      "required": false,
+      "description": "Last confirmation timestamp"
+    },
+    {
+      "name": "expiresAt",
+      "type": "date",
+      "required": false,
+      "description": "Expiration date (for temporary knowledge)"
+    },
+    {
+      "name": "metadata",
+      "type": "object",
+      "required": false,
+      "description": "Additional knowledge metadata"
+    },
+    {
+      "name": "tags",
+      "type": "array",
+      "required": false,
+      "description": "Knowledge tags for categorization"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "knowledgeId_unique",
+      "fields": ["knowledgeId"],
+      "unique": true
+    },
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "category_index",
+      "fields": ["category"],
+      "unique": false
+    },
+    {
+      "name": "key_index",
+      "fields": ["key"],
+      "unique": false
+    },
+    {
+      "name": "userId_category_composite",
+      "fields": ["userId", "category"],
+      "unique": false
+    }
+  ]
+}

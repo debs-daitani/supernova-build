@@ -1,0 +1,111 @@
+{
+  "collectionName": "SupernovaUsers",
+  "displayName": "Supernova Users",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Admin",
+    "delete": "Admin"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Wix member ID or custom user identifier"
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "required": false,
+      "description": "User email address"
+    },
+    {
+      "name": "displayName",
+      "type": "text",
+      "required": false,
+      "description": "User display name"
+    },
+    {
+      "name": "firstName",
+      "type": "text",
+      "required": false,
+      "description": "User first name"
+    },
+    {
+      "name": "lastName",
+      "type": "text",
+      "required": false,
+      "description": "User last name"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Account creation timestamp"
+    },
+    {
+      "name": "lastActiveAt",
+      "type": "date",
+      "required": true,
+      "description": "Last activity timestamp"
+    },
+    {
+      "name": "totalConversations",
+      "type": "number",
+      "required": true,
+      "description": "Total number of conversations"
+    },
+    {
+      "name": "totalMessages",
+      "type": "number",
+      "required": true,
+      "description": "Total number of messages"
+    },
+    {
+      "name": "preferences",
+      "type": "object",
+      "required": false,
+      "description": "Quick access user preferences"
+    },
+    {
+      "name": "metadata",
+      "type": "object",
+      "required": false,
+      "description": "Additional user metadata"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "User status (active, inactive, suspended)"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "userId_unique",
+      "fields": ["userId"],
+      "unique": true
+    },
+    {
+      "name": "email_index",
+      "fields": ["email"],
+      "unique": false
+    },
+    {
+      "name": "lastActiveAt_index",
+      "fields": ["lastActiveAt"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    }
+  ]
+}

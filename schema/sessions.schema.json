@@ -1,0 +1,121 @@
+{
+  "collectionName": "SupernovaSessions",
+  "displayName": "Supernova Sessions",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Admin",
+    "delete": "Admin"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "sessionId",
+      "type": "text",
+      "required": true,
+      "description": "Custom session identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Users.userId"
+    },
+    {
+      "name": "conversationId",
+      "type": "text",
+      "required": false,
+      "description": "Current conversation ID"
+    },
+    {
+      "name": "startedAt",
+      "type": "date",
+      "required": true,
+      "description": "Session start timestamp"
+    },
+    {
+      "name": "lastActivityAt",
+      "type": "date",
+      "required": true,
+      "description": "Last activity timestamp"
+    },
+    {
+      "name": "expiresAt",
+      "type": "date",
+      "required": true,
+      "description": "Session expiration timestamp"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (active, expired, ended)"
+    },
+    {
+      "name": "deviceInfo",
+      "type": "object",
+      "required": false,
+      "description": "Device/browser information"
+    },
+    {
+      "name": "workingMemory",
+      "type": "array",
+      "required": false,
+      "description": "Current working memory (recent messages)"
+    },
+    {
+      "name": "contextWindow",
+      "type": "array",
+      "required": false,
+      "description": "Active context message IDs"
+    },
+    {
+      "name": "state",
+      "type": "object",
+      "required": false,
+      "description": "Session state data"
+    },
+    {
+      "name": "metadata",
+      "type": "object",
+      "required": false,
+      "description": "Additional session metadata"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "sessionId_unique",
+      "fields": ["sessionId"],
+      "unique": true
+    },
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "conversationId_index",
+      "fields": ["conversationId"],
+      "unique": false
+    },
+    {
+      "name": "lastActivityAt_index",
+      "fields": ["lastActivityAt"],
+      "unique": false
+    },
+    {
+      "name": "expiresAt_index",
+      "fields": ["expiresAt"],
+      "unique": false
+    },
+    {
+      "name": "userId_status_composite",
+      "fields": ["userId", "status"],
+      "unique": false
+    }
+  ]
+}

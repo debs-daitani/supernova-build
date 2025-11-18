@@ -1,0 +1,53 @@
+{
+  "name": "supernova-ai-memory-system",
+  "version": "1.0.0",
+  "description": "Comprehensive memory system architecture for SUPERNova AI on Wix platform",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/",
+    "format": "prettier --write \"src/**/*.{js,ts,json,md}\""
+  },
+  "keywords": [
+    "ai",
+    "memory-system",
+    "wix",
+    "chatbot",
+    "conversation",
+    "context-management",
+    "supernova"
+  ],
+  "author": "SUPERNova AI Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/debs-daitani/supernova-build.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^2.8.0"
+  },
+  "wix": {
+    "collections": [
+      "SupernovaUsers",
+      "SupernovaConversations",
+      "SupernovaMessages",
+      "SupernovaSessions",
+      "SupernovaPreferences",
+      "SupernovaKnowledge",
+      "SupernovaContext",
+      "SupernovaMetadata"
+    ],
+    "services": [
+      "memoryService",
+      "sessionService",
+      "conversationService",
+      "userService",
+      "contextService"
+    ]
+  }
+}
