@@ -67,6 +67,9 @@ model User {
   // Phase 2F - Chatbot Builder
   chatbots            Chatbot[]
 
+  // Phase 2F Addendum - Social Media Automation
+  socialAccounts      SocialAccount[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -913,6 +916,109 @@ model ChatbotMessage {
   selectedButton        String?
 
   createdAt             DateTime            @default(now())
+
+  @@index([conversationId])
+}
+
+// ============================================
+// PHASE 2F ADDENDUM - SOCIAL MEDIA AUTOMATION
+// ============================================
+
+model SocialAccount {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform      String        // "instagram", "facebook"
+  accountId     String        // Instagram/Facebook user ID
+  accountName   String        // @username or page name
+
+  accessToken   String        @db.Text  // OAuth token
+  refreshToken  String?       @db.Text
+  tokenExpiry   DateTime?
+
+  connected     Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  automations   SocialAutomation[]
+
+  @@unique([userId, platform, accountId])
+  @@index([userId])
+}
+
+model SocialAutomation {
+  id            String        @id @default(cuid())
+  accountId     String
+  account       SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  name          String
+  automationType String       // "comment_reply", "dm_sequence", "story_reply"
+
+  // Triggers
+  triggerType   String        // "keyword", "any_comment", "specific_post"
+  keywords      String[]      // Keywords to trigger on
+  postUrl       String?       // If specific_post
+
+  // Actions
+  actionFlow    Json          // Flow data (similar to chatbot flows)
+
+  active        Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  conversations SocialConversation[]
+
+  @@index([accountId])
+}
+
+model SocialConversation {
+  id            String        @id @default(cuid())
+  automationId  String
+  automation    SocialAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  platform      String        // "instagram", "facebook"
+  threadId      String        // DM thread ID
+
+  // User info
+  socialUserId  String        // Their Instagram/Facebook ID
+  socialUsername String?
+
+  // Captured data
+  leadName      String?
+  leadEmail     String?
+  customData    Json?         // Any other captured info
+
+  // Flow tracking
+  currentStepId String?
+  variables     Json          @default("{}")
+
+  status        String        @default("active")  // "active", "completed", "abandoned"
+
+  startedAt     DateTime      @default(now())
+  lastMessageAt DateTime      @default(now())
+  completedAt   DateTime?
+
+  messages      SocialMessage[]
+
+  @@index([automationId])
+  @@index([threadId])
+}
+
+model SocialMessage {
+  id                String              @id @default(cuid())
+  conversationId    String
+  conversation      SocialConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  sender            String              // "bot" or "user"
+  messageText       String?             @db.Text
+  messageType       String              // "text", "button", "image", "quick_reply"
+
+  buttonOptions     Json?
+
+  createdAt         DateTime            @default(now())
 
   @@index([conversationId])
 }

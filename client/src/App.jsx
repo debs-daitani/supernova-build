@@ -48,6 +48,9 @@ import ChatbotBuilder from './pages/tools/ChatbotBuilder';
 import ChatbotSettings from './pages/tools/ChatbotSettings';
 import ChatbotAnalytics from './pages/tools/ChatbotAnalytics';
 
+// Phase 2F Addendum - Social Media Automation
+import SocialAutomation from './pages/tools/SocialAutomation';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -102,6 +105,9 @@ function App() {
         <Route path="/tools/chatbot-builder/:id" element={<ChatbotBuilder />} />
         <Route path="/tools/chatbot-settings/:id" element={<ChatbotSettings />} />
         <Route path="/tools/chatbot-analytics/:id" element={<ChatbotAnalytics />} />
+
+        {/* Phase 2F Addendum - Social Media Automation */}
+        <Route path="/tools/social-automation" element={<SocialAutomation />} />
       </Route>
 
       {/* Redirects */}

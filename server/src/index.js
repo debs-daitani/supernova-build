@@ -29,6 +29,10 @@ import brandHubRoutes from './routes/brandHub.js';
 import chatbotsRoutes from './routes/chatbots.js';
 import chatWidgetRoutes from './routes/chat.js';
 
+// Phase 2F Addendum - Social Media Automation
+import socialRoutes from './routes/social.js';
+import webhooksRoutes from './routes/webhooks.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -77,6 +81,10 @@ app.use('/api/brand-hub', brandHubRoutes);
 // Phase 2F - Chatbot Builder
 app.use('/api/chatbots', chatbotsRoutes);
 app.use('/api/chat', chatWidgetRoutes); // Public widget API
+
+// Phase 2F Addendum - Social Media Automation
+app.use('/api/social', socialRoutes);
+app.use('/api/webhooks', webhooksRoutes); // Meta webhooks (no auth)
 
 // Error handling middleware
 app.use((err, req, res, next) => {

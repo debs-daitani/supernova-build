@@ -239,4 +239,34 @@ export const chatWidget = {
   checkTrigger: (data) => api.post('/chat/check-trigger', data),
 };
 
+// Phase 2F Addendum - Social Media Automation
+
+// Social Accounts
+export const socialAccounts = {
+  list: () => api.get('/social/accounts'),
+  connectInstagram: (data) => api.post('/social/instagram/connect', data),
+  connectFacebook: (data) => api.post('/social/facebook/connect', data),
+  disconnect: (accountId) => api.delete(`/social/accounts/${accountId}`),
+};
+
+// Social Automations
+export const socialAutomations = {
+  list: () => api.get('/social/automations'),
+  create: (data) => api.post('/social/automations', data),
+  update: (id, data) => api.patch(`/social/automations/${id}`, data),
+  delete: (id) => api.delete(`/social/automations/${id}`),
+};
+
+// Social Conversations
+export const socialConversations = {
+  list: () => api.get('/social/conversations'),
+  get: (id) => api.get(`/social/conversations/${id}`),
+  takeover: (id) => api.post(`/social/conversations/${id}/takeover`),
+};
+
+// Social Analytics
+export const socialAnalytics = {
+  get: () => api.get('/social/analytics'),
+};
+
 export default api;
