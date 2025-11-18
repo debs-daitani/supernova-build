@@ -1,51 +1,37 @@
 # Dependencies
-node_modules/
-package-lock.json
-yarn.lock
+/node_modules
+/.pnp
+.pnp.js
 
-# Environment variables
-.env
-.env.local
-.env.development
-.env.production
+# Testing
+/coverage
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Next.js
+/.next/
+/out/
 
-# OS
+# Production
+/build
+
+# Misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# Logs
-logs/
-*.log
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build output
-dist/
-build/
+# Local env files
+.env
+.env*.local
+
+# Vercel
+.vercel
+
+# TypeScript
 *.tsbuildinfo
+next-env.d.ts
 
-# Temporary files
-tmp/
-temp/
-.cache/
-
-# Wix specific
-.wix/
-.corvid/
-
-# Test coverage
-coverage/
-.nyc_output/
-
-# Secrets
-secrets/
-*.key
-*.pem
+# Prisma
+prisma/migrations
