@@ -42,6 +42,7 @@ export default function Dashboard() {
     { name: 'Cloud Storage', href: '/storage', description: 'Store & access files anywhere', icon: '☁️' },
     { name: 'Social Network', href: '/social', description: 'Connect, share & engage', icon: '👥' },
     { name: 'Video Platform', href: '/videos', description: 'Watch, upload & share videos', icon: '📹' },
+    { name: 'Microblog', href: '/micro', description: 'Short posts & trending topics', icon: '🐦' },
   ];
 
   return (

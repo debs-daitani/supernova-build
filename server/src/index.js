@@ -97,6 +97,9 @@ import storageRoutes from './routes/storage.js';
 // Phase 2AM - Video Platform
 import videosRoutes from './routes/videos.js';
 
+// Phase 2AN - Microblogging Platform
+import microRoutes from './routes/micro.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -213,6 +216,9 @@ app.use('/api/storage', storageRoutes);
 
 // Phase 2AM - Video Platform
 app.use('/api/videos', videosRoutes);
+
+// Phase 2AN - Microblogging Platform
+app.use('/api/micro', microRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

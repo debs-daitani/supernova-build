@@ -193,6 +193,19 @@ model User {
   videoViews          VideoView[]
   videoSubscriptions  Subscription[] @relation("VideoSubscriptions")
 
+  // Phase 2AN - Microblogging Platform
+  microPosts          MicroPost[]
+  microLikes          MicroLike[]
+  microFollowing      MicroFollow[] @relation("MicroFollowing")
+  microFollowers      MicroFollow[] @relation("MicroFollowers")
+  bookmarks           Bookmark[]
+  bookmarkCollections BookmarkCollection[]
+  microLists          MicroList[]
+  listMemberships     ListMember[]
+  hostedSpaces        Space[]
+  spaceSpeaking       SpaceSpeaker[]
+  spaceListening      SpaceListener[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4253,4 +4266,229 @@ model PlaylistItem {
   @@unique([playlistId, videoId])
   @@index([playlistId])
   @@index([videoId])
+}
+
+// ============================================
+// PHASE 2AN - MICROBLOGGING PLATFORM
+// ============================================
+
+model MicroPost {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content       String
+
+  mediaUrls     String[]
+  mediaType     String?
+
+  pollOptions   Json?
+  pollEndsAt    DateTime?
+
+  isThread      Boolean       @default(false)
+  threadId      String?
+  threadOrder   Int?
+
+  replyToId     String?
+  replyTo       MicroPost?    @relation("PostReplies", fields: [replyToId], references: [id], onDelete: Cascade)
+  replies       MicroPost[]   @relation("PostReplies")
+
+  repostOfId    String?
+  repostOf      MicroPost?    @relation("Reposts", fields: [repostOfId], references: [id], onDelete: SetNull)
+  reposts       MicroPost[]   @relation("Reposts")
+
+  isQuote       Boolean       @default(false)
+
+  likesCount    Int           @default(0)
+  repostsCount  Int           @default(0)
+  repliesCount  Int           @default(0)
+  viewsCount    Int           @default(0)
+  bookmarksCount Int          @default(0)
+
+  visibility    String        @default("public")
+  isSensitive   Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  likes         MicroLike[]
+  bookmarks     Bookmark[]
+
+  @@index([userId])
+  @@index([replyToId])
+  @@index([threadId])
+  @@index([createdAt])
+}
+
+model MicroLike {
+  id            String        @id @default(cuid())
+  postId        String
+  post          MicroPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model MicroFollow {
+  id            String        @id @default(cuid())
+
+  followerId    String
+  follower      User          @relation("MicroFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId   String
+  following     User          @relation("MicroFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  notificationsOn Boolean     @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Bookmark {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId        String
+  post          MicroPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  collectionId  String?
+  collection    BookmarkCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model BookmarkCollection {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+
+  bookmarks     Bookmark[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+}
+
+model MicroList {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+
+  isPrivate     Boolean       @default(false)
+
+  members       ListMember[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+}
+
+model ListMember {
+  id            String        @id @default(cuid())
+  listId        String
+  list          MicroList     @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  addedAt       DateTime      @default(now())
+
+  @@unique([listId, userId])
+  @@index([listId])
+  @@index([userId])
+}
+
+model TrendingTopic {
+  id            String        @id @default(cuid())
+
+  topic         String        @unique
+  category      String?
+
+  postsCount    Int           @default(0)
+  location      String?
+
+  trendingAt    DateTime      @default(now())
+
+  @@index([topic])
+  @@index([trendingAt])
+}
+
+model Space {
+  id            String        @id @default(cuid())
+
+  hostId        String
+  host          User          @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+
+  status        String        @default("scheduled")
+
+  scheduledFor  DateTime?
+  startedAt     DateTime?
+  endedAt       DateTime?
+
+  recordingUrl  String?
+  listenersCount Int          @default(0)
+
+  speakers      SpaceSpeaker[]
+  listeners     SpaceListener[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([hostId])
+  @@index([status])
+}
+
+model SpaceSpeaker {
+  id            String        @id @default(cuid())
+  spaceId       String
+  space         Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  canSpeak      Boolean       @default(true)
+  isModerator   Boolean       @default(false)
+
+  joinedAt      DateTime      @default(now())
+
+  @@unique([spaceId, userId])
+  @@index([spaceId])
+  @@index([userId])
+}
+
+model SpaceListener {
+  id            String        @id @default(cuid())
+  spaceId       String
+  space         Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt      DateTime      @default(now())
+
+  @@unique([spaceId, userId])
+  @@index([spaceId])
+  @@index([userId])
 }

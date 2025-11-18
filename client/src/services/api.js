@@ -1341,4 +1341,78 @@ export const videoAnalytics = {
   video: (id) => api.get(`/videos/analytics/video/${id}`),
 };
 
+// ============================================================================
+// Phase 2AN - Microblogging Platform
+// ============================================================================
+
+// Posts
+export const microPosts = {
+  create: (data) => api.post('/micro/posts', data),
+  getForYou: (params) => api.get('/micro/timeline/for-you', { params }),
+  getFollowing: (params) => api.get('/micro/timeline/following', { params }),
+  get: (id) => api.get(`/micro/posts/${id}`),
+  getReplies: (id, params) => api.get(`/micro/posts/${id}/replies`, { params }),
+  getThread: (threadId) => api.get(`/micro/threads/${threadId}`),
+  delete: (id) => api.delete(`/micro/posts/${id}`),
+  getUserPosts: (userId, params) => api.get(`/micro/users/${userId}/posts`, { params }),
+  like: (id) => api.post(`/micro/posts/${id}/like`),
+  unlike: (id) => api.delete(`/micro/posts/${id}/like`),
+  bookmark: (id, data) => api.post(`/micro/posts/${id}/bookmark`, data),
+  removeBookmark: (id) => api.delete(`/micro/posts/${id}/bookmark`),
+};
+
+// Follow
+export const microFollow = {
+  follow: (userId, data) => api.post(`/micro/users/${userId}/follow`, data),
+  unfollow: (userId) => api.delete(`/micro/users/${userId}/follow`),
+  getFollowers: (userId, params) => api.get(`/micro/users/${userId}/followers`, { params }),
+  getFollowing: (userId, params) => api.get(`/micro/users/${userId}/following`, { params }),
+  getUserStats: (userId) => api.get(`/micro/users/${userId}/stats`),
+};
+
+// Bookmarks
+export const microBookmarks = {
+  list: (params) => api.get('/micro/bookmarks', { params }),
+  createCollection: (data) => api.post('/micro/bookmark-collections', data),
+  getCollections: () => api.get('/micro/bookmark-collections'),
+  updateCollection: (id, data) => api.put(`/micro/bookmark-collections/${id}`, data),
+  deleteCollection: (id) => api.delete(`/micro/bookmark-collections/${id}`),
+};
+
+// Lists
+export const microLists = {
+  create: (data) => api.post('/micro/lists', data),
+  getAll: (params) => api.get('/micro/lists', { params }),
+  get: (id) => api.get(`/micro/lists/${id}`),
+  update: (id, data) => api.put(`/micro/lists/${id}`, data),
+  delete: (id) => api.delete(`/micro/lists/${id}`),
+  addMember: (id, data) => api.post(`/micro/lists/${id}/members`, data),
+  removeMember: (id, userId) => api.delete(`/micro/lists/${id}/members/${userId}`),
+  getMembers: (id, params) => api.get(`/micro/lists/${id}/members`, { params }),
+  getTimeline: (id, params) => api.get(`/micro/lists/${id}/timeline`, { params }),
+};
+
+// Trending & Search
+export const microTrending = {
+  getTrending: (params) => api.get('/micro/trending', { params }),
+  searchHashtag: (tag, params) => api.get(`/micro/search/hashtag/${tag}`, { params }),
+};
+
+export const microSearch = {
+  posts: (params) => api.get('/micro/search/posts', { params }),
+  users: (params) => api.get('/micro/search/users', { params }),
+};
+
+// Spaces
+export const microSpaces = {
+  create: (data) => api.post('/micro/spaces', data),
+  getAll: (params) => api.get('/micro/spaces', { params }),
+  get: (id) => api.get(`/micro/spaces/${id}`),
+  join: (id) => api.post(`/micro/spaces/${id}/join`),
+  requestSpeak: (id) => api.post(`/micro/spaces/${id}/request-speak`),
+  updateSpeaker: (id, userId, data) => api.put(`/micro/spaces/${id}/speakers/${userId}`, data),
+  leave: (id) => api.post(`/micro/spaces/${id}/leave`),
+  end: (id, data) => api.post(`/micro/spaces/${id}/end`, data),
+};
+
 export default api;

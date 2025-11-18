@@ -140,6 +140,11 @@ import VideoHome from './pages/videos/VideoHome';
 import Shorts from './pages/videos/Shorts';
 import Watch from './pages/videos/Watch';
 
+// Phase 2AN - Microblogging Platform
+import Timeline from './pages/micro/Timeline';
+import MicroProfile from './pages/micro/Profile';
+import Explore from './pages/micro/Explore';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -290,6 +295,11 @@ function App() {
         <Route path="/videos" element={<VideoHome />} />
         <Route path="/videos/shorts" element={<Shorts />} />
         <Route path="/videos/watch/:id" element={<Watch />} />
+
+        {/* Phase 2AN - Microblogging Platform */}
+        <Route path="/micro" element={<Timeline />} />
+        <Route path="/micro/profile/:userId" element={<MicroProfile />} />
+        <Route path="/micro/explore" element={<Explore />} />
       </Route>
 
       {/* Redirects */}
