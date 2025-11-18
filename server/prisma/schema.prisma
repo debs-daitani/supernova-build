@@ -135,6 +135,11 @@ model User {
   videoProjects       VideoProject[]
   videoClips          VideoClip[]
 
+  // Phase 2AF - PDF Editor
+  pdfDocuments        PDFDocument[]
+  pdfAnnotations      PDFAnnotation[]
+  pdfSignatures       PDFSignature[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2896,4 +2901,115 @@ model VideoClip {
   createdAt     DateTime      @default(now())
 
   @@index([userId])
+}
+
+// ============================================================================
+// PHASE 2AF - PDF EDITOR
+// ============================================================================
+
+model PDFDocument {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Document info
+  name          String
+  originalName  String
+
+  // File
+  pdfUrl        String
+  fileSize      Int
+  pageCount     Int
+
+  // Thumbnail
+  thumbnail     String?
+
+  // Editing
+  isEdited      Boolean       @default(false)
+  editedUrl     String?       // If modified
+
+  // Security
+  isProtected   Boolean       @default(false)
+  hasPassword   Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  annotations   PDFAnnotation[]
+  signatures    PDFSignature[]
+
+  @@index([userId])
+}
+
+model PDFAnnotation {
+  id            String        @id @default(cuid())
+  pdfId         String
+  pdf           PDFDocument   @relation(fields: [pdfId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Annotation type
+  annotationType String       // "comment", "highlight", "underline", "drawing", "text", "stamp"
+
+  // Position
+  pageNumber    Int
+  position      Json          // {x, y, width, height}
+
+  // Content
+  content       String?       @db.Text
+  color         String?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([pdfId])
+  @@index([userId])
+}
+
+model PDFSignature {
+  id            String        @id @default(cuid())
+  pdfId         String
+  pdf           PDFDocument   @relation(fields: [pdfId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Signature
+  signatureType String        // "drawn", "typed", "image"
+  signatureData String        @db.Text  // Base64 image or text
+
+  // Position
+  pageNumber    Int
+  position      Json
+
+  // Verification
+  timestamp     DateTime      @default(now())
+  ipAddress     String?
+
+  @@index([pdfId])
+  @@index([userId])
+}
+
+model PDFTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  description   String?       @db.Text
+  category      String        // "contract", "invoice", "form", "certificate", etc.
+
+  // File
+  templateUrl   String
+  thumbnail     String
+
+  // Fields (if form template)
+  fields        Json?         // Form field definitions
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
 }

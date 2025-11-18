@@ -34,6 +34,7 @@ export default function Dashboard() {
     { name: 'Launch Planner', href: '/launch', description: 'Plan successful launches', icon: '🚀' },
     { name: 'Image Editor', href: '/image-editor', description: 'Photo editing & design', icon: '🎨' },
     { name: 'Video Editor', href: '/video-editor', description: 'Professional video editing', icon: '🎬' },
+    { name: 'PDF Editor', href: '/pdf-editor', description: 'Edit, sign & convert PDFs', icon: '📄' },
   ];
 
   return (

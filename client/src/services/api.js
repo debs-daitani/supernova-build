@@ -851,4 +851,67 @@ export const stockLibrary = {
   searchAudio: (params) => api.get('/video-editor/stock/audio', { params }),
 };
 
+// ============================================================================
+// PHASE 2AF - PDF EDITOR
+// ============================================================================
+
+// PDF Documents
+export const pdfDocuments = {
+  upload: (data) => api.post('/pdf-editor/upload', data),
+  list: () => api.get('/pdf-editor/documents'),
+  get: (id) => api.get(`/pdf-editor/documents/${id}`),
+  update: (id, data) => api.patch(`/pdf-editor/documents/${id}`, data),
+  delete: (id) => api.delete(`/pdf-editor/documents/${id}`),
+};
+
+// PDF Annotations
+export const pdfAnnotations = {
+  add: (data) => api.post('/pdf-editor/annotations', data),
+  list: (pdfId) => api.get(`/pdf-editor/annotations/${pdfId}`),
+  delete: (id) => api.delete(`/pdf-editor/annotations/${id}`),
+};
+
+// PDF Signatures
+export const pdfSignatures = {
+  add: (data) => api.post('/pdf-editor/signatures', data),
+  list: (pdfId) => api.get(`/pdf-editor/signatures/${pdfId}`),
+};
+
+// PDF Edit
+export const pdfEdit = {
+  edit: (data) => api.post('/pdf-editor/edit', data),
+};
+
+// PDF Manipulate
+export const pdfManipulate = {
+  merge: (data) => api.post('/pdf-editor/merge', data),
+  split: (data) => api.post('/pdf-editor/split', data),
+  compress: (data) => api.post('/pdf-editor/compress', data),
+  rotate: (data) => api.post('/pdf-editor/rotate', data),
+  deletePages: (data) => api.post('/pdf-editor/delete-pages', data),
+};
+
+// PDF Convert
+export const pdfConvert = {
+  toPdf: (data) => api.post('/pdf-editor/convert-to-pdf', data),
+  fromPdf: (data) => api.post('/pdf-editor/convert-from-pdf', data),
+};
+
+// PDF Protect
+export const pdfProtect = {
+  protect: (data) => api.post('/pdf-editor/protect', data),
+  watermark: (data) => api.post('/pdf-editor/watermark', data),
+};
+
+// PDF OCR
+export const pdfOCR = {
+  extract: (data) => api.post('/pdf-editor/ocr', data),
+};
+
+// PDF Templates
+export const pdfTemplates = {
+  list: (params) => api.get('/pdf-editor/templates', { params }),
+  createFromTemplate: (data) => api.post('/pdf-editor/create-from-template', data),
+};
+
 export default api;
