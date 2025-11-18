@@ -69,6 +69,10 @@ import Expenses from './pages/tools/Expenses';
 import Reports from './pages/tools/Reports';
 import Calculators from './pages/tools/Calculators';
 
+// Phase 2I - E-Commerce Shop
+import ShopDashboard from './pages/shop/ShopDashboard';
+import ShopProducts from './pages/shop/ShopProducts';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -145,6 +149,10 @@ function App() {
         <Route path="/tools/accounting/expenses" element={<Expenses />} />
         <Route path="/tools/accounting/reports" element={<Reports />} />
         <Route path="/tools/accounting/calculators" element={<Calculators />} />
+
+        {/* Phase 2I - E-Commerce Shop */}
+        <Route path="/shop" element={<ShopDashboard />} />
+        <Route path="/shop/products" element={<ShopProducts />} />
       </Route>
 
       {/* Redirects */}

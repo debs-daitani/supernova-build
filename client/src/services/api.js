@@ -396,4 +396,45 @@ export const accountingStats = {
   get: () => api.get('/accounting/stats'),
 };
 
+// Phase 2I - E-Commerce Shop
+
+// Shop - Products
+export const shopProducts = {
+  list: (params) => api.get('/shop/products', { params }),
+  create: (data) => api.post('/shop/products', data),
+  get: (id) => api.get(`/shop/products/${id}`),
+  update: (id, data) => api.patch(`/shop/products/${id}`, data),
+  delete: (id) => api.delete(`/shop/products/${id}`),
+  publish: (id, published) => api.patch(`/shop/products/${id}/publish`, { published }),
+};
+
+// Shop - Orders
+export const shopOrders = {
+  list: (params) => api.get('/shop/orders', { params }),
+  get: (id) => api.get(`/shop/orders/${id}`),
+  fulfill: (id) => api.patch(`/shop/orders/${id}/fulfill`),
+  ship: (id, trackingNumber) => api.patch(`/shop/orders/${id}/ship`, { trackingNumber }),
+  updateNotes: (id, internalNotes) => api.patch(`/shop/orders/${id}/notes`, { internalNotes }),
+};
+
+// Shop - Discounts
+export const shopDiscounts = {
+  list: (params) => api.get('/shop/discounts', { params }),
+  create: (data) => api.post('/shop/discounts', data),
+  update: (id, data) => api.patch(`/shop/discounts/${id}`, data),
+  delete: (id) => api.delete(`/shop/discounts/${id}`),
+};
+
+// Shop - Reviews
+export const shopReviews = {
+  list: (params) => api.get('/shop/reviews', { params }),
+  approve: (id) => api.patch(`/shop/reviews/${id}/approve`),
+  delete: (id) => api.delete(`/shop/reviews/${id}`),
+};
+
+// Shop - Stats
+export const shopStats = {
+  get: () => api.get('/shop/stats'),
+};
+
 export default api;

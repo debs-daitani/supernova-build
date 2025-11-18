@@ -45,6 +45,9 @@ import aiVideosRoutes from './routes/ai-videos.js';
 import crmRoutes from './routes/crm.js';
 import accountingRoutes from './routes/accounting.js';
 
+// Phase 2I - E-Commerce Shop
+import shopRoutes from './routes/shop.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -109,6 +112,9 @@ app.use('/api/ai', aiVideosRoutes);
 // Phase 2H - CRM + Accounting
 app.use('/api/crm', crmRoutes);
 app.use('/api/accounting', accountingRoutes);
+
+// Phase 2I - E-Commerce Shop
+app.use('/api/shop', shopRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
