@@ -101,6 +101,13 @@ import MessagingDashboard from './pages/messaging/MessagingDashboard';
 import EventsDashboard from './pages/events/EventsDashboard';
 import EventCalendar from './pages/events/EventCalendar';
 
+// Phase 2O - Legal Templates + Launch Toolkit
+import LegalDashboard from './pages/legal/LegalDashboard';
+import LegalGenerator from './pages/legal/LegalGenerator';
+import LaunchDashboard from './pages/launch/LaunchDashboard';
+import CreateLaunch from './pages/launch/CreateLaunch';
+import LaunchChecklist from './pages/launch/LaunchChecklist';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -212,6 +219,13 @@ function App() {
         {/* Phase 2J - Events Platform */}
         <Route path="/events" element={<EventsDashboard />} />
         <Route path="/events/calendar" element={<EventCalendar />} />
+
+        {/* Phase 2O - Legal Templates + Launch Toolkit */}
+        <Route path="/legal" element={<LegalDashboard />} />
+        <Route path="/legal/generate/:type" element={<LegalGenerator />} />
+        <Route path="/launch" element={<LaunchDashboard />} />
+        <Route path="/launch/create" element={<CreateLaunch />} />
+        <Route path="/launch/:id" element={<LaunchChecklist />} />
       </Route>
 
       {/* Redirects */}

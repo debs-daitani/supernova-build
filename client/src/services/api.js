@@ -743,4 +743,42 @@ export const eventAnalytics = {
   get: (eventId) => api.get(`/events/${eventId}/analytics`),
 };
 
+// ============================================================================
+// Phase 2O - Legal Templates + Launch Toolkit
+// ============================================================================
+
+// Legal Documents
+export const legalDocuments = {
+  generate: (data) => api.post('/legal/generate', data),
+  list: (params) => api.get('/legal/documents', { params }),
+  get: (id) => api.get(`/legal/documents/${id}`),
+  update: (id, data) => api.patch(`/legal/documents/${id}`, data),
+  delete: (id) => api.delete(`/legal/documents/${id}`),
+  gdprCheck: (websiteUrl) => api.post('/legal/gdpr-check', { websiteUrl }),
+};
+
+// Launches
+export const launches = {
+  create: (data) => api.post('/launch', data),
+  list: (params) => api.get('/launch', { params }),
+  get: (id) => api.get(`/launch/${id}`),
+  update: (id, data) => api.patch(`/launch/${id}`, data),
+  delete: (id) => api.delete(`/launch/${id}`),
+};
+
+// Launch Checklist
+export const launchChecklist = {
+  add: (launchId, data) => api.post(`/launch/${launchId}/checklist`, data),
+  update: (launchId, itemId, data) => api.patch(`/launch/${launchId}/checklist/${itemId}`, data),
+  toggle: (launchId, itemId) => api.post(`/launch/${launchId}/checklist/${itemId}/toggle`),
+  delete: (launchId, itemId) => api.delete(`/launch/${launchId}/checklist/${itemId}`),
+};
+
+// Waitlist
+export const waitlist = {
+  join: (launchId, data) => api.post(`/launch/${launchId}/waitlist`, data),
+  list: (launchId) => api.get(`/launch/${launchId}/waitlist`),
+  notify: (launchId, data) => api.post(`/launch/${launchId}/waitlist/notify`, data),
+};
+
 export default api;

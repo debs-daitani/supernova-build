@@ -66,6 +66,10 @@ import platformMessagesRoutes from './routes/platformMessages.js';
 // Phase 2J - Events Platform
 import eventsRoutes from './routes/events.js';
 
+// Phase 2O - Legal Templates + Launch Toolkit
+import legalRoutes from './routes/legal.js';
+import launchRoutes from './routes/launch.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -151,6 +155,10 @@ app.use('/api/platform-messages', platformMessagesRoutes);
 
 // Phase 2J - Events Platform
 app.use('/api', eventsRoutes);
+
+// Phase 2O - Legal Templates + Launch Toolkit
+app.use('/api/legal', legalRoutes);
+app.use('/api', launchRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

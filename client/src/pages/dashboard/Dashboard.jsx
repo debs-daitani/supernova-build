@@ -30,6 +30,8 @@ export default function Dashboard() {
     { name: 'AI Content Generator', href: '/content-ai', description: 'Blogs, ads, copy & more', icon: '✍️' },
     { name: 'Messaging Platform', href: '/messaging', description: 'Team & customer chat', icon: '💬' },
     { name: 'Events Platform', href: '/events', description: 'Host & manage events', icon: '🎫' },
+    { name: 'Legal Templates', href: '/legal', description: 'Contracts, T&Cs & policies', icon: '⚖️' },
+    { name: 'Launch Planner', href: '/launch', description: 'Plan successful launches', icon: '🚀' },
   ];
 
   return (

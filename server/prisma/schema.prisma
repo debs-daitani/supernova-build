@@ -123,6 +123,10 @@ model User {
   // Phase 2J - Events Platform
   events              Event[]
 
+  // Phase 2O - Legal Templates + Launch Toolkit
+  legalDocuments      LegalDocument[]
+  launches            Launch[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2653,4 +2657,119 @@ model EventSession {
   order         Int           @default(0)
 
   @@index([eventId])
+}
+
+// ============================================================================
+// Phase 2O - Legal Templates + Launch Toolkit
+// ============================================================================
+
+model LegalDocument {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Document type
+  documentType  String        // "terms", "privacy", "contract", "nda", "disclaimer", etc.
+
+  // Content
+  title         String
+  content       String        @db.Text
+
+  // Business details used to generate
+  businessInfo  Json          // Name, address, contact, etc.
+
+  // Version control
+  version       Int           @default(1)
+
+  // Status
+  isActive      Boolean       @default(true)
+  publishedAt   DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([documentType])
+}
+
+model Launch {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Launch details
+  name          String        // "Product Launch", "Business Launch", etc.
+  description   String?       @db.Text
+  launchDate    DateTime
+
+  // Type
+  launchType    String        // "product", "service", "course", "book", "event", "business"
+
+  // Goals
+  goals         Json          // {revenue: 10000, signups: 100, etc.}
+
+  // Status
+  status        String        @default("planning")  // planning, pre_launch, launched, post_launch
+
+  // Waitlist
+  waitlistCount Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  checklist     LaunchChecklistItem[]
+  waitlist      WaitlistEntry[]
+
+  @@index([userId])
+  @@index([launchDate])
+}
+
+model LaunchChecklistItem {
+  id            String        @id @default(cuid())
+  launchId      String
+  launch        Launch        @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  // Task
+  task          String
+  description   String?       @db.Text
+  category      String        // "marketing", "technical", "legal", "content", "logistics"
+
+  // Timeline
+  dueDate       DateTime?
+
+  // Status
+  completed     Boolean       @default(false)
+  completedAt   DateTime?
+
+  order         Int           @default(0)
+
+  @@index([launchId])
+  @@index([completed])
+}
+
+model WaitlistEntry {
+  id            String        @id @default(cuid())
+  launchId      String
+  launch        Launch        @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  // Contact info
+  email         String
+  name          String?
+
+  // Referral tracking
+  referredBy    String?       // Email of referrer
+  referralCount Int           @default(0)
+
+  // Position
+  position      Int           // Their place in line
+
+  // Status
+  notified      Boolean       @default(false)
+  converted     Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([launchId])
+  @@index([email])
 }
