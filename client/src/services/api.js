@@ -156,4 +156,51 @@ export const admin = {
   getAnalytics: () => api.get('/admin/analytics'),
 };
 
+// Phase 2D - User Empowerment Tools
+
+// Quizzes
+export const quizzes = {
+  list: () => api.get('/quizzes'),
+  create: (data) => api.post('/quizzes', data),
+  get: (id) => api.get(`/quizzes/${id}`),
+  update: (id, data) => api.patch(`/quizzes/${id}`, data),
+  delete: (id) => api.delete(`/quizzes/${id}`),
+  getBySlug: (slug) => api.get(`/quizzes/slug/${slug}`),
+  addQuestion: (quizId, data) => api.post(`/quizzes/${quizId}/questions`, data),
+  updateQuestion: (quizId, questionId, data) => api.patch(`/quizzes/${quizId}/questions/${questionId}`, data),
+  deleteQuestion: (quizId, questionId) => api.delete(`/quizzes/${quizId}/questions/${questionId}`),
+  getResponses: (quizId) => api.get(`/quizzes/${quizId}/responses`),
+  submitResponse: (quizId, data) => api.post(`/quizzes/${quizId}/responses`, data),
+  getAnalytics: (quizId) => api.get(`/quizzes/${quizId}/analytics`),
+};
+
+// Links Pages
+export const linksPage = {
+  get: () => api.get('/links-page'),
+  createOrUpdate: (data) => api.post('/links-page', data),
+  getByUsername: (username) => api.get(`/links-page/@${username}`),
+  addLink: (data) => api.post('/links-page/links', data),
+  updateLink: (id, data) => api.patch(`/links-page/links/${id}`, data),
+  deleteLink: (id) => api.delete(`/links-page/links/${id}`),
+  trackClick: (linkId) => api.post(`/links-page/track-click/${linkId}`),
+};
+
+// Short Links
+export const shortLinks = {
+  list: () => api.get('/short-links'),
+  create: (data) => api.post('/short-links', data),
+  get: (id) => api.get(`/short-links/${id}`),
+  update: (id, data) => api.patch(`/short-links/${id}`, data),
+  delete: (id) => api.delete(`/short-links/${id}`),
+  getAnalytics: (shortCode) => api.get(`/short-links/${shortCode}/analytics`),
+  redirect: (shortCode) => api.get(`/short-links/s/${shortCode}`),
+};
+
+// Brand Hub
+export const brandHub = {
+  get: () => api.get('/brand-hub'),
+  createOrUpdate: (data) => api.post('/brand-hub', data),
+  getByUsername: (username) => api.get(`/brand-hub/u/${username}`),
+};
+
 export default api;

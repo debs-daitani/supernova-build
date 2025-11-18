@@ -58,6 +58,12 @@ model User {
   notifications       Notification[]
   contentProgress     ContentProgress[]
 
+  // Phase 2D - User Empowerment Tools
+  quizzes             Quiz[]
+  linksPage           UserLinksPage?
+  shortLinks          ShortLink[]
+  brandHub            BrandHub?
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -548,4 +554,236 @@ enum NotificationType {
   PAYMENT_SUCCESS
   SUBSCRIPTION_RENEWAL
   SYSTEM
+}
+
+// ============================================
+// PHASE 2D - USER EMPOWERMENT TOOLS
+// ============================================
+
+// ============================================
+// QUIZ BUILDER
+// ============================================
+
+model Quiz {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?       @db.Text
+  slug          String        @unique  // For public URL: daitaniverse.space/quiz/[slug]
+
+  published     Boolean       @default(false)
+
+  // Styling
+  coverImage    String?
+  primaryColor  String        @default("#FF1493")  // Hot pink
+
+  // Results
+  resultTypes   Json          // Array of result types
+
+  // Analytics
+  viewCount     Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  questions     QuizQuestion[]
+  responses     QuizResponse[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([published])
+}
+
+model QuizQuestion {
+  id            String        @id @default(cuid())
+  quizId        String
+  quiz          Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  order         Int
+  questionText  String        @db.Text
+  questionType  String        // "multiple_choice", "scale", "text"
+
+  // For multiple choice
+  options       Json?         // Array of options with scores
+
+  // For scale questions
+  scaleMin      Int?
+  scaleMax      Int?
+  scaleMinLabel String?
+  scaleMaxLabel String?
+
+  required      Boolean       @default(true)
+
+  @@index([quizId])
+  @@index([order])
+}
+
+model QuizResponse {
+  id                String    @id @default(cuid())
+  quizId            String
+  quiz              Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  respondentEmail   String?
+  respondentName    String?
+
+  answers           Json      // User's answers
+  resultType        String    // Calculated result
+  score             Int?
+
+  createdAt         DateTime  @default(now())
+
+  @@index([quizId])
+  @@index([respondentEmail])
+  @@index([createdAt])
+}
+
+// ============================================
+// LINKS PAGE (AllMyLinks Alternative)
+// ============================================
+
+model UserLinksPage {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  username        String      @unique  // For URL: daitaniverse.space/@username
+
+  // Page content
+  displayName     String
+  bio             String?     @db.Text
+  avatar          String?
+
+  // Styling
+  theme           String      @default("default")  // "default", "minimal", "bold", "neon"
+  backgroundColor String      @default("#FFFFFF")
+  textColor       String      @default("#333333")
+  accentColor     String      @default("#FF1493")
+
+  // Analytics
+  viewCount       Int         @default(0)
+
+  published       Boolean     @default(false)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  links           UserLink[]
+
+  @@index([username])
+  @@index([published])
+}
+
+model UserLink {
+  id            String        @id @default(cuid())
+  linksPageId   String
+  linksPage     UserLinksPage @relation(fields: [linksPageId], references: [id], onDelete: Cascade)
+
+  title         String
+  url           String
+  icon          String?       // Icon name or emoji
+  order         Int           @default(0)
+
+  clickCount    Int           @default(0)
+  active        Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([linksPageId])
+  @@index([order])
+}
+
+// ============================================
+// SHORT LINK GENERATOR
+// ============================================
+
+model ShortLink {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  shortCode     String           @unique  // e.g., "abc123"
+  originalUrl   String           @db.Text
+
+  title         String?          // Optional title for user's reference
+
+  clickCount    Int              @default(0)
+  active        Boolean          @default(true)
+
+  expiresAt     DateTime?        // Optional expiration
+
+  createdAt     DateTime         @default(now())
+
+  clicks        ShortLinkClick[]
+
+  @@index([userId])
+  @@index([shortCode])
+  @@index([active])
+}
+
+model ShortLinkClick {
+  id            String    @id @default(cuid())
+  shortLinkId   String
+  shortLink     ShortLink @relation(fields: [shortLinkId], references: [id], onDelete: Cascade)
+
+  // Analytics data
+  ipAddress     String?
+  userAgent     String?
+  referer       String?
+  country       String?
+
+  clickedAt     DateTime  @default(now())
+
+  @@index([shortLinkId])
+  @@index([clickedAt])
+}
+
+// ============================================
+// BRAND HUB (Personal Portfolio/Website)
+// ============================================
+
+model BrandHub {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  username      String    @unique  // For URL: daitaniverse.space/u/username
+
+  // Hero section
+  headline      String?
+  tagline       String?   @db.Text
+  coverImage    String?
+
+  // About section
+  about         String?   @db.Text
+
+  // Services/offerings
+  services      Json?     // Array of services
+
+  // Portfolio/work samples
+  portfolio     Json?     // Array of portfolio items
+
+  // Testimonials
+  testimonials  Json?     // Array of testimonials
+
+  // Contact
+  contactEmail  String?
+  contactPhone  String?
+  calendlyLink  String?
+
+  // Styling
+  theme         String    @default("professional")
+  primaryColor  String    @default("#FF1493")
+
+  // Analytics
+  viewCount     Int       @default(0)
+
+  published     Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([username])
+  @@index([published])
 }

@@ -36,6 +36,12 @@ import ContentLibrary from './pages/dashboard/ContentLibrary';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ContentUpload from './pages/admin/ContentUpload';
 
+// Phase 2D - User Empowerment Tools
+import QuizBuilder from './pages/tools/QuizBuilder';
+import LinksPage from './pages/tools/LinksPage';
+import ShortLinks from './pages/tools/ShortLinks';
+import BrandHub from './pages/tools/BrandHub';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -78,6 +84,12 @@ function App() {
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/content/upload" element={<ContentUpload />} />
+
+        {/* Phase 2D - User Empowerment Tools */}
+        <Route path="/tools/quiz-builder" element={<QuizBuilder />} />
+        <Route path="/tools/links-page" element={<LinksPage />} />
+        <Route path="/tools/short-links" element={<ShortLinks />} />
+        <Route path="/tools/brand-hub" element={<BrandHub />} />
       </Route>
 
       {/* Redirects */}

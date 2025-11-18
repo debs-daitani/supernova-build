@@ -12,6 +12,13 @@ export default function Dashboard() {
     { name: 'Browse Content', href: '/content', icon: BookOpenIcon, color: 'secondary' },
   ];
 
+  const tools = [
+    { name: 'Quiz Builder', href: '/tools/quiz-builder', description: 'Create custom quizzes', icon: '📋' },
+    { name: 'Links Page', href: '/tools/links-page', description: 'Your link-in-bio page', icon: '🔗' },
+    { name: 'Short Links', href: '/tools/short-links', description: 'Trackable short links', icon: '⚡' },
+    { name: 'Brand Hub', href: '/tools/brand-hub', description: 'Your portfolio site', icon: '🎨' },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -55,6 +62,26 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   {link.name}
                 </h3>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* User Empowerment Tools */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">🛠️ Your Business Tools</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tools.map((tool) => (
+            <Link key={tool.name} to={tool.href} className="card hover:shadow-md transition-shadow group">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">{tool.icon}</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                    {tool.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">{tool.description}</p>
+                </div>
               </div>
             </Link>
           ))}

@@ -19,6 +19,12 @@ import contentRoutes from './routes/content.js';
 import uploadRoutes from './routes/upload.js';
 import adminRoutes from './routes/admin.js';
 
+// Phase 2D - User Empowerment Tools
+import quizzesRoutes from './routes/quizzes.js';
+import linksPagesRoutes from './routes/linksPages.js';
+import shortLinksRoutes from './routes/shortLinks.js';
+import brandHubRoutes from './routes/brandHub.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -57,6 +63,12 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Phase 2D - User Empowerment Tools
+app.use('/api/quizzes', quizzesRoutes);
+app.use('/api/links-page', linksPagesRoutes);
+app.use('/api/short-links', shortLinksRoutes);
+app.use('/api/brand-hub', brandHubRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
