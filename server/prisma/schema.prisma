@@ -110,6 +110,10 @@ model User {
   videoScripts        VideoScript[]
   videos              Video[]
 
+  // Phase 2N - AI Content Generator
+  generatedContent    GeneratedContent[]
+  contentBriefs       ContentBrief[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2234,4 +2238,93 @@ model VideoTemplate {
   createdAt     DateTime      @default(now())
 
   @@index([category])
+}
+
+// ============================================
+// PHASE 2N - AI CONTENT GENERATOR
+// ============================================
+
+model GeneratedContent {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Content type
+  contentType   String        // "blog", "caption", "email", "product_desc", "meta", "landing_page", "ad"
+
+  // Input (prompt)
+  prompt        String        @db.Text
+  context       Json?         // Additional context (tone, length, keywords, etc.)
+
+  // Generated content
+  content       String        @db.Text
+  variations    String[]      // Multiple versions generated
+
+  // Usage
+  used          Boolean       @default(false)
+  usedIn        String?       // Where it was used (post_id, product_id, etc.)
+
+  // Feedback
+  rating        Int?          // User rating 1-5
+  edited        Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([contentType])
+}
+
+model ContentTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  description   String?
+  contentType   String        // "blog", "email", "social", etc.
+
+  // Template structure
+  structure     Json          // Prompt template with placeholders
+
+  // Examples
+  examples      Json?         // Example outputs
+
+  // Usage
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([contentType])
+}
+
+model ContentBrief {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Brief details
+  title         String
+  topic         String
+  targetAudience String?
+  keywords      String[]
+  tone          String?       // professional, casual, friendly, authoritative
+
+  // Structure
+  outline       Json?         // Headings, subheadings, key points
+
+  // Research
+  competitorUrls String[]
+  references    Json?
+
+  // Status
+  status        String        @default("draft")  // draft, in_progress, completed
+
+  // Generated content
+  contentId     String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

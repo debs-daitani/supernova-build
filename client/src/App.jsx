@@ -87,6 +87,13 @@ import VideoDashboard from './pages/video/VideoDashboard';
 import ScriptGenerator from './pages/video/ScriptGenerator';
 import VideoLibrary from './pages/video/VideoLibrary';
 
+// Phase 2N - AI Content Generator
+import ContentAIDashboard from './pages/content-ai/ContentAIDashboard';
+import BlogGenerator from './pages/content-ai/BlogGenerator';
+import QuickGenerator from './pages/content-ai/QuickGenerator';
+import ContentRepurpose from './pages/content-ai/ContentRepurpose';
+import WritingAssistant from './pages/content-ai/WritingAssistant';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -184,6 +191,13 @@ function App() {
         <Route path="/video" element={<VideoDashboard />} />
         <Route path="/video/script-generator" element={<ScriptGenerator />} />
         <Route path="/video/library" element={<VideoLibrary />} />
+
+        {/* Phase 2N - AI Content Generator */}
+        <Route path="/content-ai" element={<ContentAIDashboard />} />
+        <Route path="/content-ai/blog" element={<BlogGenerator />} />
+        <Route path="/content-ai/:type" element={<QuickGenerator />} />
+        <Route path="/content-ai/repurpose" element={<ContentRepurpose />} />
+        <Route path="/content-ai/assistant" element={<WritingAssistant />} />
       </Route>
 
       {/* Redirects */}

@@ -27,6 +27,7 @@ export default function Dashboard() {
     { name: 'Task Manager', href: '/tasks', description: 'Projects, habits & goals', icon: '✅' },
     { name: 'Content Creation', href: '/content-creation', description: 'Create & schedule posts', icon: '🎨' },
     { name: 'Video Tools', href: '/video', description: 'Scripts, SEO & video editing', icon: '🎬' },
+    { name: 'AI Content Generator', href: '/content-ai', description: 'Blogs, ads, copy & more', icon: '✍️' },
   ];
 
   return (

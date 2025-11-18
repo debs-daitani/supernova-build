@@ -611,4 +611,60 @@ export const videoStats = {
   get: () => api.get('/video/stats'),
 };
 
+// ============================================================================
+// Phase 2N - AI Content Generator
+// ============================================================================
+
+// Content Generation
+export const aiContentGenerator = {
+  // Blog posts
+  generateBlog: (data) => api.post('/content-ai/blog', data),
+
+  // Social media
+  generateCaption: (data) => api.post('/content-ai/caption', data),
+
+  // Email
+  generateEmailSubject: (data) => api.post('/content-ai/email-subject', data),
+
+  // Product descriptions
+  generateProductDesc: (data) => api.post('/content-ai/product-desc', data),
+
+  // SEO meta
+  generateMetaDesc: (data) => api.post('/content-ai/meta-desc', data),
+
+  // Landing pages
+  generateLandingPage: (data) => api.post('/content-ai/landing-page', data),
+
+  // Ad copy
+  generateAdCopy: (data) => api.post('/content-ai/ad-copy', data),
+
+  // Content repurposing
+  repurpose: (data) => api.post('/content-ai/repurpose', data),
+
+  // Writing assistant
+  improve: (data) => api.post('/content-ai/improve', data),
+};
+
+// Generated Content History
+export const generatedContent = {
+  list: (params) => api.get('/content-ai/generated', { params }),
+  get: (id) => api.get(`/content-ai/generated/${id}`),
+  rate: (id, rating) => api.patch(`/content-ai/generated/${id}/rate`, { rating }),
+  delete: (id) => api.delete(`/content-ai/generated/${id}`),
+};
+
+// Content Briefs
+export const contentBriefs = {
+  list: (params) => api.get('/content-ai/briefs', { params }),
+  create: (data) => api.post('/content-ai/briefs', data),
+  get: (id) => api.get(`/content-ai/briefs/${id}`),
+  update: (id, data) => api.patch(`/content-ai/briefs/${id}`, data),
+  delete: (id) => api.delete(`/content-ai/briefs/${id}`),
+};
+
+// AI Content Stats
+export const aiContentStats = {
+  get: () => api.get('/content-ai/stats'),
+};
+
 export default api;
