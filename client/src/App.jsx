@@ -94,6 +94,9 @@ import QuickGenerator from './pages/content-ai/QuickGenerator';
 import ContentRepurpose from './pages/content-ai/ContentRepurpose';
 import WritingAssistant from './pages/content-ai/WritingAssistant';
 
+// Phase 2AS - Messaging Platform
+import MessagingDashboard from './pages/messaging/MessagingDashboard';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -198,6 +201,9 @@ function App() {
         <Route path="/content-ai/:type" element={<QuickGenerator />} />
         <Route path="/content-ai/repurpose" element={<ContentRepurpose />} />
         <Route path="/content-ai/assistant" element={<WritingAssistant />} />
+
+        {/* Phase 2AS - Messaging Platform */}
+        <Route path="/messaging" element={<MessagingDashboard />} />
       </Route>
 
       {/* Redirects */}

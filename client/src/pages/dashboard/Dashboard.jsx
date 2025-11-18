@@ -28,6 +28,7 @@ export default function Dashboard() {
     { name: 'Content Creation', href: '/content-creation', description: 'Create & schedule posts', icon: '🎨' },
     { name: 'Video Tools', href: '/video', description: 'Scripts, SEO & video editing', icon: '🎬' },
     { name: 'AI Content Generator', href: '/content-ai', description: 'Blogs, ads, copy & more', icon: '✍️' },
+    { name: 'Messaging Platform', href: '/messaging', description: 'Team & customer chat', icon: '💬' },
   ];
 
   return (

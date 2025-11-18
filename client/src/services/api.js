@@ -667,4 +667,51 @@ export const aiContentStats = {
   get: () => api.get('/content-ai/stats'),
 };
 
+// ============================================================================
+// Phase 2AS - Messaging Platform
+// ============================================================================
+
+// Conversations
+export const platformConversations = {
+  list: (params) => api.get('/platform-messages/conversations', { params }),
+  create: (data) => api.post('/platform-messages/conversations', data),
+  get: (id) => api.get(`/platform-messages/conversations/${id}`),
+  update: (id, data) => api.patch(`/platform-messages/conversations/${id}`, data),
+  delete: (id) => api.delete(`/platform-messages/conversations/${id}`),
+  archive: (id) => api.post(`/platform-messages/conversations/${id}/archive`),
+  mute: (id, muted) => api.post(`/platform-messages/conversations/${id}/mute`, { muted }),
+  readAll: (id) => api.post(`/platform-messages/conversations/${id}/read-all`),
+};
+
+// Messages
+export const platformMessages = {
+  list: (conversationId, params) => api.get(`/platform-messages/conversations/${conversationId}/messages`, { params }),
+  send: (conversationId, data) => api.post(`/platform-messages/conversations/${conversationId}/messages`, data),
+  edit: (id, data) => api.patch(`/platform-messages/messages/${id}`, data),
+  delete: (id) => api.delete(`/platform-messages/messages/${id}`),
+  markRead: (id) => api.post(`/platform-messages/messages/${id}/read`),
+};
+
+// Status Updates
+export const platformStatus = {
+  create: (data) => api.post('/platform-messages/status', data),
+  list: () => api.get('/platform-messages/status'),
+  view: (id) => api.post(`/platform-messages/status/${id}/view`),
+  delete: (id) => api.delete(`/platform-messages/status/${id}`),
+};
+
+// Blocking
+export const platformBlocking = {
+  block: (userId) => api.post(`/platform-messages/block/${userId}`),
+  unblock: (userId) => api.delete(`/platform-messages/block/${userId}`),
+  list: () => api.get('/platform-messages/blocked'),
+};
+
+// Calls
+export const platformCalls = {
+  initiate: (data) => api.post('/platform-messages/calls/initiate', data),
+  end: (id) => api.post(`/platform-messages/calls/${id}/end`),
+  history: () => api.get('/platform-messages/calls/history'),
+};
+
 export default api;

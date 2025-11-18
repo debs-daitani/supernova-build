@@ -60,6 +60,9 @@ import videoRoutes from './routes/video.js';
 // Phase 2N - AI Content Generator
 import contentAIRoutes from './routes/content-ai.js';
 
+// Phase 2AS - Messaging Platform
+import platformMessagesRoutes from './routes/platformMessages.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -139,6 +142,9 @@ app.use('/api/video', videoRoutes);
 
 // Phase 2N - AI Content Generator
 app.use('/api/content-ai', contentAIRoutes);
+
+// Phase 2AS - Messaging Platform
+app.use('/api/platform-messages', platformMessagesRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

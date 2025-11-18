@@ -114,6 +114,12 @@ model User {
   generatedContent    GeneratedContent[]
   contentBriefs       ContentBrief[]
 
+  // Phase 2AS - Messaging Platform
+  platformMessages    PlatformMessage[]
+  statusUpdates       StatusUpdate[]
+  blockedUsers        BlockedUser[]     @relation("UserBlocks")
+  blockedBy           BlockedUser[]     @relation("UserBlockedBy")
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -2327,4 +2333,147 @@ model ContentBrief {
 
   @@index([userId])
   @@index([status])
+}
+
+// ============================================
+// PHASE 2AS - MESSAGING PLATFORM
+// ============================================
+
+model PlatformConversation {
+  id            String        @id @default(cuid())
+
+  // Type
+  type          String        // "direct", "group", "channel"
+
+  // Participants (for direct/group)
+  participants  String[]      // Array of user IDs
+
+  // Group/Channel info
+  name          String?
+  description   String?       @db.Text
+  avatar        String?
+
+  // Creator (for groups/channels)
+  createdBy     String?
+
+  // Settings
+  isArchived    Boolean       @default(false)
+  isMuted       Boolean       @default(false)
+
+  // Last message (for sorting)
+  lastMessageAt DateTime      @default(now())
+  lastMessage   String?       @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  messages      PlatformMessage[]
+
+  @@index([type])
+  @@index([lastMessageAt])
+}
+
+model PlatformMessage {
+  id            String        @id @default(cuid())
+  conversationId String
+  conversation  PlatformConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Sender
+  senderId      String
+  sender        User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  // Content
+  messageType   String        @default("text")  // text, image, video, audio, file, voice_note
+  content       String?       @db.Text
+  mediaUrl      String?
+  fileUrl       String?
+  fileName      String?
+  fileSize      Int?
+
+  // Voice note
+  duration      Int?          // Seconds (for voice/video)
+
+  // Reply/Thread
+  replyToId     String?
+  replyTo       PlatformMessage?      @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies       PlatformMessage[]     @relation("MessageReplies")
+
+  // Status
+  isEdited      Boolean       @default(false)
+  isDeleted     Boolean       @default(false)
+  deletedAt     DateTime?
+
+  // Read receipts
+  readBy        String[]      // Array of user IDs who read message
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model StatusUpdate {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Content
+  mediaType     String        // "image", "video", "text"
+  mediaUrl      String?
+  caption       String?       @db.Text
+  backgroundColor String?     // For text-only status
+
+  // Visibility
+  viewedBy      String[]      // Array of user IDs who viewed
+
+  // Expiry (24 hours)
+  expiresAt     DateTime
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Call {
+  id            String        @id @default(cuid())
+  conversationId String
+
+  // Type
+  callType      String        // "voice", "video"
+
+  // Participants
+  callerId      String
+  receiverId    String?       // For direct calls
+  participants  String[]      // For group calls
+
+  // Status
+  status        String        // "ringing", "ongoing", "ended", "missed", "declined"
+
+  // Duration
+  startedAt     DateTime?
+  endedAt       DateTime?
+  duration      Int?          // Seconds
+
+  createdAt     DateTime      @default(now())
+
+  @@index([conversationId])
+  @@index([callerId])
+}
+
+model BlockedUser {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation("UserBlocks", fields: [userId], references: [id], onDelete: Cascade)
+
+  blockedUserId String
+  blockedUser   User          @relation("UserBlockedBy", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([userId, blockedUserId])
+  @@index([userId])
 }
