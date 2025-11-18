@@ -295,4 +295,26 @@ export const websiteTemplates = {
   get: (id) => api.get(`/websites/templates/${id}`),
 };
 
+// Phase 2Q + 2R - AI Generation (Image & Video)
+
+// AI Image Generation
+export const aiImages = {
+  generate: (data) => api.post('/ai/generate-image', data),
+  list: (params) => api.get('/ai/images', { params }),
+  get: (id) => api.get(`/ai/images/${id}`),
+  save: (id) => api.post(`/ai/images/${id}/save`),
+  markUsed: (id, usedIn) => api.post(`/ai/images/${id}/mark-used`, { usedIn }),
+  delete: (id) => api.delete(`/ai/images/${id}`),
+};
+
+// AI Video Generation
+export const aiVideos = {
+  generate: (data) => api.post('/ai/generate-video', data),
+  list: (params) => api.get('/ai/videos', { params }),
+  get: (id) => api.get(`/ai/videos/${id}`),
+  getStatus: (id) => api.get(`/ai/videos/${id}/status`),
+  save: (id) => api.post(`/ai/videos/${id}/save`),
+  delete: (id) => api.delete(`/ai/videos/${id}`),
+};
+
 export default api;

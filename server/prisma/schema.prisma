@@ -73,6 +73,10 @@ model User {
   // Phase 2G - Website Builder
   websites            Website[]
 
+  // Phase 2Q + 2R - AI Generation
+  generatedImages     GeneratedImage[]
+  generatedVideos     GeneratedVideo[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -108,6 +112,10 @@ model Conversation {
   updatedAt   DateTime @updatedAt
 
   messages    Message[]
+
+  // Phase 2Q + 2R - AI Generation
+  generatedImages  GeneratedImage[]
+  generatedVideos  GeneratedVideo[]
 
   @@index([userId])
   @@index([createdAt])
@@ -1128,4 +1136,78 @@ model WebsiteTemplate {
   createdAt     DateTime      @default(now())
 
   @@index([category])
+}
+
+// ============================================
+// PHASE 2Q + 2R - AI GENERATION (IMAGE & VIDEO)
+// ============================================
+
+model GeneratedImage {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Image details
+  prompt        String        @db.Text  // User's original request
+  enhancedPrompt String       @db.Text  // AI-enhanced DALL-E prompt
+  imageUrl      String        // URL to generated image
+
+  // Metadata
+  model         String        @default("dall-e-3")  // dall-e-3, stable-diffusion, etc.
+  size          String        @default("1024x1024")  // Image dimensions
+  style         String?       // "vivid", "natural"
+  quality       String        @default("hd")  // "standard", "hd"
+
+  // Usage
+  usedIn        String?       // "website", "marketplace", "social", etc.
+  savedToLibrary Boolean      @default(false)
+
+  // Link to conversation
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model GeneratedVideo {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Video details
+  prompt        String        @db.Text  // User's video request
+  enhancedPrompt String?      @db.Text  // AI-enhanced prompt
+  videoUrl      String?       // URL to generated video (null while processing)
+  thumbnailUrl  String?       // Video thumbnail
+
+  // Metadata
+  duration      Int           @default(5)  // Seconds
+  resolution    String        @default("1080p")
+  model         String        @default("runway-gen3")  // "runway-gen3", "pika", "heygen"
+  videoType     String        @default("text-to-video")  // "text-to-video", "image-to-video", "ai-avatar"
+
+  // Processing
+  status        String        @default("processing")  // "processing", "completed", "failed"
+  jobId         String?       // External API job ID
+  errorMessage  String?       @db.Text
+
+  // Usage
+  usedIn        String?       // "website", "marketplace", "social", etc.
+  savedToLibrary Boolean      @default(false)
+
+  // Link to conversation
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+  completedAt   DateTime?
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([status])
+  @@index([createdAt])
 }

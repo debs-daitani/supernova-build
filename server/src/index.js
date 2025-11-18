@@ -37,6 +37,10 @@ import webhooksRoutes from './routes/webhooks.js';
 import websitesRoutes from './routes/websites.js';
 import siteRoutes from './routes/site.js';
 
+// Phase 2Q + 2R - AI Generation (Image & Video)
+import aiImagesRoutes from './routes/ai-images.js';
+import aiVideosRoutes from './routes/ai-videos.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -93,6 +97,10 @@ app.use('/api/webhooks', webhooksRoutes); // Meta webhooks (no auth)
 // Phase 2G - Website Builder
 app.use('/api/websites', websitesRoutes);
 app.use('/site', siteRoutes); // Public website hosting
+
+// Phase 2Q + 2R - AI Generation
+app.use('/api/ai', aiImagesRoutes);
+app.use('/api/ai', aiVideosRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
