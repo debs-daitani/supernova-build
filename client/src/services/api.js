@@ -1212,4 +1212,71 @@ export const storageRecent = {
   starred: () => api.get('/storage/starred'),
 };
 
+// ============================================================================
+// Phase 2AL - Social Media Platform
+// ============================================================================
+
+// Profile
+export const socialProfile = {
+  get: () => api.get('/social/profile'),
+  getUser: (userId) => api.get(`/social/profile/${userId}`),
+  update: (data) => api.patch('/social/profile', data),
+  follow: (userId) => api.post(`/social/follow/${userId}`),
+  unfollow: (userId) => api.delete(`/social/follow/${userId}`),
+  getFollowers: (userId, params) => api.get(`/social/followers/${userId}`, { params }),
+  getFollowing: (userId, params) => api.get(`/social/following/${userId}`, { params }),
+};
+
+// Feed & Posts
+export const socialPosts = {
+  getFeed: (params) => api.get('/social/feed', { params }),
+  create: (data) => api.post('/social/posts', data),
+  get: (postId) => api.get(`/social/posts/${postId}`),
+  getUserPosts: (userId, params) => api.get(`/social/posts/user/${userId}`, { params }),
+  update: (postId, data) => api.patch(`/social/posts/${postId}`, data),
+  delete: (postId) => api.delete(`/social/posts/${postId}`),
+  like: (postId, data) => api.post(`/social/posts/${postId}/like`, data),
+  unlike: (postId) => api.delete(`/social/posts/${postId}/like`),
+  share: (postId, data) => api.post(`/social/posts/${postId}/share`, data),
+};
+
+// Comments
+export const socialComments = {
+  create: (postId, data) => api.post(`/social/posts/${postId}/comments`, data),
+  get: (postId, params) => api.get(`/social/posts/${postId}/comments`, { params }),
+  update: (commentId, data) => api.patch(`/social/comments/${commentId}`, data),
+  delete: (commentId) => api.delete(`/social/comments/${commentId}`),
+  like: (commentId) => api.post(`/social/comments/${commentId}/like`),
+  unlike: (commentId) => api.delete(`/social/comments/${commentId}/like`),
+};
+
+// Stories
+export const socialStories = {
+  create: (data) => api.post('/social/stories', data),
+  get: () => api.get('/social/stories'),
+  view: (storyId) => api.post(`/social/stories/${storyId}/view`),
+};
+
+// Groups
+export const socialGroups = {
+  create: (data) => api.post('/social/groups', data),
+  list: (params) => api.get('/social/groups', { params }),
+  join: (groupId) => api.post(`/social/groups/${groupId}/join`),
+  leave: (groupId) => api.delete(`/social/groups/${groupId}/leave`),
+  createPost: (groupId, data) => api.post(`/social/groups/${groupId}/posts`, data),
+};
+
+// Notifications
+export const socialNotifications = {
+  get: (params) => api.get('/social/notifications', { params }),
+  markAsRead: (notificationId) => api.patch(`/social/notifications/${notificationId}/read`),
+  markAllAsRead: () => api.patch('/social/notifications/read-all'),
+};
+
+// Search
+export const socialSearch = {
+  users: (params) => api.get('/social/search/users', { params }),
+  posts: (params) => api.get('/social/search/posts', { params }),
+};
+
 export default api;

@@ -1,447 +1,1955 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.js';
-import { subscribeInstagramWebhooks, unsubscribeInstagramWebhooks } from '../services/instagramApi.js';
-import { subscribeFacebookWebhooks, unsubscribeFacebookWebhooks } from '../services/facebookApi.js';
+const express = require('express');
+const { PrismaClient } = require('@prisma/client');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// ============================================
-// SOCIAL ACCOUNT MANAGEMENT
-// ============================================
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-// Get all connected social accounts
-router.get('/accounts', authMiddleware, async (req, res) => {
+// ============================================================================
+// PROFILE ENDPOINTS
+// ============================================================================
+
+// Get user profile (public or own)
+router.get('/profile/:userId', async (req, res) => {
   try {
-    const accounts = await prisma.socialAccount.findMany({
-      where: { userId: req.user.id },
+    const { userId } = req.params;
+    const requestingUserId = req.user.userId;
+
+    const profile = await prisma.socialProfile.findUnique({
+      where: { userId },
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
         _count: {
-          select: { automations: true }
-        }
+          select: {
+            posts: true,
+            followers: true,
+            following: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' }
     });
 
-    res.json(accounts);
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Check if requesting user is following this profile
+    let isFollowing = false;
+    if (requestingUserId !== userId) {
+      const follow = await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: requestingUserId,
+            followingId: userId,
+          },
+        },
+      });
+      isFollowing = !!follow;
+    }
+
+    // Respect privacy settings
+    if (profile.isPrivate && !isFollowing && requestingUserId !== userId) {
+      return res.status(403).json({ error: 'This profile is private' });
+    }
+
+    res.json({
+      ...profile,
+      isFollowing,
+      isOwnProfile: requestingUserId === userId,
+    });
   } catch (error) {
-    console.error('Error fetching social accounts:', error);
-    res.status(500).json({ error: 'Failed to fetch social accounts' });
+    console.error('Get profile error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
 
-// Connect Instagram account (OAuth callback)
-router.post('/instagram/connect', authMiddleware, async (req, res) => {
+// Get or create own profile
+router.get('/profile', async (req, res) => {
   try {
-    const { accessToken, accountId, accountName } = req.body;
+    const userId = req.user.userId;
 
-    if (!accessToken || !accountId) {
-      return res.status(400).json({ error: 'Access token and account ID required' });
-    }
-
-    // Create or update social account
-    const account = await prisma.socialAccount.upsert({
-      where: {
-        userId_platform_accountId: {
-          userId: req.user.id,
-          platform: 'instagram',
-          accountId
-        }
-      },
-      create: {
-        userId: req.user.id,
-        platform: 'instagram',
-        accountId,
-        accountName: accountName || accountId,
-        accessToken,
-        connected: true
-      },
-      update: {
-        accessToken,
-        accountName: accountName || accountId,
-        connected: true
-      }
-    });
-
-    // Subscribe to webhooks
-    try {
-      await subscribeInstagramWebhooks(account.id);
-    } catch (webhookError) {
-      console.error('Error subscribing to webhooks:', webhookError);
-      // Continue anyway - webhooks can be set up later
-    }
-
-    res.json(account);
-  } catch (error) {
-    console.error('Error connecting Instagram:', error);
-    res.status(500).json({ error: 'Failed to connect Instagram account' });
-  }
-});
-
-// Connect Facebook account (OAuth callback)
-router.post('/facebook/connect', authMiddleware, async (req, res) => {
-  try {
-    const { accessToken, accountId, accountName } = req.body;
-
-    if (!accessToken || !accountId) {
-      return res.status(400).json({ error: 'Access token and account ID required' });
-    }
-
-    // Create or update social account
-    const account = await prisma.socialAccount.upsert({
-      where: {
-        userId_platform_accountId: {
-          userId: req.user.id,
-          platform: 'facebook',
-          accountId
-        }
-      },
-      create: {
-        userId: req.user.id,
-        platform: 'facebook',
-        accountId,
-        accountName: accountName || accountId,
-        accessToken,
-        connected: true
-      },
-      update: {
-        accessToken,
-        accountName: accountName || accountId,
-        connected: true
-      }
-    });
-
-    // Subscribe to webhooks
-    try {
-      await subscribeFacebookWebhooks(account.id);
-    } catch (webhookError) {
-      console.error('Error subscribing to webhooks:', webhookError);
-      // Continue anyway
-    }
-
-    res.json(account);
-  } catch (error) {
-    console.error('Error connecting Facebook:', error);
-    res.status(500).json({ error: 'Failed to connect Facebook account' });
-  }
-});
-
-// Disconnect social account
-router.delete('/accounts/:accountId', authMiddleware, async (req, res) => {
-  try {
-    const account = await prisma.socialAccount.findFirst({
-      where: {
-        id: req.params.accountId,
-        userId: req.user.id
-      }
-    });
-
-    if (!account) {
-      return res.status(404).json({ error: 'Account not found' });
-    }
-
-    // Unsubscribe from webhooks
-    try {
-      if (account.platform === 'instagram') {
-        await unsubscribeInstagramWebhooks(account.id);
-      } else if (account.platform === 'facebook') {
-        await unsubscribeFacebookWebhooks(account.id);
-      }
-    } catch (error) {
-      console.error('Error unsubscribing from webhooks:', error);
-    }
-
-    // Delete account
-    await prisma.socialAccount.delete({
-      where: { id: req.params.accountId }
-    });
-
-    res.json({ message: 'Account disconnected successfully' });
-  } catch (error) {
-    console.error('Error disconnecting account:', error);
-    res.status(500).json({ error: 'Failed to disconnect account' });
-  }
-});
-
-// ============================================
-// AUTOMATION MANAGEMENT
-// ============================================
-
-// Get all automations
-router.get('/automations', authMiddleware, async (req, res) => {
-  try {
-    const accounts = await prisma.socialAccount.findMany({
-      where: { userId: req.user.id }
-    });
-
-    const accountIds = accounts.map(a => a.id);
-
-    const automations = await prisma.socialAutomation.findMany({
-      where: { accountId: { in: accountIds } },
+    let profile = await prisma.socialProfile.findUnique({
+      where: { userId },
       include: {
-        account: true,
-        _count: {
-          select: { conversations: true }
-        }
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' }
     });
 
-    res.json(automations);
+    // Auto-create profile if doesn't exist
+    if (!profile) {
+      profile = await prisma.socialProfile.create({
+        data: {
+          userId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+    }
+
+    res.json(profile);
   } catch (error) {
-    console.error('Error fetching automations:', error);
-    res.status(500).json({ error: 'Failed to fetch automations' });
+    console.error('Get own profile error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
 
-// Create automation
-router.post('/automations', authMiddleware, async (req, res) => {
+// Update profile
+router.patch('/profile', async (req, res) => {
   try {
-    const { accountId, name, automationType, triggerType, keywords, postUrl, actionFlow } = req.body;
+    const userId = req.user.userId;
+    const {
+      bio,
+      location,
+      website,
+      headline,
+      company,
+      jobTitle,
+      coverPhoto,
+      isPrivate,
+    } = req.body;
 
-    // Verify account ownership
-    const account = await prisma.socialAccount.findFirst({
-      where: {
-        id: accountId,
-        userId: req.user.id
-      }
+    // Get or create profile first
+    let profile = await prisma.socialProfile.findUnique({
+      where: { userId },
     });
 
-    if (!account) {
-      return res.status(404).json({ error: 'Account not found' });
+    if (!profile) {
+      profile = await prisma.socialProfile.create({
+        data: { userId },
+      });
     }
 
-    const automation = await prisma.socialAutomation.create({
+    // Update profile
+    const updated = await prisma.socialProfile.update({
+      where: { userId },
       data: {
-        accountId,
-        name,
-        automationType: automationType || 'dm_sequence',
-        triggerType,
-        keywords: keywords || [],
-        postUrl,
-        actionFlow: actionFlow || { steps: [] },
-        active: true
+        ...(bio !== undefined && { bio }),
+        ...(location !== undefined && { location }),
+        ...(website !== undefined && { website }),
+        ...(headline !== undefined && { headline }),
+        ...(company !== undefined && { company }),
+        ...(jobTitle !== undefined && { jobTitle }),
+        ...(coverPhoto !== undefined && { coverPhoto }),
+        ...(isPrivate !== undefined && { isPrivate }),
       },
-      include: { account: true }
-    });
-
-    res.status(201).json(automation);
-  } catch (error) {
-    console.error('Error creating automation:', error);
-    res.status(500).json({ error: 'Failed to create automation' });
-  }
-});
-
-// Update automation
-router.patch('/automations/:id', authMiddleware, async (req, res) => {
-  try {
-    const { name, automationType, triggerType, keywords, postUrl, actionFlow, active } = req.body;
-
-    // Verify ownership
-    const automation = await prisma.socialAutomation.findFirst({
-      where: { id: req.params.id },
-      include: { account: true }
-    });
-
-    if (!automation || automation.account.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Automation not found' });
-    }
-
-    const updated = await prisma.socialAutomation.update({
-      where: { id: req.params.id },
-      data: {
-        ...(name && { name }),
-        ...(automationType && { automationType }),
-        ...(triggerType && { triggerType }),
-        ...(keywords && { keywords }),
-        ...(postUrl !== undefined && { postUrl }),
-        ...(actionFlow && { actionFlow }),
-        ...(active !== undefined && { active })
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
       },
-      include: { account: true }
     });
 
     res.json(updated);
   } catch (error) {
-    console.error('Error updating automation:', error);
-    res.status(500).json({ error: 'Failed to update automation' });
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 
-// Delete automation
-router.delete('/automations/:id', authMiddleware, async (req, res) => {
+// Follow user
+router.post('/follow/:userId', async (req, res) => {
   try {
-    const automation = await prisma.socialAutomation.findFirst({
-      where: { id: req.params.id },
-      include: { account: true }
-    });
+    const followerId = req.user.userId;
+    const followingId = req.params.userId;
 
-    if (!automation || automation.account.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Automation not found' });
+    if (followerId === followingId) {
+      return res.status(400).json({ error: 'Cannot follow yourself' });
     }
 
-    await prisma.socialAutomation.delete({
-      where: { id: req.params.id }
+    // Check if target user exists
+    const targetProfile = await prisma.socialProfile.findUnique({
+      where: { userId: followingId },
     });
 
-    res.json({ message: 'Automation deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting automation:', error);
-    res.status(500).json({ error: 'Failed to delete automation' });
-  }
-});
+    if (!targetProfile) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-// ============================================
-// CONVERSATION MANAGEMENT
-// ============================================
-
-// Get all conversations
-router.get('/conversations', authMiddleware, async (req, res) => {
-  try {
-    const accounts = await prisma.socialAccount.findMany({
-      where: { userId: req.user.id }
-    });
-
-    const accountIds = accounts.map(a => a.id);
-
-    const conversations = await prisma.socialConversation.findMany({
-      where: {
-        automation: {
-          accountId: { in: accountIds }
-        }
+    // Create follow relationship
+    const follow = await prisma.follow.create({
+      data: {
+        followerId,
+        followingId,
       },
-      include: {
-        automation: {
-          include: { account: true }
-        },
-        _count: {
-          select: { messages: true }
-        }
+    });
+
+    // Update counts
+    await Promise.all([
+      prisma.socialProfile.update({
+        where: { userId: followerId },
+        data: { followingCount: { increment: 1 } },
+      }),
+      prisma.socialProfile.update({
+        where: { userId: followingId },
+        data: { followersCount: { increment: 1 } },
+      }),
+    ]);
+
+    // Create notification
+    await prisma.socialNotification.create({
+      data: {
+        userId: followingId,
+        actorId: followerId,
+        type: 'follow',
+        message: 'started following you',
       },
-      orderBy: { lastMessageAt: 'desc' },
-      take: 100
     });
 
-    res.json(conversations);
+    res.json({ success: true, follow });
   } catch (error) {
-    console.error('Error fetching conversations:', error);
-    res.status(500).json({ error: 'Failed to fetch conversations' });
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Already following this user' });
+    }
+    console.error('Follow error:', error);
+    res.status(500).json({ error: 'Failed to follow user' });
   }
 });
 
-// Get conversation details
-router.get('/conversations/:id', authMiddleware, async (req, res) => {
+// Unfollow user
+router.delete('/follow/:userId', async (req, res) => {
   try {
-    const conversation = await prisma.socialConversation.findFirst({
-      where: { id: req.params.id },
-      include: {
-        automation: {
-          include: { account: true }
+    const followerId = req.user.userId;
+    const followingId = req.params.userId;
+
+    // Delete follow relationship
+    await prisma.follow.delete({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
         },
-        messages: {
-          orderBy: { createdAt: 'asc' }
-        }
-      }
+      },
     });
 
-    if (!conversation || conversation.automation.account.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
+    // Update counts
+    await Promise.all([
+      prisma.socialProfile.update({
+        where: { userId: followerId },
+        data: { followingCount: { decrement: 1 } },
+      }),
+      prisma.socialProfile.update({
+        where: { userId: followingId },
+        data: { followersCount: { decrement: 1 } },
+      }),
+    ]);
 
-    res.json(conversation);
+    res.json({ success: true });
   } catch (error) {
-    console.error('Error fetching conversation:', error);
-    res.status(500).json({ error: 'Failed to fetch conversation' });
+    console.error('Unfollow error:', error);
+    res.status(500).json({ error: 'Failed to unfollow user' });
   }
 });
 
-// Manual takeover (disable automation for this conversation)
-router.post('/conversations/:id/takeover', authMiddleware, async (req, res) => {
+// Get followers
+router.get('/followers/:userId', async (req, res) => {
   try {
-    const conversation = await prisma.socialConversation.findFirst({
-      where: { id: req.params.id },
-      include: { automation: { include: { account: true } } }
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const followers = await prisma.follow.findMany({
+      where: { followingId: userId },
+      include: {
+        follower: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
     });
 
-    if (!conversation || conversation.automation.account.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
-
-    // Mark conversation as manually managed
-    await prisma.socialConversation.update({
-      where: { id: req.params.id },
-      data: { status: 'manual_takeover' }
-    });
-
-    res.json({ message: 'Manual takeover activated' });
-  } catch (error) {
-    console.error('Error taking over conversation:', error);
-    res.status(500).json({ error: 'Failed to takeover conversation' });
-  }
-});
-
-// ============================================
-// ANALYTICS
-// ============================================
-
-// Get automation analytics
-router.get('/analytics', authMiddleware, async (req, res) => {
-  try {
-    const accounts = await prisma.socialAccount.findMany({
-      where: { userId: req.user.id }
-    });
-
-    const accountIds = accounts.map(a => a.id);
-
-    const totalAutomations = await prisma.socialAutomation.count({
-      where: { accountId: { in: accountIds } }
-    });
-
-    const activeAutomations = await prisma.socialAutomation.count({
-      where: { accountId: { in: accountIds }, active: true }
-    });
-
-    const totalConversations = await prisma.socialConversation.count({
-      where: { automation: { accountId: { in: accountIds } } }
-    });
-
-    const activeConversations = await prisma.socialConversation.count({
-      where: {
-        automation: { accountId: { in: accountIds } },
-        status: 'active'
-      }
-    });
-
-    const completedConversations = await prisma.socialConversation.count({
-      where: {
-        automation: { accountId: { in: accountIds } },
-        status: 'completed'
-      }
-    });
-
-    const leadsCapture = await prisma.socialConversation.count({
-      where: {
-        automation: { accountId: { in: accountIds } },
-        leadEmail: { not: null }
-      }
+    const total = await prisma.follow.count({
+      where: { followingId: userId },
     });
 
     res.json({
-      totalAutomations,
-      activeAutomations,
-      totalConversations,
-      activeConversations,
-      completedConversations,
-      leadsCapture,
-      conversionRate: totalConversations > 0
-        ? ((leadsCapture / totalConversations) * 100).toFixed(1)
-        : 0
+      followers: followers.map((f) => f.follower),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
-    console.error('Error fetching analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch analytics' });
+    console.error('Get followers error:', error);
+    res.status(500).json({ error: 'Failed to fetch followers' });
   }
 });
 
-export default router;
+// Get following
+router.get('/following/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const following = await prisma.follow.findMany({
+      where: { followerId: userId },
+      include: {
+        following: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.follow.count({
+      where: { followerId: userId },
+    });
+
+    res.json({
+      following: following.map((f) => f.following),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get following error:', error);
+    res.status(500).json({ error: 'Failed to fetch following' });
+  }
+});
+
+// ============================================================================
+// FEED ENDPOINTS
+// ============================================================================
+
+// Get personalized feed
+router.get('/feed', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const algorithm = req.query.algorithm || 'chronological'; // 'chronological' or 'engagement'
+
+    // Get list of users the current user follows
+    const following = await prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+
+    const followingIds = following.map((f) => f.followingId);
+    followingIds.push(userId); // Include own posts
+
+    // Build query
+    const where = {
+      userId: { in: followingIds },
+      isDeleted: false,
+      OR: [
+        { visibility: 'public' },
+        { visibility: 'followers', userId: { in: followingIds } },
+        { visibility: 'private', userId },
+      ],
+    };
+
+    // Determine order
+    let orderBy;
+    if (algorithm === 'engagement') {
+      // Sort by engagement (likes + comments), then by recency
+      orderBy = [
+        { likesCount: 'desc' },
+        { commentsCount: 'desc' },
+        { createdAt: 'desc' },
+      ];
+    } else {
+      // Chronological (default)
+      orderBy = { createdAt: 'desc' };
+    }
+
+    const posts = await prisma.post.findMany({
+      where,
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        likes: {
+          where: { userId },
+          select: { id: true, reactionType: true },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            shares: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy,
+    });
+
+    const total = await prisma.post.count({ where });
+
+    // Format response
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      hasLiked: post.likes.length > 0,
+      userReaction: post.likes[0]?.reactionType || null,
+      likes: post._count.likes,
+      comments: post._count.comments,
+      shares: post._count.shares,
+    }));
+
+    res.json({
+      posts: formattedPosts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get feed error:', error);
+    res.status(500).json({ error: 'Failed to fetch feed' });
+  }
+});
+
+// ============================================================================
+// POST ENDPOINTS
+// ============================================================================
+
+// Create post
+router.post('/posts', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      content,
+      mediaUrls,
+      mediaType,
+      pollOptions,
+      pollEndsAt,
+      linkUrl,
+      linkTitle,
+      linkDescription,
+      linkImage,
+      visibility,
+      postType,
+    } = req.body;
+
+    // Ensure user has a social profile
+    let profile = await prisma.socialProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      profile = await prisma.socialProfile.create({
+        data: { userId },
+      });
+    }
+
+    // Create post
+    const post = await prisma.post.create({
+      data: {
+        userId,
+        content,
+        mediaUrls: mediaUrls || [],
+        mediaType,
+        pollOptions: pollOptions ? JSON.parse(JSON.stringify(pollOptions)) : null,
+        pollEndsAt: pollEndsAt ? new Date(pollEndsAt) : null,
+        linkUrl,
+        linkTitle,
+        linkDescription,
+        linkImage,
+        visibility: visibility || 'public',
+        postType: postType || 'post',
+      },
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Update posts count
+    await prisma.socialProfile.update({
+      where: { userId },
+      data: { postsCount: { increment: 1 } },
+    });
+
+    res.status(201).json(post);
+  } catch (error) {
+    console.error('Create post error:', error);
+    res.status(500).json({ error: 'Failed to create post' });
+  }
+});
+
+// Get single post
+router.get('/posts/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        likes: {
+          where: { userId },
+          select: { id: true, reactionType: true },
+        },
+        comments: {
+          where: { parentId: null },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+            likes: {
+              where: { userId },
+              select: { id: true },
+            },
+            _count: {
+              select: {
+                replies: true,
+                likes: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            shares: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.isDeleted) {
+      return res.status(404).json({ error: 'Post has been deleted' });
+    }
+
+    // Check visibility permissions
+    if (post.visibility === 'private' && post.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to view this post' });
+    }
+
+    // Format response
+    const formattedPost = {
+      ...post,
+      hasLiked: post.likes.length > 0,
+      userReaction: post.likes[0]?.reactionType || null,
+      likes: post._count.likes,
+      commentsCount: post._count.comments,
+      shares: post._count.shares,
+      topComments: post.comments.map((comment) => ({
+        ...comment,
+        hasLiked: comment.likes.length > 0,
+        likesCount: comment._count.likes,
+        repliesCount: comment._count.replies,
+      })),
+    };
+
+    delete formattedPost._count;
+    delete formattedPost.comments;
+
+    // Increment views
+    await prisma.post.update({
+      where: { id: postId },
+      data: { viewsCount: { increment: 1 } },
+    });
+
+    res.json(formattedPost);
+  } catch (error) {
+    console.error('Get post error:', error);
+    res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
+
+// Get user posts
+router.get('/posts/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requestingUserId = req.user.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    // Check if requesting user can view posts
+    const profile = await prisma.socialProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Build visibility filter
+    let visibilityFilter;
+    if (userId === requestingUserId) {
+      // Own posts - see everything
+      visibilityFilter = {};
+    } else if (profile.isPrivate) {
+      // Check if following
+      const isFollowing = await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: requestingUserId,
+            followingId: userId,
+          },
+        },
+      });
+
+      if (!isFollowing) {
+        return res.status(403).json({ error: 'This profile is private' });
+      }
+
+      visibilityFilter = {
+        OR: [{ visibility: 'public' }, { visibility: 'followers' }],
+      };
+    } else {
+      // Public profile
+      visibilityFilter = {
+        OR: [{ visibility: 'public' }, { visibility: 'followers' }],
+      };
+    }
+
+    const posts = await prisma.post.findMany({
+      where: {
+        userId,
+        isDeleted: false,
+        ...visibilityFilter,
+      },
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        likes: {
+          where: { userId: requestingUserId },
+          select: { id: true, reactionType: true },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            shares: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.post.count({
+      where: {
+        userId,
+        isDeleted: false,
+        ...visibilityFilter,
+      },
+    });
+
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      hasLiked: post.likes.length > 0,
+      userReaction: post.likes[0]?.reactionType || null,
+      likes: post._count.likes,
+      comments: post._count.comments,
+      shares: post._count.shares,
+    }));
+
+    res.json({
+      posts: formattedPosts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get user posts error:', error);
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
+// Update post
+router.patch('/posts/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    const { content, visibility, isPinned } = req.body;
+
+    // Check ownership
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to edit this post' });
+    }
+
+    // Update post
+    const updated = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        ...(content !== undefined && { content }),
+        ...(visibility !== undefined && { visibility }),
+        ...(isPinned !== undefined && { isPinned }),
+      },
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update post error:', error);
+    res.status(500).json({ error: 'Failed to update post' });
+  }
+});
+
+// Delete post
+router.delete('/posts/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    // Check ownership
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to delete this post' });
+    }
+
+    // Soft delete
+    await prisma.post.update({
+      where: { id: postId },
+      data: { isDeleted: true },
+    });
+
+    // Update posts count
+    await prisma.socialProfile.update({
+      where: { userId },
+      data: { postsCount: { decrement: 1 } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete post error:', error);
+    res.status(500).json({ error: 'Failed to delete post' });
+  }
+});
+
+// ============================================================================
+// LIKE ENDPOINTS
+// ============================================================================
+
+// Like/react to post
+router.post('/posts/:postId/like', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    const { reactionType } = req.body; // 'like', 'love', 'celebrate', 'support', 'insightful'
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Check if already liked
+    const existingLike = await prisma.like.findUnique({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
+      },
+    });
+
+    let like;
+    if (existingLike) {
+      // Update reaction type
+      like = await prisma.like.update({
+        where: { id: existingLike.id },
+        data: { reactionType: reactionType || 'like' },
+      });
+    } else {
+      // Create new like
+      like = await prisma.like.create({
+        data: {
+          userId,
+          postId,
+          reactionType: reactionType || 'like',
+        },
+      });
+
+      // Increment likes count
+      await prisma.post.update({
+        where: { id: postId },
+        data: { likesCount: { increment: 1 } },
+      });
+
+      // Create notification (if not own post)
+      if (post.userId !== userId) {
+        await prisma.socialNotification.create({
+          data: {
+            userId: post.userId,
+            actorId: userId,
+            type: 'like',
+            postId,
+            message: `reacted to your post`,
+          },
+        });
+      }
+    }
+
+    res.json({ success: true, like });
+  } catch (error) {
+    console.error('Like post error:', error);
+    res.status(500).json({ error: 'Failed to like post' });
+  }
+});
+
+// Unlike post
+router.delete('/posts/:postId/like', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    await prisma.like.delete({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
+      },
+    });
+
+    // Decrement likes count
+    await prisma.post.update({
+      where: { id: postId },
+      data: { likesCount: { decrement: 1 } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Unlike post error:', error);
+    res.status(500).json({ error: 'Failed to unlike post' });
+  }
+});
+
+// ============================================================================
+// COMMENT ENDPOINTS
+// ============================================================================
+
+// Create comment
+router.post('/posts/:postId/comments', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    const { content, parentId } = req.body;
+
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ error: 'Comment content is required' });
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // If replying to a comment, check it exists
+    if (parentId) {
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+      });
+
+      if (!parentComment || parentComment.postId !== postId) {
+        return res.status(400).json({ error: 'Invalid parent comment' });
+      }
+    }
+
+    // Create comment
+    const comment = await prisma.comment.create({
+      data: {
+        userId,
+        postId,
+        content,
+        parentId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            replies: true,
+          },
+        },
+      },
+    });
+
+    // Increment comments count on post
+    await prisma.post.update({
+      where: { id: postId },
+      data: { commentsCount: { increment: 1 } },
+    });
+
+    // Create notification (if not own post)
+    if (post.userId !== userId) {
+      await prisma.socialNotification.create({
+        data: {
+          userId: post.userId,
+          actorId: userId,
+          type: 'comment',
+          postId,
+          commentId: comment.id,
+          message: 'commented on your post',
+        },
+      });
+    }
+
+    res.status(201).json(comment);
+  } catch (error) {
+    console.error('Create comment error:', error);
+    res.status(500).json({ error: 'Failed to create comment' });
+  }
+});
+
+// Get comments for post
+router.get('/posts/:postId/comments', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const parentId = req.query.parentId || null;
+
+    const comments = await prisma.comment.findMany({
+      where: {
+        postId,
+        parentId,
+        isDeleted: false,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        likes: {
+          where: { userId },
+          select: { id: true },
+        },
+        _count: {
+          select: {
+            likes: true,
+            replies: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.comment.count({
+      where: {
+        postId,
+        parentId,
+        isDeleted: false,
+      },
+    });
+
+    const formattedComments = comments.map((comment) => ({
+      ...comment,
+      hasLiked: comment.likes.length > 0,
+      likesCount: comment._count.likes,
+      repliesCount: comment._count.replies,
+    }));
+
+    res.json({
+      comments: formattedComments,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get comments error:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
+// Update comment
+router.patch('/comments/:commentId', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.userId;
+    const { content } = req.body;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to edit this comment' });
+    }
+
+    const updated = await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        content,
+        isEdited: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update comment error:', error);
+    res.status(500).json({ error: 'Failed to update comment' });
+  }
+});
+
+// Delete comment
+router.delete('/comments/:commentId', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.userId;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to delete this comment' });
+    }
+
+    // Soft delete
+    await prisma.comment.update({
+      where: { id: commentId },
+      data: { isDeleted: true },
+    });
+
+    // Decrement comments count on post
+    await prisma.post.update({
+      where: { id: comment.postId },
+      data: { commentsCount: { decrement: 1 } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete comment error:', error);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
+});
+
+// Like comment
+router.post('/comments/:commentId/like', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.userId;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Create like
+    const like = await prisma.commentLike.create({
+      data: {
+        userId,
+        commentId,
+      },
+    });
+
+    res.json({ success: true, like });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Already liked this comment' });
+    }
+    console.error('Like comment error:', error);
+    res.status(500).json({ error: 'Failed to like comment' });
+  }
+});
+
+// Unlike comment
+router.delete('/comments/:commentId/like', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.userId;
+
+    await prisma.commentLike.delete({
+      where: {
+        userId_commentId: {
+          userId,
+          commentId,
+        },
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Unlike comment error:', error);
+    res.status(500).json({ error: 'Failed to unlike comment' });
+  }
+});
+
+// ============================================================================
+// SHARE ENDPOINTS
+// ============================================================================
+
+// Share post
+router.post('/posts/:postId/share', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    const { caption } = req.body;
+
+    const originalPost = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!originalPost) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Create share
+    const share = await prisma.share.create({
+      data: {
+        userId,
+        postId,
+        caption,
+      },
+    });
+
+    // Increment shares count
+    await prisma.post.update({
+      where: { id: postId },
+      data: { sharesCount: { increment: 1 } },
+    });
+
+    // Create notification (if not own post)
+    if (originalPost.userId !== userId) {
+      await prisma.socialNotification.create({
+        data: {
+          userId: originalPost.userId,
+          actorId: userId,
+          type: 'share',
+          postId,
+          message: 'shared your post',
+        },
+      });
+    }
+
+    res.status(201).json({ success: true, share });
+  } catch (error) {
+    console.error('Share post error:', error);
+    res.status(500).json({ error: 'Failed to share post' });
+  }
+});
+
+// ============================================================================
+// STORY ENDPOINTS
+// ============================================================================
+
+// Create story
+router.post('/stories', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      mediaType,
+      mediaUrl,
+      backgroundColor,
+      textContent,
+      visibility,
+    } = req.body;
+
+    if (!mediaType || !['image', 'video', 'text'].includes(mediaType)) {
+      return res.status(400).json({ error: 'Invalid media type' });
+    }
+
+    // Stories expire after 24 hours
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    const story = await prisma.story.create({
+      data: {
+        userId,
+        mediaType,
+        mediaUrl,
+        backgroundColor,
+        textContent,
+        visibility: visibility || 'followers',
+        expiresAt,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json(story);
+  } catch (error) {
+    console.error('Create story error:', error);
+    res.status(500).json({ error: 'Failed to create story' });
+  }
+});
+
+// Get stories from following
+router.get('/stories', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Get list of users the current user follows
+    const following = await prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+
+    const followingIds = following.map((f) => f.followingId);
+    followingIds.push(userId); // Include own stories
+
+    // Get active stories (not expired)
+    const stories = await prisma.story.findMany({
+      where: {
+        userId: { in: followingIds },
+        expiresAt: { gt: new Date() },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        views: {
+          where: { userId },
+          select: { id: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Group stories by user
+    const groupedStories = stories.reduce((acc, story) => {
+      const key = story.userId;
+      if (!acc[key]) {
+        acc[key] = {
+          user: story.user,
+          stories: [],
+          hasViewed: false,
+        };
+      }
+      acc[key].stories.push({
+        ...story,
+        hasViewed: story.views.length > 0,
+      });
+      if (story.views.length === 0) {
+        acc[key].hasViewed = false;
+      }
+      return acc;
+    }, {});
+
+    res.json({ storyGroups: Object.values(groupedStories) });
+  } catch (error) {
+    console.error('Get stories error:', error);
+    res.status(500).json({ error: 'Failed to fetch stories' });
+  }
+});
+
+// Mark story as viewed
+router.post('/stories/:storyId/view', async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const userId = req.user.userId;
+
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+    });
+
+    if (!story) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+
+    if (new Date() > story.expiresAt) {
+      return res.status(410).json({ error: 'Story has expired' });
+    }
+
+    // Create view record
+    await prisma.storyView.create({
+      data: {
+        userId,
+        storyId,
+      },
+    });
+
+    // Increment views count
+    await prisma.story.update({
+      where: { id: storyId },
+      data: { viewsCount: { increment: 1 } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Story already viewed' });
+    }
+    console.error('View story error:', error);
+    res.status(500).json({ error: 'Failed to mark story as viewed' });
+  }
+});
+
+// ============================================================================
+// GROUP ENDPOINTS
+// ============================================================================
+
+// Create group
+router.post('/groups', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      name,
+      description,
+      groupType,
+      coverPhoto,
+      rules,
+    } = req.body;
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Group name is required' });
+    }
+
+    const group = await prisma.socialGroup.create({
+      data: {
+        ownerId: userId,
+        name,
+        description,
+        groupType: groupType || 'public',
+        coverPhoto,
+        rules,
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    // Add creator as admin member
+    await prisma.groupMember.create({
+      data: {
+        userId,
+        groupId: group.id,
+        role: 'admin',
+      },
+    });
+
+    res.status(201).json(group);
+  } catch (error) {
+    console.error('Create group error:', error);
+    res.status(500).json({ error: 'Failed to create group' });
+  }
+});
+
+// Get groups
+router.get('/groups', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const search = req.query.search;
+    const groupType = req.query.groupType;
+
+    const where = {
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(groupType && { groupType }),
+    };
+
+    const groups = await prisma.socialGroup.findMany({
+      where,
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            members: true,
+            posts: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.socialGroup.count({ where });
+
+    res.json({
+      groups,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get groups error:', error);
+    res.status(500).json({ error: 'Failed to fetch groups' });
+  }
+});
+
+// Join group
+router.post('/groups/:groupId/join', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user.userId;
+
+    const group = await prisma.socialGroup.findUnique({
+      where: { id: groupId },
+    });
+
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    if (group.groupType === 'secret') {
+      return res.status(403).json({ error: 'Cannot join secret groups without invitation' });
+    }
+
+    // Create membership
+    const member = await prisma.groupMember.create({
+      data: {
+        userId,
+        groupId,
+        role: 'member',
+      },
+    });
+
+    // Increment members count
+    await prisma.socialGroup.update({
+      where: { id: groupId },
+      data: { membersCount: { increment: 1 } },
+    });
+
+    res.json({ success: true, member });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Already a member of this group' });
+    }
+    console.error('Join group error:', error);
+    res.status(500).json({ error: 'Failed to join group' });
+  }
+});
+
+// Leave group
+router.delete('/groups/:groupId/leave', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user.userId;
+
+    await prisma.groupMember.delete({
+      where: {
+        userId_groupId: {
+          userId,
+          groupId,
+        },
+      },
+    });
+
+    // Decrement members count
+    await prisma.socialGroup.update({
+      where: { id: groupId },
+      data: { membersCount: { decrement: 1 } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Leave group error:', error);
+    res.status(500).json({ error: 'Failed to leave group' });
+  }
+});
+
+// Create group post
+router.post('/groups/:groupId/posts', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user.userId;
+    const { content, mediaUrls, mediaType } = req.body;
+
+    // Check membership
+    const member = await prisma.groupMember.findUnique({
+      where: {
+        userId_groupId: {
+          userId,
+          groupId,
+        },
+      },
+    });
+
+    if (!member) {
+      return res.status(403).json({ error: 'You must be a member to post in this group' });
+    }
+
+    const post = await prisma.groupPost.create({
+      data: {
+        userId,
+        groupId,
+        content,
+        mediaUrls: mediaUrls || [],
+        mediaType,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json(post);
+  } catch (error) {
+    console.error('Create group post error:', error);
+    res.status(500).json({ error: 'Failed to create group post' });
+  }
+});
+
+// ============================================================================
+// NOTIFICATION ENDPOINTS
+// ============================================================================
+
+// Get notifications
+router.get('/notifications', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const unreadOnly = req.query.unreadOnly === 'true';
+
+    const where = {
+      userId,
+      ...(unreadOnly && { isRead: false }),
+    };
+
+    const notifications = await prisma.socialNotification.findMany({
+      where,
+      include: {
+        actor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        post: {
+          select: {
+            id: true,
+            content: true,
+          },
+        },
+        comment: {
+          select: {
+            id: true,
+            content: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.socialNotification.count({ where });
+    const unreadCount = await prisma.socialNotification.count({
+      where: { userId, isRead: false },
+    });
+
+    res.json({
+      notifications,
+      unreadCount,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// Mark notification as read
+router.patch('/notifications/:notificationId/read', async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.user.userId;
+
+    const notification = await prisma.socialNotification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    if (notification.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to modify this notification' });
+    }
+
+    await prisma.socialNotification.update({
+      where: { id: notificationId },
+      data: { isRead: true },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Mark notification as read error:', error);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+// Mark all notifications as read
+router.patch('/notifications/read-all', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    await prisma.socialNotification.updateMany({
+      where: {
+        userId,
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Mark all notifications as read error:', error);
+    res.status(500).json({ error: 'Failed to mark all notifications as read' });
+  }
+});
+
+// ============================================================================
+// SEARCH ENDPOINTS
+// ============================================================================
+
+// Search users
+router.get('/search/users', async (req, res) => {
+  try {
+    const { query } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        socialProfile: {
+          select: {
+            bio: true,
+            headline: true,
+            followersCount: true,
+            isVerified: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.user.count({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+    });
+
+    res.json({
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({ error: 'Failed to search users' });
+  }
+});
+
+// Search posts
+router.get('/search/posts', async (req, res) => {
+  try {
+    const { query } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const posts = await prisma.post.findMany({
+      where: {
+        content: { contains: query, mode: 'insensitive' },
+        isDeleted: false,
+        visibility: 'public',
+      },
+      include: {
+        user: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            shares: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.post.count({
+      where: {
+        content: { contains: query, mode: 'insensitive' },
+        isDeleted: false,
+        visibility: 'public',
+      },
+    });
+
+    res.json({
+      posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Search posts error:', error);
+    res.status(500).json({ error: 'Failed to search posts' });
+  }
+});
+
+module.exports = router;

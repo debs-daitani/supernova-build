@@ -132,6 +132,9 @@ import FormsDashboard from './pages/forms/FormsDashboard';
 // Phase 2AK - Cloud Storage
 import MyDrive from './pages/storage/MyDrive';
 
+// Phase 2AL - Social Media Platform
+import Feed from './pages/social/Feed';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -274,6 +277,9 @@ function App() {
 
         {/* Phase 2AK - Cloud Storage */}
         <Route path="/storage" element={<MyDrive />} />
+
+        {/* Phase 2AL - Social Media Platform */}
+        <Route path="/social" element={<Feed />} />
       </Route>
 
       {/* Redirects */}

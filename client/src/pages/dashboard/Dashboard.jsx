@@ -40,6 +40,7 @@ export default function Dashboard() {
     { name: 'Presentations', href: '/presentations', description: 'Create stunning slide decks', icon: '🎤' },
     { name: 'Forms', href: '/forms', description: 'Surveys, quizzes & data collection', icon: '📋' },
     { name: 'Cloud Storage', href: '/storage', description: 'Store & access files anywhere', icon: '☁️' },
+    { name: 'Social Network', href: '/social', description: 'Connect, share & engage', icon: '👥' },
   ];
 
   return (
