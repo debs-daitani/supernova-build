@@ -129,6 +129,9 @@ import PresentationsDashboard from './pages/presentations/PresentationsDashboard
 // Phase 2AJ - Forms Builder
 import FormsDashboard from './pages/forms/FormsDashboard';
 
+// Phase 2AK - Cloud Storage
+import MyDrive from './pages/storage/MyDrive';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -268,6 +271,9 @@ function App() {
 
         {/* Phase 2AJ - Forms Builder */}
         <Route path="/forms" element={<FormsDashboard />} />
+
+        {/* Phase 2AK - Cloud Storage */}
+        <Route path="/storage" element={<MyDrive />} />
       </Route>
 
       {/* Redirects */}

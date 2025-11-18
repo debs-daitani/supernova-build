@@ -39,6 +39,7 @@ export default function Dashboard() {
     { name: 'Spreadsheets', href: '/sheets', description: 'Data analysis & formulas', icon: '📊' },
     { name: 'Presentations', href: '/presentations', description: 'Create stunning slide decks', icon: '🎤' },
     { name: 'Forms', href: '/forms', description: 'Surveys, quizzes & data collection', icon: '📋' },
+    { name: 'Cloud Storage', href: '/storage', description: 'Store & access files anywhere', icon: '☁️' },
   ];
 
   return (

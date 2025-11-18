@@ -166,6 +166,12 @@ model User {
   forms               Form[]
   formFolders         FormFolder[]
 
+  // Phase 2AK - Cloud Storage
+  storageFiles        StorageFile[]
+  storageFolders      StorageFolder[]
+  storageShares       StorageShare[]
+  storageQuota        StorageQuota?
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -3591,4 +3597,139 @@ model FormTemplate {
   createdAt     DateTime      @default(now())
 
   @@index([category])
+}
+
+// ============================================
+// Phase 2AK: Cloud Storage (Google Drive Killer)
+// ============================================
+
+model StorageFile {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  originalName  String
+  mimeType      String
+  fileSize      BigInt
+
+  storageUrl    String
+  storageKey    String
+
+  folderId      String?
+  folder        StorageFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  thumbnailUrl  String?
+
+  isStarred     Boolean       @default(false)
+  isTrashed     Boolean       @default(false)
+  trashedAt     DateTime?
+
+  isPublic      Boolean       @default(false)
+  shareLink     String?       @unique
+
+  documentType  String?       // "doc", "sheet", "presentation", "form"
+  documentId    String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastViewedAt  DateTime      @default(now())
+
+  shares        StorageShare[]
+  versions      StorageFileVersion[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([isTrashed])
+  @@index([isStarred])
+  @@index([mimeType])
+}
+
+model StorageFolder {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  color         String?
+
+  parentId      String?
+  parent        StorageFolder? @relation("StorageFolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders    StorageFolder[] @relation("StorageFolderHierarchy")
+
+  isStarred     Boolean       @default(false)
+  isTrashed     Boolean       @default(false)
+  trashedAt     DateTime?
+
+  isPublic      Boolean       @default(false)
+  shareLink     String?       @unique
+
+  createdAt     DateTime      @default(now())
+
+  files         StorageFile[]
+  shares        StorageShare[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([isTrashed])
+}
+
+model StorageShare {
+  id            String        @id @default(cuid())
+
+  fileId        String?
+  file          StorageFile?  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  folderId      String?
+  folder        StorageFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  email         String?
+
+  isPublicLink  Boolean       @default(false)
+
+  permission    String        // "view", "comment", "edit"
+
+  expiresAt     DateTime?
+
+  sharedAt      DateTime      @default(now())
+  sharedBy      String
+
+  @@index([fileId])
+  @@index([folderId])
+  @@index([userId])
+  @@index([email])
+}
+
+model StorageFileVersion {
+  id            String        @id @default(cuid())
+  fileId        String
+  file          StorageFile   @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+  fileSize      BigInt
+  storageUrl    String
+  storageKey    String
+
+  uploadedBy    String
+  comment       String?       @db.Text
+
+  createdAt     DateTime      @default(now())
+
+  @@index([fileId])
+}
+
+model StorageQuota {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalQuota    BigInt        @default(10737418240)  // 10GB
+  usedSpace     BigInt        @default(0)
+
+  lastCalculated DateTime     @default(now())
+
+  @@index([userId])
 }

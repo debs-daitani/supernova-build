@@ -1146,4 +1146,70 @@ export const formTemplates = {
   get: (id) => api.get(`/forms/templates/${id}`),
 };
 
+// ============================================
+// Phase 2AK: Cloud Storage
+// ============================================
+
+// File Upload
+export const storageUpload = {
+  init: (data) => api.post('/storage/upload/init', data),
+  complete: (data) => api.post('/storage/upload/complete', data),
+};
+
+// Files
+export const storageFiles = {
+  list: (params) => api.get('/storage/files', { params }),
+  get: (id) => api.get(`/storage/files/${id}`),
+  download: (id) => api.get(`/storage/files/${id}/download`),
+  update: (id, data) => api.patch(`/storage/files/${id}`, data),
+  delete: (id) => api.delete(`/storage/files/${id}`),
+  star: (id) => api.post(`/storage/files/${id}/star`),
+  unstar: (id) => api.post(`/storage/files/${id}/unstar`),
+  copy: (id) => api.post(`/storage/files/${id}/copy`),
+  versions: (id) => api.get(`/storage/files/${id}/versions`),
+  restoreVersion: (id, versionId) => api.post(`/storage/files/${id}/restore-version/${versionId}`),
+};
+
+// Folders
+export const storageFolders = {
+  list: () => api.get('/storage/folders'),
+  get: (id) => api.get(`/storage/folders/${id}`),
+  create: (data) => api.post('/storage/folders', data),
+  update: (id, data) => api.patch(`/storage/folders/${id}`, data),
+  delete: (id) => api.delete(`/storage/folders/${id}`),
+};
+
+// Sharing
+export const storageSharing = {
+  create: (data) => api.post('/storage/share', data),
+  getSharedWithMe: () => api.get('/storage/shared-with-me'),
+  update: (id, data) => api.patch(`/storage/shares/${id}`, data),
+  delete: (id) => api.delete(`/storage/shares/${id}`),
+};
+
+// Trash
+export const storageTrash = {
+  list: () => api.get('/storage/trash'),
+  restore: (type, id) => api.post(`/storage/trash/${type}/${id}/restore`),
+  deletePermanently: (type, id) => api.delete(`/storage/trash/${type}/${id}`),
+  empty: () => api.delete('/storage/trash/empty'),
+};
+
+// Search
+export const storageSearch = {
+  search: (params) => api.get('/storage/search', { params }),
+};
+
+// Quota
+export const storageQuota = {
+  get: () => api.get('/storage/quota'),
+  calculate: () => api.post('/storage/quota/calculate'),
+};
+
+// Recent & Starred
+export const storageRecent = {
+  recent: () => api.get('/storage/recent'),
+  starred: () => api.get('/storage/starred'),
+};
+
 export default api;

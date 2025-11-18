@@ -91,6 +91,9 @@ import presentationsRoutes from './routes/presentations.js';
 // Phase 2AJ - Forms Builder
 import formsRoutes from './routes/forms.js';
 
+// Phase 2AK - Cloud Storage
+import storageRoutes from './routes/storage.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -201,6 +204,9 @@ app.use('/api/presentations', presentationsRoutes);
 
 // Phase 2AJ - Forms Builder
 app.use('/api/forms', formsRoutes);
+
+// Phase 2AK - Cloud Storage
+app.use('/api/storage', storageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
