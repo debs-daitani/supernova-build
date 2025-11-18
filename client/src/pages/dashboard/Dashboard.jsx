@@ -36,6 +36,7 @@ export default function Dashboard() {
     { name: 'Video Editor', href: '/video-editor', description: 'Professional video editing', icon: '🎬' },
     { name: 'PDF Editor', href: '/pdf-editor', description: 'Edit, sign & convert PDFs', icon: '📄' },
     { name: 'Documents', href: '/docs', description: 'Write & collaborate in real-time', icon: '📝' },
+    { name: 'Spreadsheets', href: '/sheets', description: 'Data analysis & formulas', icon: '📊' },
   ];
 
   return (

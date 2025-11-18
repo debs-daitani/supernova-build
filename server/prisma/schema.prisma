@@ -147,6 +147,13 @@ model User {
   documentComments    DocumentComment[]
   documentVersions    DocumentVersion[]
 
+  // Phase 2AH - Spreadsheet Editor
+  spreadsheets        Spreadsheet[]
+  spreadsheetFolders  SpreadsheetFolder[]
+  spreadsheetCollaborations SpreadsheetCollaborator[]
+  spreadsheetComments SpreadsheetComment[]
+  spreadsheetVersions SpreadsheetVersion[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -3166,6 +3173,149 @@ model DocumentTemplate {
   category      String        // "business", "academic", "personal", "creative"
 
   content       Json          // Template content
+  thumbnail     String?
+
+  featured      Boolean       @default(false)
+  usageCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+}
+
+// ============================================================================
+// PHASE 2AH - SPREADSHEET EDITOR
+// ============================================================================
+
+model Spreadsheet {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Spreadsheet info
+  title         String        @default("Untitled Spreadsheet")
+
+  // Data (stored as JSON - cell data, formulas, formatting)
+  sheets        Json          // Array of sheets, each with cells data
+
+  // Sharing
+  isPublic      Boolean       @default(false)
+  shareLink     String?       @unique
+
+  // Folder
+  folderId      String?
+  folder        SpreadsheetFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastViewedAt  DateTime      @default(now())
+
+  // Relations
+  collaborators SpreadsheetCollaborator[]
+  comments      SpreadsheetComment[]
+  versions      SpreadsheetVersion[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([updatedAt])
+}
+
+model SpreadsheetFolder {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  color         String?
+
+  parentId      String?
+  parent        SpreadsheetFolder? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders    SpreadsheetFolder[] @relation("FolderHierarchy")
+
+  spreadsheets  Spreadsheet[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model SpreadsheetCollaborator {
+  id            String        @id @default(cuid())
+  spreadsheetId String
+  spreadsheet   Spreadsheet   @relation(fields: [spreadsheetId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permission    String        // "view", "comment", "edit", "owner"
+
+  lastViewedAt  DateTime      @default(now())
+  invitedAt     DateTime      @default(now())
+  invitedBy     String
+
+  @@unique([spreadsheetId, userId])
+  @@index([spreadsheetId])
+  @@index([userId])
+}
+
+model SpreadsheetComment {
+  id            String        @id @default(cuid())
+  spreadsheetId String
+  spreadsheet   Spreadsheet   @relation(fields: [spreadsheetId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content       String        @db.Text
+
+  // Cell reference
+  sheetName     String
+  cellReference String        // e.g., "A1", "B5:D10"
+
+  resolved      Boolean       @default(false)
+  resolvedAt    DateTime?
+  resolvedBy    String?
+
+  parentId      String?
+  parent        SpreadsheetComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       SpreadsheetComment[] @relation("CommentReplies")
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([spreadsheetId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model SpreadsheetVersion {
+  id            String        @id @default(cuid())
+  spreadsheetId String
+  spreadsheet   Spreadsheet   @relation(fields: [spreadsheetId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+  sheets        Json
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  changesSummary String?      @db.Text
+
+  createdAt     DateTime      @default(now())
+
+  @@index([spreadsheetId])
+  @@index([userId])
+}
+
+model SpreadsheetTemplate {
+  id            String        @id @default(cuid())
+
+  name          String
+  description   String?       @db.Text
+  category      String        // "budget", "invoice", "tracker", "dashboard", "schedule"
+
+  sheets        Json          // Template data
   thumbnail     String?
 
   featured      Boolean       @default(false)

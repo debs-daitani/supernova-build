@@ -973,4 +973,65 @@ export const documentTemplates = {
   createFromTemplate: (templateId, data) => api.post(`/docs/from-template/${templateId}`, data),
 };
 
+// ============================================================================
+// PHASE 2AH - SPREADSHEET EDITOR
+// ============================================================================
+
+// Spreadsheets
+export const spreadsheets = {
+  create: (data) => api.post('/sheets', data),
+  list: (params) => api.get('/sheets', { params }),
+  get: (id) => api.get(`/sheets/${id}`),
+  update: (id, data) => api.patch(`/sheets/${id}`, data),
+  delete: (id) => api.delete(`/sheets/${id}`),
+  copy: (id) => api.post(`/sheets/${id}/copy`),
+  move: (id, data) => api.post(`/sheets/${id}/move`, data),
+};
+
+// Spreadsheet Folders
+export const spreadsheetFolders = {
+  create: (data) => api.post('/sheets/folders', data),
+  list: () => api.get('/sheets/folders'),
+  update: (id, data) => api.patch(`/sheets/folders/${id}`, data),
+  delete: (id) => api.delete(`/sheets/folders/${id}`),
+};
+
+// Spreadsheet Sharing
+export const spreadsheetSharing = {
+  share: (id, data) => api.post(`/sheets/${id}/share`, data),
+  generateLink: (id) => api.post(`/sheets/${id}/share-link`),
+  updatePermissions: (id, data) => api.patch(`/sheets/${id}/permissions`, data),
+  removeCollaborator: (id, userId) => api.delete(`/sheets/${id}/collaborators/${userId}`),
+};
+
+// Spreadsheet Comments
+export const spreadsheetComments = {
+  add: (id, data) => api.post(`/sheets/${id}/comments`, data),
+  list: (id, params) => api.get(`/sheets/${id}/comments`, { params }),
+  update: (sheetId, commentId, data) => api.patch(`/sheets/${sheetId}/comments/${commentId}`, data),
+  delete: (sheetId, commentId) => api.delete(`/sheets/${sheetId}/comments/${commentId}`),
+  resolve: (sheetId, commentId) => api.post(`/sheets/${sheetId}/comments/${commentId}/resolve`),
+};
+
+// Spreadsheet Versions
+export const spreadsheetVersions = {
+  list: (id) => api.get(`/sheets/${id}/versions`),
+  restore: (id, versionId) => api.post(`/sheets/${id}/restore/${versionId}`),
+};
+
+// Spreadsheet Import/Export
+export const spreadsheetImportExport = {
+  importCSV: (data) => api.post('/sheets/import/csv', data),
+  importXLSX: (data) => api.post('/sheets/import/xlsx', data),
+  exportCSV: (id) => api.get(`/sheets/${id}/export/csv`),
+  exportXLSX: (id) => api.get(`/sheets/${id}/export/xlsx`),
+  exportPDF: (id) => api.get(`/sheets/${id}/export/pdf`),
+};
+
+// Spreadsheet Templates
+export const spreadsheetTemplates = {
+  list: (params) => api.get('/sheets/templates', { params }),
+  createFromTemplate: (templateId, data) => api.post(`/sheets/from-template/${templateId}`, data),
+};
+
 export default api;

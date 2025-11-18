@@ -82,6 +82,9 @@ import pdfEditorRoutes from './routes/pdf-editor.js';
 // Phase 2AG - Document Editor
 import docsRoutes from './routes/docs.js';
 
+// Phase 2AH - Spreadsheet Editor
+import sheetsRoutes from './routes/sheets.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -183,6 +186,9 @@ app.use('/api/pdf-editor', pdfEditorRoutes);
 
 // Phase 2AG - Document Editor
 app.use('/api/docs', docsRoutes);
+
+// Phase 2AH - Spreadsheet Editor
+app.use('/api/sheets', sheetsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
