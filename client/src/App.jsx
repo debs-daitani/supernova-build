@@ -51,6 +51,11 @@ import ChatbotAnalytics from './pages/tools/ChatbotAnalytics';
 // Phase 2F Addendum - Social Media Automation
 import SocialAutomation from './pages/tools/SocialAutomation';
 
+// Phase 2G - Website Builder
+import WebsitesDashboard from './pages/tools/WebsitesDashboard';
+import WebsiteBuilder from './pages/tools/WebsiteBuilder';
+import WebsiteSettings from './pages/tools/WebsiteSettings';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -108,6 +113,11 @@ function App() {
 
         {/* Phase 2F Addendum - Social Media Automation */}
         <Route path="/tools/social-automation" element={<SocialAutomation />} />
+
+        {/* Phase 2G - Website Builder */}
+        <Route path="/tools/websites" element={<WebsitesDashboard />} />
+        <Route path="/tools/websites/:websiteId/builder" element={<WebsiteBuilder />} />
+        <Route path="/tools/websites/:websiteId/settings" element={<WebsiteSettings />} />
       </Route>
 
       {/* Redirects */}

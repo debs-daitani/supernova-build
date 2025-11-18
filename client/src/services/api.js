@@ -269,4 +269,30 @@ export const socialAnalytics = {
   get: () => api.get('/social/analytics'),
 };
 
+// Phase 2G - Website Builder
+
+// Websites
+export const websites = {
+  list: () => api.get('/websites'),
+  get: (id) => api.get(`/websites/${id}`),
+  create: (data) => api.post('/websites', data),
+  update: (id, data) => api.patch(`/websites/${id}`, data),
+  delete: (id) => api.delete(`/websites/${id}`),
+  publish: (id, publish) => api.post(`/websites/${id}/publish`, { publish }),
+};
+
+// Website Pages
+export const websitePages = {
+  list: (websiteId) => api.get(`/websites/${websiteId}/pages`),
+  create: (websiteId, data) => api.post(`/websites/${websiteId}/pages`, data),
+  update: (websiteId, pageId, data) => api.patch(`/websites/${websiteId}/pages/${pageId}`, data),
+  delete: (websiteId, pageId) => api.delete(`/websites/${websiteId}/pages/${pageId}`),
+};
+
+// Website Templates
+export const websiteTemplates = {
+  list: () => api.get('/websites/templates/all'),
+  get: (id) => api.get(`/websites/templates/${id}`),
+};
+
 export default api;

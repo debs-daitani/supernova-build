@@ -70,6 +70,9 @@ model User {
   // Phase 2F Addendum - Social Media Automation
   socialAccounts      SocialAccount[]
 
+  // Phase 2G - Website Builder
+  websites            Website[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -1021,4 +1024,108 @@ model SocialMessage {
   createdAt         DateTime            @default(now())
 
   @@index([conversationId])
+}
+
+// ============================================
+// PHASE 2G - WEBSITE BUILDER (The Wix Killer)
+// ============================================
+
+model Website {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  name          String
+  subdomain     String        @unique  // username.daitaniverse.space
+  customDomain  String?       @unique  // user's own domain
+
+  // Settings
+  title         String?
+  description   String?       @db.Text
+  favicon       String?
+  logo          String?
+
+  // Theme
+  template      String?       // Template ID they started with
+  theme         Json          @default("{}")  // Colors, fonts, spacing
+
+  // SEO
+  seoTitle      String?
+  seoDescription String?      @db.Text
+  seoKeywords   String[]
+
+  // Analytics
+  googleAnalyticsId String?
+
+  // Publishing
+  published     Boolean       @default(false)
+  publishedAt   DateTime?
+
+  // Settings
+  settings      Json          @default("{}")  // Various site settings
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  pages         WebsitePage[]
+
+  @@index([userId])
+  @@index([subdomain])
+  @@index([customDomain])
+}
+
+model WebsitePage {
+  id            String        @id @default(cuid())
+  websiteId     String
+  website       Website       @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  // Page info
+  title         String
+  slug          String        // URL slug (e.g., "about", "contact")
+
+  // Page type
+  pageType      String        @default("custom")  // "home", "about", "blog", "shop", "custom"
+
+  // Content (JSON structure of blocks/components)
+  content       Json          @default("{}")  // All page blocks/elements
+
+  // SEO
+  seoTitle      String?
+  seoDescription String?      @db.Text
+
+  // Settings
+  published     Boolean       @default(true)
+  order         Int           @default(0)  // Order in navigation
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([websiteId, slug])
+  @@index([websiteId])
+}
+
+model WebsiteTemplate {
+  id            String        @id @default(cuid())
+
+  name          String
+  description   String?       @db.Text
+  category      String        // "business", "portfolio", "blog", "shop", "landing"
+
+  // Preview
+  thumbnail     String
+  demoUrl       String?
+
+  // Template structure
+  pages         Json          // Pre-built pages
+  theme         Json          // Default theme
+
+  // Popularity
+  usageCount    Int           @default(0)
+  featured      Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
 }

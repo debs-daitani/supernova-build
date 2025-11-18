@@ -33,6 +33,10 @@ import chatWidgetRoutes from './routes/chat.js';
 import socialRoutes from './routes/social.js';
 import webhooksRoutes from './routes/webhooks.js';
 
+// Phase 2G - Website Builder
+import websitesRoutes from './routes/websites.js';
+import siteRoutes from './routes/site.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -85,6 +89,10 @@ app.use('/api/chat', chatWidgetRoutes); // Public widget API
 // Phase 2F Addendum - Social Media Automation
 app.use('/api/social', socialRoutes);
 app.use('/api/webhooks', webhooksRoutes); // Meta webhooks (no auth)
+
+// Phase 2G - Website Builder
+app.use('/api/websites', websitesRoutes);
+app.use('/site', siteRoutes); // Public website hosting
 
 // Error handling middleware
 app.use((err, req, res, next) => {
