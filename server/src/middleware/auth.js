@@ -68,3 +68,42 @@ export const requireMember = (req, res, next) => {
   }
   next();
 };
+
+// Alias for authenticateToken
+export const authenticate = authenticateToken;
+
+// Optional authentication - doesn't fail if no token
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      // No token, continue without user
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        accountType: true,
+        isAdmin: true,
+      },
+    });
+
+    if (user) {
+      req.user = user;
+    }
+
+    next();
+  } catch (error) {
+    // Token is invalid, but continue without user
+    next();
+  }
+};

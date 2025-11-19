@@ -100,6 +100,9 @@ import videosRoutes from './routes/videos.js';
 // Phase 2AN - Microblogging Platform
 import microRoutes from './routes/micro.js';
 
+// Phase 2AT - Demo Video & Screen Recording
+import demosRoutes from './routes/demos.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -219,6 +222,9 @@ app.use('/api/videos', videosRoutes);
 
 // Phase 2AN - Microblogging Platform
 app.use('/api/micro', microRoutes);
+
+// Phase 2AT - Demo Video & Screen Recording
+app.use('/api/demos', demosRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

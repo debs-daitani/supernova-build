@@ -206,6 +206,11 @@ model User {
   spaceSpeaking       SpaceSpeaker[]
   spaceListening      SpaceListener[]
 
+  // Phase 2AT - Demo Video & Screen Recording
+  demoVideoViews      DemoVideoView[]
+  videoTestimonials   VideoTestimonial[]
+  screenRecordings    ScreenRecording[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4491,4 +4496,135 @@ model SpaceListener {
   @@unique([spaceId, userId])
   @@index([spaceId])
   @@index([userId])
+}
+
+// ============================================
+// PHASE 2AT - DEMO VIDEO & SCREEN RECORDING SYSTEM
+// ============================================
+
+model DemoVideo {
+  id            String        @id @default(cuid())
+
+  // Video info
+  title         String
+  description   String?       @db.Text
+
+  // Video file
+  videoUrl      String
+  thumbnailUrl  String
+  duration      Int           // Seconds
+
+  // Type
+  videoType     String        // "demo", "tutorial", "testimonial", "feature_walkthrough"
+
+  // Target
+  category      String?       // "website_builder", "crm", "ecommerce", "overview", etc.
+
+  // Interactive elements
+  chapters      Json?         // [{time: 30, title: "Website Builder"}, ...]
+  ctas          Json?         // [{time: 60, text: "Start Free Trial", url: "/signup"}]
+
+  // Display settings
+  featured      Boolean       @default(false)
+  order         Int           @default(0)
+
+  // Status
+  isPublished   Boolean       @default(false)
+
+  // Stats
+  viewCount     Int           @default(0)
+  avgWatchTime  Int?          // Average seconds watched
+  completionRate Float?       // % who watched to end
+
+  // SEO
+  metaTitle     String?
+  metaDescription String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  publishedAt   DateTime?
+
+  // Relations
+  views         DemoVideoView[]
+
+  @@index([videoType])
+  @@index([featured])
+  @@index([isPublished])
+}
+
+model DemoVideoView {
+  id            String        @id @default(cuid())
+  videoId       String
+  video         DemoVideo     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Watch data
+  watchTime     Int           // Seconds watched
+  completed     Boolean       @default(false)
+
+  // Drop-off point (if didn't complete)
+  dropOffAt     Int?          // Second where they stopped
+
+  // Source
+  referrer      String?
+
+  viewedAt      DateTime      @default(now())
+
+  @@index([videoId])
+  @@index([userId])
+}
+
+model VideoTestimonial {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Testimonial
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int?
+
+  // Text version
+  quote         String?       @db.Text
+
+  // Status
+  status        String        @default("pending")  // "pending", "approved", "rejected"
+
+  // Display
+  featured      Boolean       @default(false)
+  displayOnHome Boolean       @default(false)
+
+  submittedAt   DateTime      @default(now())
+  reviewedAt    DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([featured])
+}
+
+model ScreenRecording {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String?
+
+  // Recording
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int
+
+  // Type
+  recordingType String        // "full_screen", "window", "tab"
+
+  // Settings used
+  includeAudio  Boolean
+  includeCursor Boolean
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

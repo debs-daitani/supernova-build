@@ -145,6 +145,15 @@ import Timeline from './pages/micro/Timeline';
 import MicroProfile from './pages/micro/Profile';
 import Explore from './pages/micro/Explore';
 
+// Phase 2AT - Demo Video & Screen Recording
+import VideoGallery from './pages/demos/VideoGallery';
+import VideoPlayer from './pages/demos/VideoPlayer';
+import ScreenRecorder from './pages/tools/ScreenRecorder';
+import MyRecordings from './pages/tools/MyRecordings';
+import SubmitTestimonial from './pages/testimonials/Submit';
+import DemoVideosAdmin from './pages/admin/DemoVideos';
+import TestimonialsAdmin from './pages/admin/Testimonials';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -300,7 +309,20 @@ function App() {
         <Route path="/micro" element={<Timeline />} />
         <Route path="/micro/profile/:userId" element={<MicroProfile />} />
         <Route path="/micro/explore" element={<Explore />} />
+
+        {/* Phase 2AT - Demo Video & Screen Recording */}
+        <Route path="/tools/screen-recorder" element={<ScreenRecorder />} />
+        <Route path="/tools/screen-recorder/recordings" element={<MyRecordings />} />
+        <Route path="/testimonials/submit" element={<SubmitTestimonial />} />
+
+        {/* Admin - Demo Videos */}
+        <Route path="/admin/demo-videos" element={<DemoVideosAdmin />} />
+        <Route path="/admin/testimonials" element={<TestimonialsAdmin />} />
       </Route>
+
+      {/* Public Demo Video Routes (Outside protected routes) */}
+      <Route path="/demos" element={<VideoGallery />} />
+      <Route path="/demos/watch/:id" element={<VideoPlayer />} />
 
       {/* Redirects */}
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
