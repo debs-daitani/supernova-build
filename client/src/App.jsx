@@ -196,6 +196,11 @@ import Orders from './pages/checkout/Orders';
 import ThankYouPagesDashboard from './pages/thankYouPages/Dashboard';
 import ThankYouPageBuilder from './pages/thankYouPages/Builder';
 
+// Phase 2BF - Signup Flow
+import SignupFlow from './pages/signup/SignupFlow';
+import SignupSuccess from './pages/signup/SignupSuccess';
+import VerifyEmail from './pages/signup/VerifyEmail';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -209,8 +214,12 @@ function App() {
         isAuthenticated ? <Navigate to="/dashboard" /> : <Login />
       } />
       <Route path="/signup" element={
-        isAuthenticated ? <Navigate to="/dashboard" /> : <Signup />
+        isAuthenticated ? <Navigate to="/dashboard" /> : <SignupFlow />
       } />
+
+      {/* Phase 2BF - Signup Flow (Public) */}
+      <Route path="/signup/success" element={<SignupSuccess />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>

@@ -30,6 +30,21 @@ model User {
   isAdmin       Boolean  @default(false)
   emailVerified Boolean  @default(false)
 
+  // Phase 2BF - Trial & Subscription Management
+  planType      String?     // "trial", "pro", "enterprise"
+  planStatus    String      @default("active")  // "active", "cancelled", "expired", "past_due"
+  trialStartDate DateTime?
+  trialEndDate  DateTime?
+  stripeCustomerId String?  @unique
+  stripeSubscriptionId String?  @unique
+
+  // Phase 2BF - Signup & Referral Tracking
+  referralSource String?    // Where they came from
+  signupGoal    String?     // Primary goal during signup
+  signupIndustry String?    // Industry selected during signup
+  verificationToken String? @unique
+  verificationTokenExpiry DateTime?
+
   // Quiz results
   quizResult    QuizResult?
   quizAnswers   Json?    // Store quiz answers as JSON
@@ -260,9 +275,14 @@ model User {
   // Phase 2BD - Thank You Pages
   thankYouPages       ThankYouPage[]
 
+  // Phase 2BF - Signup Flow
+  signupFlowSessions  SignupFlowSession[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
+  @@index([verificationToken])
+  @@index([trialEndDate])
 }
 
 enum AccountType {
@@ -6081,4 +6101,60 @@ model PostPurchaseSurvey {
   submittedAt   DateTime      @default(now())
 
   @@index([orderId])
+}
+
+// ============================================
+// PHASE 2BF: SIGNUP FLOW SYSTEM
+// ============================================
+
+model SignupFlowSession {
+  id            String        @id @default(cuid())
+
+  // User (if completed signup)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session tracking
+  sessionId     String        @unique  // For anonymous tracking
+  visitorId     String?       // Browser fingerprint
+
+  // Progress
+  currentStep   Int           @default(1)  // 1-5
+  completedSteps Json          @default("[]")  // Array of completed step numbers
+  isCompleted   Boolean       @default(false)
+
+  // Collected data
+  email         String?
+  name          String?
+  password      String?       // Hashed
+  primaryGoal   String?
+  industry      String?
+  referralSource String?
+  selectedPlan  String?       // "trial", "pro", "enterprise"
+
+  // Metadata
+  ipAddress     String?
+  userAgent     String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  landingPage   String?
+
+  // Abandonment tracking
+  lastActiveAt  DateTime      @default(now())
+  abandonedAt   DateTime?
+  recoveryEmailSent Boolean   @default(false)
+  recoveryEmailSentAt DateTime?
+
+  // Conversion
+  convertedAt   DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([sessionId])
+  @@index([email])
+  @@index([isCompleted])
+  @@index([abandonedAt])
+  @@index([createdAt])
 }
