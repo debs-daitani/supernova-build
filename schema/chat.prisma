@@ -1,0 +1,234 @@
+/**
+ * Live Chat Widget Schema
+ * Real-time customer support chat system (Intercom/Drift killer)
+ */
+
+// Add to your main User model:
+model User {
+  // ... existing fields
+
+  // Chat relations
+  chatWidgets          ChatWidget[]
+  chatConversations    ChatConversation[] @relation("AssignedConversations")
+  chatMessages         ChatMessage[]
+  cannedResponses      CannedResponse[]
+}
+
+// Chat Widget Configuration
+model ChatWidget {
+  id                String              @id @default(cuid())
+
+  // Owner
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  name              String              // "Main Website Chat", "Product Page Chat"
+  websiteUrl        String?             // Where it's installed
+
+  // Embed code
+  embedCode         String              @unique // Generated unique ID for widget
+
+  // Appearance
+  position          WidgetPosition      @default(BOTTOM_RIGHT)
+  primaryColor      String              @default("#FF6B35") // Brand color
+  avatar            String?             // Team member photo URL
+  greeting          String              @default("Hi! How can we help?")
+  offlineMessage    String              @default("We're currently away. Leave a message!")
+
+  // Behavior settings
+  settings          Json?               // All customization options
+  isActive          Boolean             @default(true)
+
+  // Stats
+  totalConversations Int               @default(0)
+  totalMessages     Int                @default(0)
+
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  conversations     ChatConversation[]
+
+  @@index([userId])
+  @@index([embedCode])
+}
+
+enum WidgetPosition {
+  BOTTOM_RIGHT
+  BOTTOM_LEFT
+  TOP_RIGHT
+  TOP_LEFT
+}
+
+// Chat Conversation
+model ChatConversation {
+  id                String              @id @default(cuid())
+
+  // Widget
+  widgetId          String
+  widget            ChatWidget          @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+
+  // Visitor
+  visitorId         String              // Anonymous or registered user
+  visitor           ChatVisitor?        @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+  visitorName       String?
+  visitorEmail      String?
+  visitorMetadata   Json?               // Page, referrer, location, etc.
+
+  // Status
+  status            ConversationStatus  @default(ACTIVE)
+
+  // Assignment
+  assignedToId      String?
+  assignedTo        User?               @relation("AssignedConversations", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  startedAt         DateTime            @default(now())
+  lastMessageAt     DateTime            @default(now())
+  closedAt          DateTime?
+
+  // Relations
+  messages          ChatMessage[]
+
+  @@index([widgetId])
+  @@index([visitorId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([lastMessageAt])
+}
+
+enum ConversationStatus {
+  ACTIVE
+  CLOSED
+  SNOOZED
+}
+
+// Chat Message
+model ChatMessage {
+  id                String              @id @default(cuid())
+
+  // Conversation
+  conversationId    String
+  conversation      ChatConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Sender
+  senderId          String              // visitorId or userId
+  senderType        SenderType          // visitor, agent, bot
+  senderName        String?
+
+  // For agent messages, track which user
+  userId            String?
+  user              User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Content
+  message           String              @db.Text
+  attachments       String[]            // URLs to uploaded files
+
+  // Status
+  isRead            Boolean             @default(false)
+  isInternal        Boolean             @default(false) // Internal notes not shown to visitor
+
+  // Timestamp
+  sentAt            DateTime            @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([sentAt])
+}
+
+enum SenderType {
+  VISITOR
+  AGENT
+  BOT
+}
+
+// Chat Visitor Tracking
+model ChatVisitor {
+  id                String              @id @default(cuid())
+
+  // Identity
+  sessionId         String              @unique
+  fingerprint       String?             // Browser fingerprint
+  name              String?
+  email             String?
+
+  // Tracking data
+  metadata          Json?               // Location, device, browser, etc.
+  currentPage       String?
+  pageHistory       String[]            // Pages visited
+
+  // Stats
+  pageViews         Int                 @default(0)
+  firstSeen         DateTime            @default(now())
+  lastSeen          DateTime            @default(now())
+
+  // Relations
+  conversations     ChatConversation[]
+
+  @@index([sessionId])
+  @@index([email])
+  @@index([lastSeen])
+}
+
+// Canned Responses (Quick Replies)
+model CannedResponse {
+  id                String              @id @default(cuid())
+
+  // Owner
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Content
+  title             String              // "Greeting", "Pricing Info"
+  message           String              @db.Text
+  category          String?             // "Sales", "Support", "General"
+
+  // Stats
+  usageCount        Int                 @default(0)
+
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([category])
+}
+
+// Chatbot Rules (Automated Responses)
+model ChatbotRule {
+  id                String              @id @default(cuid())
+
+  // Widget
+  widgetId          String
+
+  // Rule
+  name              String
+  keywords          String[]            // Trigger keywords
+  response          String              @db.Text
+  isActive          Boolean             @default(true)
+
+  // Stats
+  triggerCount      Int                 @default(0)
+
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([widgetId])
+  @@index([isActive])
+}
+
+// Chat Widget Settings History
+model ChatWidgetSettings {
+  id                String              @id @default(cuid())
+
+  widgetId          String
+  settings          Json                // Complete settings snapshot
+
+  createdAt         DateTime            @default(now())
+  createdBy         String?
+
+  @@index([widgetId])
+}
