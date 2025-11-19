@@ -1,0 +1,340 @@
+/**
+ * Analytics Dashboard Schema
+ * Comprehensive tracking system (Google Analytics + Mixpanel + Hotjar alternative)
+ */
+
+// Add to your main User model:
+model User {
+  // ... existing fields
+
+  // Analytics relations
+  analyticsEvents   AnalyticsEvent[]
+  analyticsSessions AnalyticsSession[]
+  customGoals       CustomGoal[]
+}
+
+// Analytics Event (individual tracked events)
+model AnalyticsEvent {
+  id                String            @id @default(cuid())
+
+  // User & Session
+  userId            String?
+  user              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId         String
+  session           AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Event details
+  eventType         String            // page_view, click, purchase, signup, etc.
+  eventCategory     String            // website, ecommerce, email, course, social
+  eventAction       String            // view, click, submit, complete, open
+  eventLabel        String?           // Specific identifier
+  eventValue        Float?            // Numeric value (revenue, duration, etc.)
+
+  // Page context
+  pagePath          String?           // /products/item-123
+  pageTitle         String?           // Product Page
+  referrer          String?           // Where they came from
+
+  // UTM parameters
+  utmSource         String?           // facebook, newsletter, google
+  utmMedium         String?           // social, email, cpc, organic
+  utmCampaign       String?           // summer_sale, launch_2024
+  utmContent        String?           // ad_variant_a, banner_top
+  utmTerm           String?           // keyword for paid search
+
+  // Technical data
+  ipAddress         String?
+  userAgent         String?           // Browser user agent
+  device            String?           // desktop, mobile, tablet
+  browser           String?           // Chrome, Firefox, Safari
+  os                String?           // Windows, macOS, iOS, Android
+  screenResolution  String?           // 1920x1080
+  language          String?           // en-US
+
+  // Location (derived from IP)
+  country           String?
+  region            String?
+  city              String?
+  latitude          Float?
+  longitude         Float?
+
+  // Additional context
+  metadata          Json?             // Any extra data
+
+  // Timestamp
+  timestamp         DateTime          @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([eventCategory])
+  @@index([timestamp])
+  @@index([utmCampaign])
+}
+
+// Analytics Session (group of events)
+model AnalyticsSession {
+  id                String            @id @default(cuid())
+
+  // User
+  userId            String?
+  user              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Session timing
+  startTime         DateTime          @default(now())
+  endTime           DateTime?
+  duration          Int?              // Seconds
+
+  // Session stats
+  pageViews         Int               @default(0)
+  eventCount        Int               @default(0)
+  bounced           Boolean           @default(false) // Left after 1 page
+
+  // Entry/Exit
+  landingPage       String?           // First page
+  exitPage          String?           // Last page
+  referrer          String?           // External referrer
+
+  // UTM (from first page view)
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  utmContent        String?
+  utmTerm           String?
+
+  // Device & Location
+  device            String?           // desktop, mobile, tablet
+  browser           String?
+  os                String?
+  country           String?
+  city              String?
+
+  // Technical
+  ipAddress         String?
+  userAgent         String?
+
+  // Relations
+  events            AnalyticsEvent[]
+
+  @@index([userId])
+  @@index([startTime])
+  @@index([device])
+  @@index([country])
+  @@index([utmCampaign])
+}
+
+// Aggregated Analytics (pre-calculated for performance)
+model AnalyticsAggregate {
+  id                String            @id @default(cuid())
+
+  // Time period
+  periodType        PeriodType        // hour, day, week, month
+  periodStart       DateTime
+  periodEnd         DateTime
+
+  // Dimension (what we're grouping by)
+  dimension         String?           // page, source, device, country, etc.
+  dimensionValue    String?           // /products, facebook, mobile, US
+
+  // Metrics
+  visitors          Int               @default(0)
+  sessions          Int               @default(0)
+  pageViews         Int               @default(0)
+  bounceRate        Float?
+  avgDuration       Float?            // Seconds
+
+  // Ecommerce
+  revenue           Float?
+  transactions      Int?
+  avgOrderValue     Float?
+
+  // Engagement
+  events            Int?
+  conversions       Int?
+  conversionRate    Float?
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([periodType, periodStart, dimension, dimensionValue])
+  @@index([periodType, periodStart])
+  @@index([dimension])
+}
+
+enum PeriodType {
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+// Conversion Funnel (multi-step conversion tracking)
+model ConversionFunnel {
+  id                String            @id @default(cuid())
+
+  // User
+  userId            String
+
+  // Funnel definition
+  name              String            // "Signup Flow", "Checkout Process"
+  description       String?           @db.Text
+
+  // Steps (ordered array)
+  steps             Json              // [{ name: "Landing", event: "page_view:/signup" }, ...]
+
+  // Status
+  isActive          Boolean           @default(true)
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  completions       FunnelCompletion[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// Funnel Completion (track individual user progress)
+model FunnelCompletion {
+  id                String            @id @default(cuid())
+
+  // Relations
+  funnelId          String
+  funnel            ConversionFunnel  @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  userId            String?
+  sessionId         String
+
+  // Progress
+  currentStep       Int               @default(0) // Which step they're on
+  completedSteps    Int[]             // Steps completed
+  isCompleted       Boolean           @default(false)
+
+  // Timing
+  startedAt         DateTime          @default(now())
+  completedAt       DateTime?
+  totalDuration     Int?              // Seconds
+
+  // Step timing
+  stepDurations     Json?             // Time spent at each step
+
+  @@index([funnelId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([isCompleted])
+}
+
+// Custom Goal (user-defined targets)
+model CustomGoal {
+  id                String            @id @default(cuid())
+
+  // Owner
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Goal definition
+  name              String            // "100 Email Subscribers"
+  description       String?           @db.Text
+  targetMetric      String            // email_subscribers, revenue, course_completions
+  targetValue       Float             // 100, 5000, 50
+  currentValue      Float             @default(0)
+
+  // Time period
+  startDate         DateTime          @default(now())
+  endDate           DateTime?         // Deadline
+
+  // Status
+  isCompleted       Boolean           @default(false)
+  completedAt       DateTime?
+
+  // Alerts
+  alertOnComplete   Boolean           @default(true)
+  alertOnMilestone  Boolean           @default(false) // Alert at 25%, 50%, 75%
+  lastAlertAt       DateTime?
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([isCompleted])
+  @@index([targetMetric])
+}
+
+// Real-time Analytics (current active users)
+model ActiveUser {
+  id                String            @id @default(cuid())
+
+  userId            String?
+  sessionId         String            @unique
+
+  // Current activity
+  currentPage       String            // Where they are now
+  lastActivity      DateTime          @default(now())
+
+  // Device & Location
+  device            String?
+  country           String?
+  city              String?
+
+  // Session started
+  startedAt         DateTime          @default(now())
+
+  @@index([lastActivity])
+  @@index([currentPage])
+}
+
+// Custom Report (saved report configurations)
+model CustomReport {
+  id                String            @id @default(cuid())
+
+  // Owner
+  userId            String
+
+  // Report config
+  name              String
+  description       String?
+  metrics           String[]          // ["visitors", "pageViews", "revenue"]
+  dimensions        String[]          // ["date", "source", "device"]
+  filters           Json?             // { country: "US", device: "mobile" }
+  dateRange         String            // last_7_days, last_30_days, custom
+
+  // Schedule
+  isScheduled       Boolean           @default(false)
+  scheduleFrequency String?           // daily, weekly, monthly
+  scheduleTo        String?           // Email addresses
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([userId])
+}
+
+// Privacy & Consent
+model AnalyticsConsent {
+  id                String            @id @default(cuid())
+
+  userId            String?
+  ipAddress         String?
+  cookieId          String?           @unique
+
+  // Consent status
+  hasConsented      Boolean           @default(false)
+  consentDate       DateTime?
+
+  // Opt-out
+  hasOptedOut       Boolean           @default(false)
+  optOutDate        DateTime?
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([cookieId])
+}
