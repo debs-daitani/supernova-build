@@ -192,6 +192,10 @@ import CheckoutBuilder from './pages/checkout/Builder';
 import Coupons from './pages/checkout/Coupons';
 import Orders from './pages/checkout/Orders';
 
+// Phase 2BD - Thank You Pages
+import ThankYouPagesDashboard from './pages/thankYouPages/Dashboard';
+import ThankYouPageBuilder from './pages/thankYouPages/Builder';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -386,6 +390,10 @@ function App() {
         <Route path="/checkout/:id/builder" element={<CheckoutBuilder />} />
         <Route path="/coupons" element={<Coupons />} />
         <Route path="/orders" element={<Orders />} />
+
+        {/* Phase 2BD - Thank You Pages */}
+        <Route path="/thank-you-pages" element={<ThankYouPagesDashboard />} />
+        <Route path="/thank-you-pages/:id/builder" element={<ThankYouPageBuilder />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

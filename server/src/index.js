@@ -130,6 +130,9 @@ import signupFlowsRoutes from './routes/signup-flows.js';
 // Phase 2BC - Checkout Pages
 import checkoutRoutes from './routes/checkout.js';
 
+// Phase 2BD - Thank You Pages
+import thankYouPagesRoutes from './routes/thank-you-pages.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -279,6 +282,9 @@ app.use('/api/signup-flows', signupFlowsRoutes);
 
 // Phase 2BC - Checkout Pages
 app.use('/api/checkout', checkoutRoutes);
+
+// Phase 2BD - Thank You Pages
+app.use('/api/thank-you-pages', thankYouPagesRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
