@@ -1,0 +1,156 @@
+{
+  "displayName": "Pitch Decks",
+  "id": "PitchDecks",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who owns this pitch deck"
+    },
+    {
+      "key": "title",
+      "displayName": "Title",
+      "type": "text",
+      "description": "Pitch deck title/company name"
+    },
+    {
+      "key": "tagline",
+      "displayName": "Tagline",
+      "type": "text",
+      "description": "One-sentence pitch/tagline"
+    },
+    {
+      "key": "deckType",
+      "displayName": "Deck Type",
+      "type": "text",
+      "description": "Type of pitch deck: investor, partnership, sales, client, internal"
+    },
+    {
+      "key": "industry",
+      "displayName": "Industry",
+      "type": "text",
+      "description": "Industry or sector"
+    },
+    {
+      "key": "stage",
+      "displayName": "Stage",
+      "type": "text",
+      "description": "Business stage: pre_seed, seed, series_a, series_b, growth, established"
+    },
+    {
+      "key": "status",
+      "displayName": "Status",
+      "type": "text",
+      "description": "Status: questionnaire, generating, draft, review, final, presenting"
+    },
+    {
+      "key": "slides",
+      "displayName": "Slides",
+      "type": "object",
+      "description": "JSON array of slide IDs in order"
+    },
+    {
+      "key": "designTheme",
+      "displayName": "Design Theme",
+      "type": "text",
+      "description": "Design theme: professional, bold, minimal, creative, tech"
+    },
+    {
+      "key": "colorScheme",
+      "displayName": "Color Scheme",
+      "type": "object",
+      "description": "JSON object with primary, secondary, accent colors"
+    },
+    {
+      "key": "brandKitId",
+      "displayName": "Brand Kit ID",
+      "type": "text",
+      "description": "Reference to user's brand kit for automatic styling"
+    },
+    {
+      "key": "askAmount",
+      "displayName": "Ask Amount",
+      "type": "number",
+      "description": "Amount raising (for investor decks)"
+    },
+    {
+      "key": "useOfFunds",
+      "displayName": "Use of Funds",
+      "type": "object",
+      "description": "JSON breakdown of how funds will be used"
+    },
+    {
+      "key": "targetAudience",
+      "displayName": "Target Audience",
+      "type": "text",
+      "description": "Who this pitch is for (e.g., VCs, angel investors, enterprise clients)"
+    },
+    {
+      "key": "presentationDate",
+      "displayName": "Presentation Date",
+      "type": "date",
+      "description": "When this will be presented"
+    },
+    {
+      "key": "slideCount",
+      "displayName": "Slide Count",
+      "type": "number",
+      "description": "Total number of slides in deck"
+    },
+    {
+      "key": "shareLink",
+      "displayName": "Share Link",
+      "type": "text",
+      "description": "Unique shareable link"
+    },
+    {
+      "key": "sharePassword",
+      "displayName": "Share Password",
+      "type": "text",
+      "description": "Optional password protection for sharing"
+    },
+    {
+      "key": "trackingEnabled",
+      "displayName": "Tracking Enabled",
+      "type": "boolean",
+      "description": "Whether analytics tracking is enabled"
+    },
+    {
+      "key": "viewCount",
+      "displayName": "View Count",
+      "type": "number",
+      "description": "Number of times deck has been viewed"
+    },
+    {
+      "key": "collaborators",
+      "displayName": "Collaborators",
+      "type": "object",
+      "description": "JSON array of user IDs who can edit this deck"
+    },
+    {
+      "key": "lastEditedAt",
+      "displayName": "Last Edited At",
+      "type": "date",
+      "description": "When deck was last edited"
+    },
+    {
+      "key": "lastEditedBy",
+      "displayName": "Last Edited By",
+      "type": "text",
+      "description": "User ID who last edited"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this deck was created"
+    }
+  ]
+}

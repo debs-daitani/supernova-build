@@ -1,0 +1,78 @@
+{
+  "displayName": "Pitch Versions",
+  "id": "PitchVersions",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "pitchDeckId",
+      "displayName": "Pitch Deck ID",
+      "type": "text",
+      "description": "Reference to the pitch deck"
+    },
+    {
+      "key": "versionNumber",
+      "displayName": "Version Number",
+      "type": "number",
+      "description": "Version number (1, 2, 3, etc.)"
+    },
+    {
+      "key": "versionName",
+      "displayName": "Version Name",
+      "type": "text",
+      "description": "Optional name for this version (e.g., 'Conservative', 'Aggressive', 'Short')"
+    },
+    {
+      "key": "description",
+      "displayName": "Description",
+      "type": "text",
+      "description": "What changed in this version"
+    },
+    {
+      "key": "snapshot",
+      "displayName": "Snapshot",
+      "type": "object",
+      "description": "JSON snapshot of entire deck state at this version"
+    },
+    {
+      "key": "slides",
+      "displayName": "Slides",
+      "type": "object",
+      "description": "JSON array of all slides in this version"
+    },
+    {
+      "key": "changes",
+      "displayName": "Changes",
+      "type": "object",
+      "description": "JSON array of specific changes from previous version"
+    },
+    {
+      "key": "isCurrent",
+      "displayName": "Is Current",
+      "type": "boolean",
+      "description": "Whether this is the current active version"
+    },
+    {
+      "key": "tags",
+      "displayName": "Tags",
+      "type": "object",
+      "description": "JSON array of tags for organization"
+    },
+    {
+      "key": "createdBy",
+      "displayName": "Created By",
+      "type": "text",
+      "description": "User ID who created this version"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this version was saved"
+    }
+  ]
+}

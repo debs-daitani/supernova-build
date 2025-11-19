@@ -1,0 +1,90 @@
+{
+  "displayName": "Pitch Questionnaires",
+  "id": "PitchQuestionnaires",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "pitchDeckId",
+      "displayName": "Pitch Deck ID",
+      "type": "text",
+      "description": "Reference to the pitch deck"
+    },
+    {
+      "key": "deckType",
+      "displayName": "Deck Type",
+      "type": "text",
+      "description": "Type of deck for questionnaire customization"
+    },
+    {
+      "key": "responses",
+      "displayName": "Responses",
+      "type": "object",
+      "description": "JSON object with all question-answer pairs"
+    },
+    {
+      "key": "currentQuestionIndex",
+      "displayName": "Current Question Index",
+      "type": "number",
+      "description": "Which question user is currently on"
+    },
+    {
+      "key": "totalQuestions",
+      "displayName": "Total Questions",
+      "type": "number",
+      "description": "Total number of questions in this questionnaire"
+    },
+    {
+      "key": "completionPercentage",
+      "displayName": "Completion Percentage",
+      "type": "number",
+      "description": "Percentage of questionnaire completed (0-100)"
+    },
+    {
+      "key": "conversationFlow",
+      "displayName": "Conversation Flow",
+      "type": "object",
+      "description": "JSON array of conversation turns (question, answer, AI acknowledgment)"
+    },
+    {
+      "key": "skippedQuestions",
+      "displayName": "Skipped Questions",
+      "type": "object",
+      "description": "JSON array of question IDs that were skipped"
+    },
+    {
+      "key": "adaptiveQuestions",
+      "displayName": "Adaptive Questions",
+      "type": "object",
+      "description": "JSON array of follow-up questions generated based on answers"
+    },
+    {
+      "key": "isComplete",
+      "displayName": "Is Complete",
+      "type": "boolean",
+      "description": "Whether questionnaire is fully completed"
+    },
+    {
+      "key": "completedAt",
+      "displayName": "Completed At",
+      "type": "date",
+      "description": "When questionnaire was completed"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When questionnaire was started"
+    },
+    {
+      "key": "updatedAt",
+      "displayName": "Updated At",
+      "type": "date",
+      "description": "When questionnaire was last updated"
+    }
+  ]
+}

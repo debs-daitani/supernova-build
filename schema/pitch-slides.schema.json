@@ -1,0 +1,132 @@
+{
+  "displayName": "Pitch Slides",
+  "id": "PitchSlides",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "pitchDeckId",
+      "displayName": "Pitch Deck ID",
+      "type": "text",
+      "description": "Reference to the pitch deck"
+    },
+    {
+      "key": "slideNumber",
+      "displayName": "Slide Number",
+      "type": "number",
+      "description": "Position in deck (1-based)"
+    },
+    {
+      "key": "slideType",
+      "displayName": "Slide Type",
+      "type": "text",
+      "description": "Type: cover, hook, problem, solution, why_now, market, product, business_model, traction, competition, gtm, team, financials, ask, vision, thank_you, custom"
+    },
+    {
+      "key": "title",
+      "displayName": "Title",
+      "type": "text",
+      "description": "Slide title/headline"
+    },
+    {
+      "key": "subtitle",
+      "displayName": "Subtitle",
+      "type": "text",
+      "description": "Slide subtitle if applicable"
+    },
+    {
+      "key": "content",
+      "displayName": "Content",
+      "type": "object",
+      "description": "JSON structured content (text blocks, bullet points, data)"
+    },
+    {
+      "key": "speakerNotes",
+      "displayName": "Speaker Notes",
+      "type": "text",
+      "description": "Notes for presenter (what to say)"
+    },
+    {
+      "key": "designLayout",
+      "displayName": "Design Layout",
+      "type": "text",
+      "description": "Layout template: title_content, two_column, full_image, split_screen, centered, minimal, etc."
+    },
+    {
+      "key": "backgroundColor",
+      "displayName": "Background Color",
+      "type": "text",
+      "description": "Hex color code for background"
+    },
+    {
+      "key": "textColor",
+      "displayName": "Text Color",
+      "type": "text",
+      "description": "Hex color code for text"
+    },
+    {
+      "key": "imageUrls",
+      "displayName": "Image URLs",
+      "type": "object",
+      "description": "JSON array of image URLs used on this slide"
+    },
+    {
+      "key": "charts",
+      "displayName": "Charts",
+      "type": "object",
+      "description": "JSON array of chart configurations (type, data, styling)"
+    },
+    {
+      "key": "animations",
+      "displayName": "Animations",
+      "type": "object",
+      "description": "JSON array of animation effects"
+    },
+    {
+      "key": "duration",
+      "displayName": "Duration",
+      "type": "number",
+      "description": "Recommended time to spend on this slide (seconds)"
+    },
+    {
+      "key": "isVisible",
+      "displayName": "Is Visible",
+      "type": "boolean",
+      "description": "Whether slide is included in presentation"
+    },
+    {
+      "key": "isLocked",
+      "displayName": "Is Locked",
+      "type": "boolean",
+      "description": "Whether slide is locked from editing"
+    },
+    {
+      "key": "comments",
+      "displayName": "Comments",
+      "type": "object",
+      "description": "JSON array of comments from collaborators"
+    },
+    {
+      "key": "aiSuggestions",
+      "displayName": "AI Suggestions",
+      "type": "object",
+      "description": "JSON array of AI improvement suggestions"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this slide was created"
+    },
+    {
+      "key": "updatedAt",
+      "displayName": "Updated At",
+      "type": "date",
+      "description": "When this slide was last updated"
+    }
+  ]
+}
