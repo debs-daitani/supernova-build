@@ -289,6 +289,11 @@ model User {
   payments            Payment[]
   invoices            Invoice[]
 
+  // Phase 2BH - Welcome Experience & Engagement
+  achievements        Achievement[]
+  welcomeEmails       WelcomeEmail[]
+  sampleDataItems     SampleData[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5070,6 +5075,11 @@ model OnboardingProgress {
   primaryGoal   String?       // "website", "courses", "ecommerce", "crm", "all"
   selectedFeatures Json?      // Array of features user wants to use
 
+  // Phase 2BH - Welcome wizard
+  setupComplete     Boolean      @default(false)
+  wantsSampleData   Boolean      @default(false)
+  sampleDataCreated Boolean      @default(false)
+
   // Milestones
   hasCompletedWelcome     Boolean   @default(false)
   hasCompletedTour        Boolean   @default(false)
@@ -5080,6 +5090,17 @@ model OnboardingProgress {
   firstContactAdded       Boolean   @default(false)
   firstSaleMade           Boolean   @default(false)
 
+  // Phase 2BH - First win tracking
+  firstWinAchieved  Boolean      @default(false)
+  firstWinDate      DateTime?
+  firstWinType      String?      // 'page_published', 'product_added', etc.
+
+  // Phase 2BH - Engagement tracking
+  loginStreak       Int          @default(0)
+  lastLoginDate     DateTime?
+  totalLogins       Int          @default(0)
+  consecutiveDays   Int          @default(0)
+
   // Settings
   showTips      Boolean       @default(true)
   skipOnboarding Boolean      @default(false)
@@ -5089,6 +5110,7 @@ model OnboardingProgress {
 
   @@index([userId])
   @@index([primaryGoal])
+  @@index([firstWinAchieved])
 }
 
 model OnboardingStep {
@@ -6248,4 +6270,95 @@ model Invoice {
 
   @@index([userId])
   @@index([status])
+}
+
+// ============================================
+// Phase 2BH - Welcome Experience & Engagement
+// ============================================
+
+model Achievement {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Achievement details
+  type          String        // 'first_page', 'first_sale', 'login_streak_7', etc.
+  title         String
+  description   String?
+  icon          String?       // Emoji or icon identifier
+  category      String?       // 'setup', 'content', 'sales', 'engagement'
+
+  // Status
+  unlocked      Boolean       @default(false)
+  unlockedAt    DateTime?
+  viewed        Boolean       @default(false)
+
+  // Progress (for progressive achievements)
+  currentValue  Int?          @default(0)
+  targetValue   Int?
+
+  // Metadata
+  metadata      Json?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([unlocked])
+}
+
+model WelcomeEmail {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Email details
+  emailNumber   Int           // 1-5 for the welcome series
+  emailType     String        // 'welcome', 'day_1', 'day_3', 'day_5', 'day_7'
+  subject       String
+
+  // Status
+  scheduled     Boolean       @default(false)
+  scheduledFor  DateTime?
+  sent          Boolean       @default(false)
+  sentAt        DateTime?
+  opened        Boolean       @default(false)
+  openedAt      DateTime?
+  clicked       Boolean       @default(false)
+  clickedAt     DateTime?
+
+  // Metadata
+  metadata      Json?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([sent])
+  @@index([scheduledFor])
+}
+
+model SampleData {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Sample data type
+  dataType      String        // 'website', 'product', 'contact', 'course', etc.
+  entityType    String        // 'page', 'product', 'contact', 'lesson'
+  entityId      String        // ID of the actual entity
+
+  // Metadata
+  isSample      Boolean       @default(true)
+  label         String?       // Display label like "Sample Product"
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([dataType])
+  @@index([entityId])
 }
