@@ -1,0 +1,120 @@
+{
+  "displayName": "Business Insights",
+  "id": "BusinessInsights",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who owns this business"
+    },
+    {
+      "key": "category",
+      "displayName": "Category",
+      "type": "text",
+      "description": "Insight category: revenue, marketing, product, operations, growth, risk, customer"
+    },
+    {
+      "key": "priority",
+      "displayName": "Priority",
+      "type": "text",
+      "description": "Priority level: critical, high, medium, low"
+    },
+    {
+      "key": "title",
+      "displayName": "Title",
+      "type": "text",
+      "description": "Short insight title/summary"
+    },
+    {
+      "key": "insight",
+      "displayName": "Insight",
+      "type": "text",
+      "description": "The finding - what the data shows"
+    },
+    {
+      "key": "recommendation",
+      "displayName": "Recommendation",
+      "type": "text",
+      "description": "Specific actionable advice on what to do"
+    },
+    {
+      "key": "expectedImpact",
+      "displayName": "Expected Impact",
+      "type": "text",
+      "description": "What happens if you implement this recommendation"
+    },
+    {
+      "key": "effort",
+      "displayName": "Effort",
+      "type": "text",
+      "description": "Required effort: low, medium, high"
+    },
+    {
+      "key": "dataSource",
+      "displayName": "Data Source",
+      "type": "text",
+      "description": "What data this insight is based on"
+    },
+    {
+      "key": "supportingData",
+      "displayName": "Supporting Data",
+      "type": "object",
+      "description": "JSON object with metrics, charts, and evidence"
+    },
+    {
+      "key": "actionSteps",
+      "displayName": "Action Steps",
+      "type": "object",
+      "description": "JSON array of specific steps to implement"
+    },
+    {
+      "key": "estimatedRevenue",
+      "displayName": "Estimated Revenue Impact",
+      "type": "number",
+      "description": "Estimated revenue impact in GBP"
+    },
+    {
+      "key": "isRead",
+      "displayName": "Is Read",
+      "type": "boolean",
+      "description": "Whether user has viewed this insight"
+    },
+    {
+      "key": "isActioned",
+      "displayName": "Is Actioned",
+      "type": "boolean",
+      "description": "Whether user has taken action on this"
+    },
+    {
+      "key": "actionedAt",
+      "displayName": "Actioned At",
+      "type": "date",
+      "description": "When user marked this as actioned"
+    },
+    {
+      "key": "dismissedAt",
+      "displayName": "Dismissed At",
+      "type": "date",
+      "description": "If user dismissed this insight"
+    },
+    {
+      "key": "validUntil",
+      "displayName": "Valid Until",
+      "type": "date",
+      "description": "When this insight expires/becomes outdated"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this insight was generated"
+    }
+  ]
+}

@@ -6,7 +6,8 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 
 1. **SUPERNova AI Memory System** - Comprehensive memory architecture for conversational AI
 2. **The dAItaniverse Platform** - Complete business coaching and book writing platform
-3. **Book Writing Suite** - Premium add-on for fiction and non-fiction authors
+3. **AI Business Advisor** - Premium add-on providing AI-powered business insights and strategy
+4. **Book Writing Suite** - Premium add-on for fiction and non-fiction authors
 
 ## Key Features
 
@@ -34,6 +35,24 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 - **Bulk Operations**: Create multiple pins at once
 - **Content Templates**: Pre-designed pin templates
 - **Trend Analysis**: Growth metrics and engagement trends
+
+### AI Business Advisor (Premium Add-On - £15-20/month)
+
+- **Business Health Score**: Real-time health scoring (0-100) across 6 categories (revenue, growth, customer, marketing, operations, profitability)
+- **AI-Powered Insights**: Strategic recommendations based on actual business data
+- **Chat with AI Advisor**: Ask questions, get personalized business advice using Claude AI
+- **Strategic Goal Planning**: AI-generated strategies to achieve revenue and growth goals
+- **SWOT Analysis**: Organize strengths, weaknesses, opportunities, and threats
+- **Competitor Tracking**: Monitor and compare against competitors
+- **Weekly Reports**: Automated business health reports every Monday
+- **Monthly Summaries**: Comprehensive performance reviews and next month focus
+- **Insight Priority System**: Critical, high, medium, and low priority recommendations
+- **Action Tracking**: Mark insights as actioned and track implementation
+- **Progress Metrics**: Track health score trends and improvements over time
+- **Scenario Planning**: Test "what-if" scenarios before making decisions
+- **Goal Milestones**: Break down big goals into trackable milestones
+- **Revenue Projections**: AI-powered forecasting based on current trajectory
+- **Pattern Recognition**: Identify winning strategies and growth opportunities
 
 ### Book Writing Suite (Premium Add-On - £10/month)
 
@@ -71,6 +90,10 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 ### Pinterest Integration
 - [Pinterest Integration Guide](./docs/PINTEREST_INTEGRATION.md) - Complete implementation guide
 - [Example Implementation](./examples/pinterest-implementation.js) - Full code examples
+
+### AI Business Advisor
+- [Business Advisor Guide](./docs/BUSINESS_ADVISOR.md) - Complete implementation guide
+- [Example Implementation](./examples/business-advisor-implementation.js) - Full code examples
 
 ### Book Writing Suite
 - [Book Writing Suite Guide](./docs/BOOK_WRITING_SUITE.md) - Complete implementation guide

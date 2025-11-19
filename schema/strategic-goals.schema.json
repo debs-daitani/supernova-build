@@ -1,0 +1,132 @@
+{
+  "displayName": "Strategic Goals",
+  "id": "StrategicGoals",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who owns this goal"
+    },
+    {
+      "key": "goal",
+      "displayName": "Goal",
+      "type": "text",
+      "description": "The goal statement (e.g., 'Hit £10k/month revenue')"
+    },
+    {
+      "key": "description",
+      "displayName": "Description",
+      "type": "text",
+      "description": "Detailed description of the goal"
+    },
+    {
+      "key": "category",
+      "displayName": "Category",
+      "type": "text",
+      "description": "Goal category: revenue, growth, marketing, product, operations, customer"
+    },
+    {
+      "key": "targetValue",
+      "displayName": "Target Value",
+      "type": "number",
+      "description": "Target numeric value"
+    },
+    {
+      "key": "currentValue",
+      "displayName": "Current Value",
+      "type": "number",
+      "description": "Current value/progress"
+    },
+    {
+      "key": "targetDate",
+      "displayName": "Target Date",
+      "type": "date",
+      "description": "When this goal should be achieved by"
+    },
+    {
+      "key": "progress",
+      "displayName": "Progress",
+      "type": "number",
+      "description": "Progress percentage (0-100)"
+    },
+    {
+      "key": "keyMetrics",
+      "displayName": "Key Metrics",
+      "type": "object",
+      "description": "JSON array of metrics being tracked for this goal"
+    },
+    {
+      "key": "milestones",
+      "displayName": "Milestones",
+      "type": "object",
+      "description": "JSON array of milestones with dates and completion status"
+    },
+    {
+      "key": "status",
+      "displayName": "Status",
+      "type": "text",
+      "description": "Status: not_started, in_progress, achieved, at_risk, abandoned"
+    },
+    {
+      "key": "aiStrategy",
+      "displayName": "AI Strategy",
+      "type": "text",
+      "description": "AI-generated strategy to achieve this goal"
+    },
+    {
+      "key": "aiRecommendations",
+      "displayName": "AI Recommendations",
+      "type": "object",
+      "description": "JSON array of AI-generated action items"
+    },
+    {
+      "key": "projectedAchievement",
+      "displayName": "Projected Achievement",
+      "type": "date",
+      "description": "AI-projected date when goal will be achieved based on current trajectory"
+    },
+    {
+      "key": "obstacles",
+      "displayName": "Obstacles",
+      "type": "object",
+      "description": "JSON array of identified obstacles"
+    },
+    {
+      "key": "actionItems",
+      "displayName": "Action Items",
+      "type": "object",
+      "description": "JSON array of action items with completion status"
+    },
+    {
+      "key": "whyImportant",
+      "displayName": "Why Important",
+      "type": "text",
+      "description": "Why this goal matters to the business"
+    },
+    {
+      "key": "achievedAt",
+      "displayName": "Achieved At",
+      "type": "date",
+      "description": "When this goal was achieved"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this goal was created"
+    },
+    {
+      "key": "updatedAt",
+      "displayName": "Updated At",
+      "type": "date",
+      "description": "When this goal was last updated"
+    }
+  ]
+}

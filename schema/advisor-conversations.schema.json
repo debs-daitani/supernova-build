@@ -1,0 +1,96 @@
+{
+  "displayName": "Advisor Conversations",
+  "id": "AdvisorConversations",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who asked the question"
+    },
+    {
+      "key": "question",
+      "displayName": "Question",
+      "type": "text",
+      "description": "User's question to the AI advisor"
+    },
+    {
+      "key": "context",
+      "displayName": "Context",
+      "type": "object",
+      "description": "JSON object with relevant business data included in the AI prompt"
+    },
+    {
+      "key": "response",
+      "displayName": "Response",
+      "type": "text",
+      "description": "AI advisor's response"
+    },
+    {
+      "key": "category",
+      "displayName": "Category",
+      "type": "text",
+      "description": "Question category: revenue, marketing, product, operations, strategy, general"
+    },
+    {
+      "key": "followUpQuestions",
+      "displayName": "Follow-Up Questions",
+      "type": "object",
+      "description": "JSON array of suggested follow-up questions"
+    },
+    {
+      "key": "actionItems",
+      "displayName": "Action Items",
+      "type": "object",
+      "description": "JSON array of actionable recommendations from this conversation"
+    },
+    {
+      "key": "dataSources",
+      "displayName": "Data Sources",
+      "type": "object",
+      "description": "JSON array of data sources referenced in the response"
+    },
+    {
+      "key": "helpful",
+      "displayName": "Helpful",
+      "type": "boolean",
+      "description": "User feedback: was this response helpful"
+    },
+    {
+      "key": "followedUp",
+      "displayName": "Followed Up",
+      "type": "boolean",
+      "description": "Whether user asked follow-up questions"
+    },
+    {
+      "key": "conversationThread",
+      "displayName": "Conversation Thread",
+      "type": "text",
+      "description": "ID linking related questions in a conversation"
+    },
+    {
+      "key": "tokensUsed",
+      "displayName": "Tokens Used",
+      "type": "number",
+      "description": "Number of AI tokens used for this interaction"
+    },
+    {
+      "key": "responseTime",
+      "displayName": "Response Time",
+      "type": "number",
+      "description": "Time taken to generate response in milliseconds"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this conversation occurred"
+    }
+  ]
+}

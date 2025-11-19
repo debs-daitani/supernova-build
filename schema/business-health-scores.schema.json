@@ -1,0 +1,126 @@
+{
+  "displayName": "Business Health Scores",
+  "id": "BusinessHealthScores",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who owns this business"
+    },
+    {
+      "key": "date",
+      "displayName": "Date",
+      "type": "date",
+      "description": "Date of this health score snapshot"
+    },
+    {
+      "key": "overallScore",
+      "displayName": "Overall Score",
+      "type": "number",
+      "description": "Overall business health score (0-100)"
+    },
+    {
+      "key": "healthStatus",
+      "displayName": "Health Status",
+      "type": "text",
+      "description": "Health status: thriving (80-100), stable (60-79), at_risk (40-59), critical (0-39)"
+    },
+    {
+      "key": "revenueScore",
+      "displayName": "Revenue Score",
+      "type": "number",
+      "description": "Revenue health score (0-100)"
+    },
+    {
+      "key": "growthScore",
+      "displayName": "Growth Score",
+      "type": "number",
+      "description": "Growth momentum score (0-100)"
+    },
+    {
+      "key": "customerScore",
+      "displayName": "Customer Score",
+      "type": "number",
+      "description": "Customer satisfaction and retention score (0-100)"
+    },
+    {
+      "key": "marketingScore",
+      "displayName": "Marketing Score",
+      "type": "number",
+      "description": "Marketing effectiveness score (0-100)"
+    },
+    {
+      "key": "operationsScore",
+      "displayName": "Operations Score",
+      "type": "number",
+      "description": "Operational efficiency score (0-100)"
+    },
+    {
+      "key": "profitabilityScore",
+      "displayName": "Profitability Score",
+      "type": "number",
+      "description": "Profitability and financial health score (0-100)"
+    },
+    {
+      "key": "insights",
+      "displayName": "Insights",
+      "type": "object",
+      "description": "JSON object with key insights for each category"
+    },
+    {
+      "key": "trends",
+      "displayName": "Trends",
+      "type": "object",
+      "description": "JSON object showing trends (improving, declining, stable) for each metric"
+    },
+    {
+      "key": "scoreChanges",
+      "displayName": "Score Changes",
+      "type": "object",
+      "description": "JSON object showing score changes from previous period"
+    },
+    {
+      "key": "strengths",
+      "displayName": "Strengths",
+      "type": "object",
+      "description": "JSON array of current business strengths"
+    },
+    {
+      "key": "weaknesses",
+      "displayName": "Weaknesses",
+      "type": "object",
+      "description": "JSON array of areas needing improvement"
+    },
+    {
+      "key": "criticalIssues",
+      "displayName": "Critical Issues",
+      "type": "object",
+      "description": "JSON array of critical issues requiring immediate attention"
+    },
+    {
+      "key": "opportunityAreas",
+      "displayName": "Opportunity Areas",
+      "type": "object",
+      "description": "JSON array of opportunity areas for growth"
+    },
+    {
+      "key": "dataQuality",
+      "displayName": "Data Quality",
+      "type": "number",
+      "description": "Quality of data used for this score (0-100) - affects confidence"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this score was calculated"
+    }
+  ]
+}

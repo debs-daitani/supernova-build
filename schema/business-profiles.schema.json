@@ -1,0 +1,150 @@
+{
+  "displayName": "Business Profiles",
+  "id": "BusinessProfiles",
+  "permissions": {
+    "insert": "Admin",
+    "update": "Admin",
+    "remove": "Admin",
+    "read": "Anyone"
+  },
+  "fields": [
+    {
+      "key": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "description": "Reference to the user who owns this business profile"
+    },
+    {
+      "key": "businessName",
+      "displayName": "Business Name",
+      "type": "text",
+      "description": "Name of the business"
+    },
+    {
+      "key": "industry",
+      "displayName": "Industry",
+      "type": "text",
+      "description": "Industry or niche (e.g., ecommerce, coaching, courses, services)"
+    },
+    {
+      "key": "businessModel",
+      "displayName": "Business Model",
+      "type": "text",
+      "description": "Primary business model (ecommerce, services, courses, coaching, saas, affiliate, etc.)"
+    },
+    {
+      "key": "monthlyRevenue",
+      "displayName": "Monthly Revenue",
+      "type": "number",
+      "description": "Current monthly revenue in GBP"
+    },
+    {
+      "key": "targetRevenue",
+      "displayName": "Target Revenue",
+      "type": "number",
+      "description": "Monthly revenue goal in GBP"
+    },
+    {
+      "key": "employeeCount",
+      "displayName": "Employee Count",
+      "type": "number",
+      "description": "Number of employees/team members"
+    },
+    {
+      "key": "yearsInBusiness",
+      "displayName": "Years in Business",
+      "type": "number",
+      "description": "How many years the business has been operating"
+    },
+    {
+      "key": "targetAudience",
+      "displayName": "Target Audience",
+      "type": "text",
+      "description": "Description of target audience/ideal customer"
+    },
+    {
+      "key": "mainProducts",
+      "displayName": "Main Products",
+      "type": "object",
+      "description": "JSON array of main products/services offered"
+    },
+    {
+      "key": "competitors",
+      "displayName": "Competitors",
+      "type": "object",
+      "description": "JSON array of main competitors"
+    },
+    {
+      "key": "strengths",
+      "displayName": "Strengths",
+      "type": "object",
+      "description": "JSON array of business strengths"
+    },
+    {
+      "key": "weaknesses",
+      "displayName": "Weaknesses",
+      "type": "object",
+      "description": "JSON array of business weaknesses"
+    },
+    {
+      "key": "opportunities",
+      "displayName": "Opportunities",
+      "type": "object",
+      "description": "JSON array of market opportunities"
+    },
+    {
+      "key": "threats",
+      "displayName": "Threats",
+      "type": "object",
+      "description": "JSON array of business threats"
+    },
+    {
+      "key": "goals",
+      "displayName": "Goals",
+      "type": "object",
+      "description": "JSON array of primary business goals"
+    },
+    {
+      "key": "challenges",
+      "displayName": "Challenges",
+      "type": "object",
+      "description": "JSON array of current challenges"
+    },
+    {
+      "key": "timezone",
+      "displayName": "Timezone",
+      "type": "text",
+      "description": "Business timezone for scheduling and reports"
+    },
+    {
+      "key": "currency",
+      "displayName": "Currency",
+      "type": "text",
+      "description": "Primary currency (default: GBP)"
+    },
+    {
+      "key": "setupComplete",
+      "displayName": "Setup Complete",
+      "type": "boolean",
+      "description": "Whether initial setup wizard has been completed"
+    },
+    {
+      "key": "lastAnalyzedAt",
+      "displayName": "Last Analyzed At",
+      "type": "date",
+      "description": "When the business was last analyzed by AI"
+    },
+    {
+      "key": "createdAt",
+      "displayName": "Created At",
+      "type": "date",
+      "description": "When this profile was created"
+    },
+    {
+      "key": "updatedAt",
+      "displayName": "Updated At",
+      "type": "date",
+      "description": "When this profile was last updated"
+    }
+  ]
+}
