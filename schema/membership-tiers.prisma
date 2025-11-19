@@ -1,0 +1,164 @@
+// MEMBERSHIP TIERS SYSTEM
+// Add these models to your main schema.prisma file
+
+// MEMBERSHIP TIERS
+model MembershipTier {
+  id              String   @id @default(cuid())
+
+  // Basic Info
+  name            String   @unique // "Free", "Starter", "Pro", "Enterprise"
+  slug            String   @unique // "free", "starter", "pro", "enterprise"
+  description     String
+  tagline         String?  // "Perfect for getting started"
+
+  // Pricing
+  priceMonthly    Float    // 0 for free, 26 for base, etc.
+  priceYearly     Float?   // Annual pricing (usually discounted)
+  stripePriceId   String?  // Stripe Price ID
+  stripeProductId String?  // Stripe Product ID
+
+  // Display
+  color           String   @default("#FF5722") // Brand color for this tier
+  icon            String?  // Emoji or icon name
+  order           Int      @default(0) // Display order (0 = first)
+  featured        Boolean  @default(false) // Highlight as "Most Popular"
+
+  // Availability
+  isActive        Boolean  @default(true)
+  isPublic        Boolean  @default(true) // Show on pricing page
+  isLegacy        Boolean  @default(false) // Grandfathered tier
+
+  // Trial
+  trialDays       Int      @default(0) // 0 = no trial, 14 = 14-day trial
+
+  // Features & Limits (stored as JSON)
+  features        Json     // Array of feature objects
+  limits          Json     // Object of usage limits
+
+  // Relations
+  users           User[]   @relation("UserMembershipTier")
+  subscriptions   Subscription[] @relation("SubscriptionTier")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive, isPublic])
+}
+
+// FEATURE FLAGS (for granular control)
+model Feature {
+  id              String   @id @default(cuid())
+
+  key             String   @unique // "website_builder", "ecommerce", "courses"
+  name            String   // "Website Builder"
+  description     String
+  category        String   // "content", "sales", "marketing", "tools"
+
+  // Which tiers have access (array of tier slugs)
+  availableInTiers String[] // ["free", "supernova-lte", "enterprise"]
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+// USAGE TRACKING (enforce limits)
+model UsageRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation("UserUsageRecords", fields: [userId], references: [id], onDelete: Cascade)
+
+  metric          String   // "pages_created", "products_sold", "storage_used"
+  value           Int      // Current usage count
+  periodStart     DateTime // Start of current billing period
+  periodEnd       DateTime // End of current billing period
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, metric, periodStart])
+  @@index([userId, metric])
+  @@index([periodStart, periodEnd])
+}
+
+// ADD-ONS (extra features for purchase)
+model AddOn {
+  id              String   @id @default(cuid())
+
+  name            String
+  slug            String   @unique
+  description     String
+
+  priceMonthly    Float
+  stripePriceId   String?
+
+  // What it unlocks
+  feature         String?  // Feature key
+  extraLimit      Json?    // Additional limits, e.g. {"storage_gb": 50}
+
+  isActive        Boolean  @default(true)
+
+  purchases       AddOnPurchase[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// ADD-ON PURCHASES
+model AddOnPurchase {
+  id              String   @id @default(cuid())
+
+  userId          String
+  user            User     @relation("UserAddOnPurchases", fields: [userId], references: [id], onDelete: Cascade)
+
+  addOnId         String
+  addOn           AddOn    @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  status          AddOnStatus @default(ACTIVE)
+
+  purchasedAt     DateTime @default(now())
+  expiresAt       DateTime?
+  cancelledAt     DateTime?
+
+  @@unique([userId, addOnId])
+  @@index([userId, status])
+}
+
+enum AddOnStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+// NOTE: Add these fields to your existing User model:
+// model User {
+//   // ... existing fields
+//
+//   // Membership
+//   membershipTierId String?
+//   membershipTier   MembershipTier? @relation("UserMembershipTier", fields: [membershipTierId], references: [id])
+//
+//   // Usage tracking
+//   usageRecords     UsageRecord[] @relation("UserUsageRecords")
+//   addOnPurchases   AddOnPurchase[] @relation("UserAddOnPurchases")
+//
+//   // ... existing fields
+// }
+
+// NOTE: Add this field to your existing Subscription model (if exists):
+// model Subscription {
+//   // ... existing fields
+//
+//   tierIdAtPurchase String?
+//   tierAtPurchase   MembershipTier? @relation("SubscriptionTier", fields: [tierIdAtPurchase], references: [id])
+//
+//   // ... existing fields
+// }

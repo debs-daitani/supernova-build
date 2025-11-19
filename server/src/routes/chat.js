@@ -1,482 +1,308 @@
-/**
- * Chat Routes
- * API endpoints for live chat widget
- */
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+import { processUserMessage } from '../services/chatbotEngine.js';
 
-const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const { authenticateToken } = require('../middleware/auth');
-const chatService = require('../services/chatService');
-
 const prisma = new PrismaClient();
 
-// ============================================================================
-// WIDGET MANAGEMENT (Authenticated)
-// ============================================================================
+// ============================================
+// PUBLIC CHAT WIDGET API
+// (No auth required - for website visitors)
+// ============================================
 
-/**
- * Get user's chat widgets
- * GET /api/chat/widgets
- */
-router.get('/widgets', authenticateToken, async (req, res) => {
+// Start a new conversation
+router.post('/start', async (req, res) => {
   try {
-    const widgets = await prisma.chatWidget.findMany({
+    const { chatbotId, visitorId, pageUrl } = req.body;
+
+    if (!chatbotId || !visitorId) {
+      return res.status(400).json({ error: 'Chatbot ID and visitor ID are required' });
+    }
+
+    // Get chatbot
+    const chatbot = await prisma.chatbot.findUnique({
+      where: { id: chatbotId },
+      include: {
+        flows: { where: { active: true } },
+        triggers: { where: { active: true } }
+      }
+    });
+
+    if (!chatbot || !chatbot.enabled) {
+      return res.status(404).json({ error: 'Chatbot not found or disabled' });
+    }
+
+    // Check if visitor already has an active conversation
+    let conversation = await prisma.chatbotConversation.findFirst({
       where: {
-        userId: req.user.id
+        chatbotId,
+        visitorId,
+        status: 'active'
       },
-      orderBy: {
-        createdAt: 'desc'
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 50 // Last 50 messages
+        }
       }
     });
 
-    res.json({ success: true, widgets });
-  } catch (error) {
-    console.error('Error getting widgets:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+    // If no active conversation, create new one
+    if (!conversation) {
+      // Find matching trigger based on page URL or default trigger
+      let triggeredFlow = null;
 
-/**
- * Get specific widget by ID
- * GET /api/chat/widgets/:id
- */
-router.get('/widgets/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
+      if (pageUrl) {
+        const pageUrlTrigger = chatbot.triggers.find(t => t.triggerType === 'page_url' && pageUrl.includes(t.pageUrl));
+        if (pageUrlTrigger) {
+          triggeredFlow = chatbot.flows.find(f => f.id === pageUrlTrigger.flowId);
+        }
+      }
 
-    const widget = await prisma.chatWidget.findUnique({
-      where: { id }
-    });
+      // If no page URL trigger, use first active flow
+      if (!triggeredFlow && chatbot.flows.length > 0) {
+        triggeredFlow = chatbot.flows[0];
+      }
 
-    if (!widget || widget.userId !== req.user.id) {
-      return res.status(404).json({ success: false, error: 'Widget not found' });
+      // Create conversation
+      conversation = await prisma.chatbotConversation.create({
+        data: {
+          chatbotId,
+          visitorId,
+          currentFlowId: triggeredFlow?.id,
+          currentNodeId: null,
+          variables: {},
+          status: 'active'
+        },
+        include: {
+          messages: true
+        }
+      });
+
+      // Send welcome message
+      const welcomeMessage = await prisma.chatbotMessage.create({
+        data: {
+          conversationId: conversation.id,
+          sender: 'bot',
+          messageType: 'text',
+          content: chatbot.welcomeMessage || 'Hi! 👋 How can I help you today?'
+        }
+      });
+
+      conversation.messages = [welcomeMessage];
     }
 
-    res.json({ success: true, widget });
+    res.json({
+      conversationId: conversation.id,
+      chatbot: {
+        name: chatbot.name,
+        avatar: chatbot.avatar,
+        primaryColor: chatbot.primaryColor
+      },
+      messages: conversation.messages
+    });
   } catch (error) {
-    console.error('Error getting widget:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error starting conversation:', error);
+    res.status(500).json({ error: 'Failed to start conversation' });
   }
 });
 
-/**
- * Create chat widget
- * POST /api/chat/widgets
- */
-router.post('/widgets', authenticateToken, async (req, res) => {
+// Send a user message
+router.post('/:conversationId/message', async (req, res) => {
   try {
-    const { name, websiteUrl, settings } = req.body;
+    const { content, buttonId } = req.body;
+    const { conversationId } = req.params;
 
-    // Generate unique embed code
-    const embedCode = generateEmbedCode();
+    if (!content && !buttonId) {
+      return res.status(400).json({ error: 'Message content or button ID is required' });
+    }
 
-    const widget = await prisma.chatWidget.create({
+    // Get conversation
+    const conversation = await prisma.chatbotConversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        chatbot: {
+          include: {
+            flows: true
+          }
+        }
+      }
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    if (conversation.status !== 'active') {
+      return res.status(400).json({ error: 'Conversation is not active' });
+    }
+
+    // Save user message
+    const userMessage = await prisma.chatbotMessage.create({
       data: {
-        userId: req.user.id,
-        name,
-        websiteUrl,
-        embedCode,
-        settings: settings || {}
+        conversationId,
+        sender: 'user',
+        messageType: buttonId ? 'button' : 'text',
+        content: content || '',
+        selectedButton: buttonId
       }
     });
 
-    res.json({ success: true, widget });
-  } catch (error) {
-    console.error('Error creating widget:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+    // Process message and get bot response
+    const botResponse = await processUserMessage(conversationId, content || '', buttonId);
 
-/**
- * Get widget by embed code (Public - for widget initialization)
- * GET /api/chat/widgets/embed/:embedCode
- */
-router.get('/widgets/embed/:embedCode', async (req, res) => {
-  try {
-    const { embedCode } = req.params;
-
-    const widget = await prisma.chatWidget.findUnique({
-      where: { embedCode },
-      select: {
-        id: true,
-        name: true,
-        position: true,
-        primaryColor: true,
-        avatar: true,
-        greeting: true,
-        offlineMessage: true,
-        settings: true,
-        isActive: true
-      }
+    // Update conversation last message time
+    await prisma.chatbotConversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt: new Date() }
     });
 
-    if (!widget) {
-      return res.status(404).json({ success: false, error: 'Widget not found' });
-    }
-
-    if (!widget.isActive) {
-      return res.status(403).json({ success: false, error: 'Widget is not active' });
-    }
-
-    res.json({ success: true, widget });
-  } catch (error) {
-    console.error('Error getting widget:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Update widget settings
- * PATCH /api/chat/widgets/:id
- */
-router.patch('/widgets/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, websiteUrl, position, primaryColor, avatar, greeting, offlineMessage, settings, isActive } = req.body;
-
-    // Check ownership
-    const widget = await prisma.chatWidget.findUnique({
-      where: { id }
+    res.json({
+      userMessage,
+      botMessages: botResponse.messages,
+      variables: botResponse.variables,
+      status: botResponse.status
     });
-
-    if (!widget || widget.userId !== req.user.id) {
-      return res.status(403).json({ success: false, error: 'Access denied' });
-    }
-
-    const updated = await prisma.chatWidget.update({
-      where: { id },
-      data: {
-        name,
-        websiteUrl,
-        position,
-        primaryColor,
-        avatar,
-        greeting,
-        offlineMessage,
-        settings,
-        isActive
-      }
-    });
-
-    res.json({ success: true, widget: updated });
-  } catch (error) {
-    console.error('Error updating widget:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// CONVERSATIONS
-// ============================================================================
-
-/**
- * List conversations
- * GET /api/chat/conversations
- */
-router.get('/conversations', authenticateToken, async (req, res) => {
-  try {
-    const { widgetId, status, assignedToMe, limit, offset } = req.query;
-
-    const filters = {
-      limit: limit ? parseInt(limit) : 50,
-      offset: offset ? parseInt(offset) : 0
-    };
-
-    if (widgetId) filters.widgetId = widgetId;
-    if (status) filters.status = status;
-    if (assignedToMe === 'true') filters.assignedToId = req.user.id;
-
-    const result = await chatService.listConversations(prisma, filters);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error listing conversations:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get conversation with messages
- * GET /api/chat/conversations/:id
- */
-router.get('/conversations/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await chatService.getConversation(prisma, id);
-
-    if (result.success) {
-      // Mark messages as read
-      await chatService.markAsRead(prisma, id, req.user.id);
-    }
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting conversation:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Send message in conversation
- * POST /api/chat/conversations/:id/messages
- */
-router.post('/conversations/:id/messages', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { message, attachments, isInternal } = req.body;
-
-    const result = await chatService.sendMessage(prisma, {
-      conversationId: id,
-      senderId: req.user.id,
-      senderType: 'AGENT',
-      senderName: req.user.name,
-      userId: req.user.id,
-      message,
-      attachments: attachments || [],
-      isInternal: isInternal || false
-    });
-
-    res.json(result);
   } catch (error) {
     console.error('Error sending message:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ error: 'Failed to send message' });
   }
 });
 
-/**
- * Assign conversation
- * POST /api/chat/conversations/:id/assign
- */
-router.post('/conversations/:id/assign', authenticateToken, async (req, res) => {
+// Get conversation history
+router.get('/:conversationId/messages', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { userId } = req.body;
+    const { conversationId } = req.params;
 
-    const result = await chatService.assignConversation(prisma, id, userId);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error assigning conversation:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Close conversation
- * POST /api/chat/conversations/:id/close
- */
-router.post('/conversations/:id/close', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await chatService.closeConversation(prisma, id);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error closing conversation:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// VISITOR TRACKING
-// ============================================================================
-
-/**
- * Get online visitors
- * GET /api/chat/visitors/online
- */
-router.get('/visitors/online', authenticateToken, async (req, res) => {
-  try {
-    const { widgetId } = req.query;
-
-    const result = await chatService.getOnlineVisitors(prisma, widgetId);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting online visitors:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// CANNED RESPONSES
-// ============================================================================
-
-/**
- * Get canned responses
- * GET /api/chat/canned-responses
- */
-router.get('/canned-responses', authenticateToken, async (req, res) => {
-  try {
-    const result = await chatService.getCannedResponses(prisma, req.user.id);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting canned responses:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Create canned response
- * POST /api/chat/canned-responses
- */
-router.post('/canned-responses', authenticateToken, async (req, res) => {
-  try {
-    const { title, message, category } = req.body;
-
-    const result = await chatService.createCannedResponse(prisma, req.user.id, {
-      title,
-      message,
-      category
+    const conversation = await prisma.chatbotConversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' }
+        }
+      }
     });
 
-    res.json(result);
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    res.json({
+      messages: conversation.messages,
+      variables: conversation.variables,
+      status: conversation.status
+    });
   } catch (error) {
-    console.error('Error creating canned response:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
 
-/**
- * Update canned response
- * PATCH /api/chat/canned-responses/:id
- */
-router.patch('/canned-responses/:id', authenticateToken, async (req, res) => {
+// Hand off conversation to SUPERNova AI
+router.post('/:conversationId/handoff', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, message, category } = req.body;
+    const { conversationId } = req.params;
 
-    const response = await prisma.cannedResponse.update({
-      where: {
-        id,
-        userId: req.user.id
-      },
+    const conversation = await prisma.chatbotConversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        chatbot: true
+      }
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    if (!conversation.chatbot.aiHandoffEnabled) {
+      return res.status(400).json({ error: 'AI handoff is not enabled for this chatbot' });
+    }
+
+    // Update conversation status
+    await prisma.chatbotConversation.update({
+      where: { id: conversationId },
+      data: { status: 'handed_off_to_ai' }
+    });
+
+    // Create bot message indicating handoff
+    await prisma.chatbotMessage.create({
       data: {
-        title,
-        message,
-        category
+        conversationId,
+        sender: 'bot',
+        messageType: 'text',
+        content: '🤖 Transferring you to SUPERNova AI for more personalized assistance...'
       }
     });
 
-    res.json({ success: true, response });
+    res.json({
+      message: 'Conversation handed off to AI',
+      supernova: true
+    });
   } catch (error) {
-    console.error('Error updating canned response:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error handing off conversation:', error);
+    res.status(500).json({ error: 'Failed to hand off conversation' });
   }
 });
 
-/**
- * Use canned response
- * POST /api/chat/canned-responses/:id/use
- */
-router.post('/canned-responses/:id/use', authenticateToken, async (req, res) => {
+// Mark conversation as completed
+router.post('/:conversationId/complete', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { conversationId } = req.params;
 
-    const result = await chatService.useCannedResponse(prisma, id);
+    await prisma.chatbotConversation.update({
+      where: { id: conversationId },
+      data: {
+        status: 'completed',
+        completedAt: new Date()
+      }
+    });
 
-    res.json(result);
+    res.json({ message: 'Conversation marked as completed' });
   } catch (error) {
-    console.error('Error using canned response:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error completing conversation:', error);
+    res.status(500).json({ error: 'Failed to complete conversation' });
   }
 });
 
-/**
- * Delete canned response
- * DELETE /api/chat/canned-responses/:id
- */
-router.delete('/canned-responses/:id', authenticateToken, async (req, res) => {
+// Check for keyword triggers
+router.post('/check-trigger', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { chatbotId, keyword } = req.body;
 
-    await prisma.cannedResponse.delete({
+    if (!chatbotId || !keyword) {
+      return res.status(400).json({ error: 'Chatbot ID and keyword are required' });
+    }
+
+    const triggers = await prisma.chatbotTrigger.findMany({
       where: {
-        id,
-        userId: req.user.id
+        chatbotId,
+        triggerType: 'keyword',
+        active: true
       }
     });
 
-    res.json({ success: true });
+    // Find matching trigger
+    const matchedTrigger = triggers.find(t =>
+      keyword.toLowerCase().includes(t.keyword.toLowerCase())
+    );
+
+    if (matchedTrigger) {
+      const flow = await prisma.chatbotFlow.findUnique({
+        where: { id: matchedTrigger.flowId }
+      });
+
+      res.json({
+        triggered: true,
+        flowId: flow.id,
+        flowName: flow.name
+      });
+    } else {
+      res.json({ triggered: false });
+    }
   } catch (error) {
-    console.error('Error deleting canned response:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error checking trigger:', error);
+    res.status(500).json({ error: 'Failed to check trigger' });
   }
 });
 
-// ============================================================================
-// CHATBOT RULES
-// ============================================================================
-
-/**
- * Get chatbot rules
- * GET /api/chat/widgets/:widgetId/bot-rules
- */
-router.get('/widgets/:widgetId/bot-rules', authenticateToken, async (req, res) => {
-  try {
-    const { widgetId } = req.params;
-
-    const result = await chatService.getChatbotRules(prisma, widgetId);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting chatbot rules:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Create chatbot rule
- * POST /api/chat/widgets/:widgetId/bot-rules
- */
-router.post('/widgets/:widgetId/bot-rules', authenticateToken, async (req, res) => {
-  try {
-    const { widgetId } = req.params;
-    const { name, keywords, response, isActive } = req.body;
-
-    const result = await chatService.createChatbotRule(prisma, widgetId, {
-      name,
-      keywords,
-      response,
-      isActive
-    });
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error creating chatbot rule:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Delete chatbot rule
- * DELETE /api/chat/bot-rules/:id
- */
-router.delete('/bot-rules/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    await prisma.chatbotRule.delete({
-      where: { id }
-    });
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting chatbot rule:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-function generateEmbedCode() {
-  return 'cw_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
-module.exports = router;
+export default router;

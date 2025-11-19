@@ -1,0 +1,97 @@
+/**
+ * User Migration Schema Extensions
+ * Add these fields to your existing User model in schema.prisma
+ */
+
+// Add to User model:
+model User {
+  // ... existing fields (id, email, name, etc.)
+
+  // Migration metadata
+  migratedFrom      String?   // "wix", "shopify", "manual", etc.
+  migratedAt        DateTime? // When user was migrated
+  originalUserId    String?   // Their ID in the old system
+  migrationBatch    String?   // Batch identifier for tracking
+
+  // Quiz tester special status
+  isQuizTester      Boolean   @default(false)
+  lifetimeAccess    Boolean   @default(false)
+  quizResults       Json?     // Store Impact Authenticator quiz results
+  quizCompletedAt   DateTime? // When they took the quiz
+
+  // Temporary password flag
+  requirePasswordReset Boolean @default(false) // Force password change on first login
+  temporaryPassword    String? // Encrypted temporary password (cleared after first login)
+
+  // Additional migration data
+  migrationNotes    String?   // Any special notes about this user's migration
+  importSource      String?   // Specific source within platform (e.g., "landing_page", "quiz")
+  originalTags      String[]  // Tags from original system
+
+  // ... existing relations
+}
+
+// Migration Log Model
+model MigrationLog {
+  id                String   @id @default(cuid())
+  batchId           String   // Unique identifier for this migration batch
+
+  // Statistics
+  totalProcessed    Int      @default(0)
+  successCount      Int      @default(0)
+  duplicateCount    Int      @default(0)
+  errorCount        Int      @default(0)
+  emailsSent        Int      @default(0)
+  emailsFailed      Int      @default(0)
+
+  // Metadata
+  source            String   // "wix", "csv", "manual"
+  migratedBy        String?  // Admin user who ran migration
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+
+  // Results
+  status            MigrationStatus @default(IN_PROGRESS)
+  errorLog          Json?    // Array of errors encountered
+  successLog        Json?    // Array of successful imports
+  skippedLog        Json?    // Array of skipped users (duplicates)
+
+  // File info
+  filename          String?
+  fileSize          Int?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum MigrationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  PARTIAL // Some succeeded, some failed
+}
+
+// Migrated User Record (for detailed tracking)
+model MigratedUser {
+  id                String   @id @default(cuid())
+  batchId           String   // Links to MigrationLog
+
+  // Original data
+  originalEmail     String
+  originalName      String?
+  originalData      Json?    // Store all original CSV data
+
+  // Result
+  userId            String?  // If successfully created
+  status            String   // "success", "duplicate", "error"
+  errorMessage      String?
+
+  // Tracking
+  emailSent         Boolean  @default(false)
+  emailSentAt       DateTime?
+
+  createdAt         DateTime @default(now())
+
+  @@index([batchId])
+}

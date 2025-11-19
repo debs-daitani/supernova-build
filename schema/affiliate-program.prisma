@@ -1,0 +1,305 @@
+// AFFILIATE PROGRAM SCHEMA
+// Add these models to your main schema.prisma file
+
+// AFFILIATE PROFILE - User's affiliate account
+model AffiliateProfile {
+  id              String   @id @default(cuid())
+
+  userId          String   @unique
+  user            User     @relation("UserAffiliateProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique referral info
+  affiliateCode   String   @unique // e.g. "DEBS123"
+  referralLink    String   // Full URL with tracking
+
+  // Commission settings
+  commissionRate  Float    @default(0.20) // 20% default
+  tier            AffiliateTier @default(BRONZE)
+
+  // Earnings tracking
+  totalEarnings   Float    @default(0) // All-time total
+  pendingEarnings Float    @default(0) // Awaiting approval/payout
+  paidEarnings    Float    @default(0) // Already received
+
+  // Account status
+  status          AffiliateStatus @default(ACTIVE)
+
+  // Payment details
+  paymentMethod   String? // "paypal", "bank_transfer", "stripe"
+  paymentEmail    String? // PayPal email
+  paymentDetails  Json?   // Bank details, Stripe account, etc.
+
+  // Tax information (optional)
+  taxInfo         Json?
+
+  // Stats
+  totalClicks     Int      @default(0)
+  totalSignups    Int      @default(0)
+  totalConversions Int     @default(0)
+
+  // Relations
+  referrals       Referral[]
+  commissions     Commission[]
+  payouts         Payout[]
+
+  joinedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([affiliateCode])
+  @@index([status])
+  @@index([userId])
+}
+
+enum AffiliateStatus {
+  PENDING     // Application pending
+  ACTIVE      // Active affiliate
+  SUSPENDED   // Temporarily suspended
+  CLOSED      // Account closed
+}
+
+enum AffiliateTier {
+  BRONZE      // 0-10 referrals: 20%
+  SILVER      // 11-50 referrals: 25%
+  GOLD        // 51+ referrals: 30%
+}
+
+// REFERRAL - Track referred users
+model Referral {
+  id              String   @id @default(cuid())
+
+  affiliateId     String
+  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  referredUserId  String   @unique
+  referredUser    User     @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  referralCode    String   // Which code was used
+  referralSource  String?  // utm_source, utm_medium, etc.
+
+  // Tracking
+  ipAddress       String?
+  userAgent       String?
+  landingPage     String?
+
+  // Status
+  signupDate      DateTime @default(now())
+  firstPurchaseDate DateTime?
+  status          ReferralStatus @default(SIGNED_UP)
+
+  // Value tracking
+  totalValue      Float    @default(0) // Total purchases from this referral
+  lifetimeMonths  Int      @default(0) // How many months they've been subscribed
+
+  // Relations
+  commissions     Commission[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([affiliateId])
+  @@index([referredUserId])
+  @@index([status])
+}
+
+enum ReferralStatus {
+  SIGNED_UP       // Registered but not subscribed
+  TRIAL           // On free trial
+  SUBSCRIBED      // Active paying customer
+  CANCELLED       // Subscription cancelled
+  REFUNDED        // Refunded their purchase
+}
+
+// COMMISSION - Individual commission records
+model Commission {
+  id              String   @id @default(cuid())
+
+  affiliateId     String
+  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  referralId      String?
+  referral        Referral? @relation(fields: [referralId], references: [id], onDelete: SetNull)
+
+  // Commission details
+  amount          Float
+  percentage      Float    // What % was used
+  baseAmount      Float    // Original transaction amount
+
+  // Transaction reference
+  orderId         String?
+  subscriptionId  String?
+  invoiceId       String?
+
+  // Status
+  status          CommissionStatus @default(PENDING)
+
+  description     String
+  notes           String?
+
+  // Dates
+  createdAt       DateTime @default(now())
+  approvedAt      DateTime?
+  paidAt          DateTime?
+  cancelledAt     DateTime?
+
+  // Relations
+  payoutId        String?
+  payout          Payout?  @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum CommissionStatus {
+  PENDING         // Awaiting approval (30-day refund period)
+  APPROVED        // Approved, ready for payout
+  PAID            // Included in a payout
+  CANCELLED       // Refund or cancellation
+  EXPIRED         // Commission period expired
+}
+
+// PAYOUT - Batch payouts to affiliates
+model Payout {
+  id              String   @id @default(cuid())
+
+  affiliateId     String
+  affiliate       AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  // Payout details
+  amount          Float
+  currency        String   @default("GBP")
+
+  // Payment method
+  method          PayoutMethod
+  paymentEmail    String?
+  paymentDetails  Json?
+
+  // Status
+  status          PayoutStatus @default(PENDING)
+
+  // Commissions included
+  commissions     Commission[]
+  commissionCount Int      @default(0)
+
+  // Transaction info
+  transactionId   String?
+  processorFee    Float?   @default(0)
+  netAmount       Float?   // Amount after fees
+
+  // Notes
+  notes           String?
+  failureReason   String?
+
+  // Dates
+  requestedAt     DateTime @default(now())
+  processedAt     DateTime?
+  paidAt          DateTime?
+  failedAt        DateTime?
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+enum PayoutMethod {
+  PAYPAL
+  BANK_TRANSFER
+  STRIPE
+  CHECK
+  OTHER
+}
+
+enum PayoutStatus {
+  PENDING         // Requested, awaiting processing
+  PROCESSING      // Being processed
+  COMPLETED       // Successfully paid
+  FAILED          // Payment failed
+  CANCELLED       // Payout cancelled
+}
+
+// AFFILIATE MATERIAL - Marketing assets
+model AffiliateMaterial {
+  id              String   @id @default(cuid())
+
+  title           String
+  description     String
+  type            MaterialType
+
+  // File info
+  fileUrl         String?
+  thumbnailUrl    String?
+  dimensions      String?  // "728x90" for images
+  fileSize        Int?     // bytes
+
+  // Content (for templates)
+  content         String?  // Email body, social post text, etc.
+
+  // Category
+  category        String?  // "social", "email", "banner", etc.
+  tags            String[] // Search tags
+
+  // Stats
+  downloadCount   Int      @default(0)
+  useCount        Int      @default(0)
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([type])
+  @@index([category])
+}
+
+enum MaterialType {
+  BANNER          // Banner ad
+  EMAIL           // Email template
+  SOCIAL          // Social media post
+  VIDEO           // Video asset
+  LANDING_PAGE    // Landing page copy
+  BLOG_POST       // Blog post template
+  GRAPHIC         // Social graphic
+  OTHER
+}
+
+// REFERRAL CLICK - Track clicks on referral links
+model ReferralClick {
+  id              String   @id @default(cuid())
+
+  affiliateCode   String
+  affiliateId     String?
+
+  // Tracking data
+  ipAddress       String
+  userAgent       String?
+  referer         String?
+  landingPage     String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+
+  // Conversion tracking
+  converted       Boolean  @default(false)
+  convertedUserId String?
+
+  clickedAt       DateTime @default(now())
+
+  @@index([affiliateCode])
+  @@index([clickedAt])
+  @@index([converted])
+}
+
+// NOTE: Add these fields to your existing User model:
+// model User {
+//   // ... existing fields
+//
+//   // Affiliate relations
+//   affiliateProfile AffiliateProfile? @relation("UserAffiliateProfile")
+//   referredBy       Referral?          @relation("ReferredUser")
+//
+//   // Referral tracking
+//   referralCode     String? // Code used during signup
+//
+//   // ... existing fields
+// }
