@@ -106,6 +106,9 @@ import demosRoutes from './routes/demos.js';
 // Phase 2AU - Launch Assets & Comparisons
 import comparisonsRoutes from './routes/comparisons.js';
 
+// Phase 2AV - Testimonial Collection System
+import testimonialsRoutes from './routes/testimonials.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -231,6 +234,9 @@ app.use('/api/demos', demosRoutes);
 
 // Phase 2AU - Launch Assets & Comparisons
 app.use('/api/comparisons', comparisonsRoutes);
+
+// Phase 2AV - Testimonial Collection System
+app.use('/api/testimonials', testimonialsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

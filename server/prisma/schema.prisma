@@ -214,6 +214,10 @@ model User {
   // Phase 2AU - Launch Assets & Comparisons
   roiCalculations     ROICalculation[]
 
+  // Phase 2AV - Testimonial System
+  testimonials        Testimonial[]
+  testimonialRequests TestimonialRequest[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4733,4 +4737,113 @@ model ROICalculation {
   @@index([userId])
   @@index([email])
   @@index([calculatedAt])
+}
+
+// ============================================
+// PHASE 2AV - TESTIMONIAL SYSTEM
+// ============================================
+
+model Testimonial {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Testimonial content
+  content       String        @db.Text
+
+  // Rating
+  rating        Int?          // 1-5 stars (optional)
+
+  // Media
+  photoUrl      String?
+  videoUrl      String?
+  videoThumbnail String?
+
+  // Author info (can override user info)
+  authorName    String
+  authorRole    String?       // "Entrepreneur", "Coach", "Agency Owner"
+  authorCompany String?
+  authorPhoto   String?
+
+  // Context
+  useCase       String?       // What they use platform for
+  category      String?       // "website_builder", "crm", "overall", etc.
+
+  // Status
+  status        String        @default("pending")  // "pending", "approved", "rejected", "featured"
+
+  // Display settings
+  featured      Boolean       @default(false)
+  displayOnHome Boolean       @default(false)
+  order         Int           @default(0)
+
+  // Source
+  source        String?       // "quiz_tester", "customer", "campaign"
+
+  // Metadata
+  submittedAt   DateTime      @default(now())
+  reviewedAt    DateTime?
+  reviewedBy    String?
+
+  // Relations
+  requests      TestimonialRequest[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([featured])
+  @@index([category])
+  @@index([rating])
+}
+
+model TestimonialRequest {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Request details
+  requestType   String        // "email", "in_app", "sms"
+
+  // Status
+  status        String        @default("sent")  // "sent", "opened", "submitted", "declined"
+
+  // Tracking
+  sentAt        DateTime      @default(now())
+  openedAt      DateTime?
+  submittedAt   DateTime?
+
+  // Link to submitted testimonial
+  testimonialId String?
+  testimonial   Testimonial?  @relation(fields: [testimonialId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TestimonialWidget {
+  id            String        @id @default(cuid())
+
+  // Widget settings
+  name          String
+  widgetType    String        // "carousel", "grid", "single", "wall"
+
+  // Filters
+  category      String?       // Show only specific category
+  featuredOnly  Boolean       @default(false)
+  minRating     Int?          // Show only X stars and above
+
+  // Display settings
+  showPhoto     Boolean       @default(true)
+  showRating    Boolean       @default(true)
+  showRole      Boolean       @default(true)
+  maxItems      Int           @default(3)
+
+  // Style
+  theme         String        @default("light")  // "light", "dark", "custom"
+  customCSS     String?       @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([widgetType])
 }

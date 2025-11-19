@@ -150,14 +150,17 @@ import VideoGallery from './pages/demos/VideoGallery';
 import VideoPlayer from './pages/demos/VideoPlayer';
 import ScreenRecorder from './pages/tools/ScreenRecorder';
 import MyRecordings from './pages/tools/MyRecordings';
-import SubmitTestimonial from './pages/testimonials/Submit';
 import DemoVideosAdmin from './pages/admin/DemoVideos';
-import TestimonialsAdmin from './pages/admin/Testimonials';
 
 // Phase 2AU - Launch Assets & Comparisons
 import ComparisonChart from './pages/compare/ComparisonChart';
 import ROICalculator from './pages/compare/ROICalculator';
 import ComparisonsAdmin from './pages/admin/Comparisons';
+
+// Phase 2AV - Testimonial Collection System
+import SubmitTestimonial from './pages/testimonials/Submit';
+import TestimonialWall from './pages/testimonials/Wall';
+import TestimonialsAdmin from './pages/admin/TestimonialsAdmin';
 
 // Error Pages
 import NotFound from './pages/errors/NotFound';
@@ -335,6 +338,9 @@ function App() {
       {/* Public Comparison Routes (Outside protected routes) */}
       <Route path="/compare" element={<ComparisonChart />} />
       <Route path="/compare/calculator" element={<ROICalculator />} />
+
+      {/* Public Testimonial Routes (Outside protected routes) */}
+      <Route path="/testimonials/wall" element={<TestimonialWall />} />
 
       {/* Redirects */}
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
