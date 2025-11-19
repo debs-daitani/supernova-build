@@ -1,0 +1,228 @@
+/**
+ * Platform Migration Schema
+ * System for migrating from other platforms to The dAItaniverse
+ */
+
+// Add to your main User model:
+model User {
+  // ... existing fields
+
+  // Migration relations
+  migrationProjects MigrationProject[]
+}
+
+// Migration Project
+model MigrationProject {
+  id                String              @id @default(cuid())
+
+  // User info
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Source platform
+  sourcePlatform    MigrationPlatform
+  platformVersion   String?             // Platform version if available
+
+  // Project details
+  projectName       String?             // User-provided name
+  status            MigrationStatus     @default(PENDING)
+
+  // Data selection
+  dataToMigrate     String[]            // ["pages", "products", "customers", etc.]
+
+  // Connection details (encrypted)
+  apiKey            String?             // For API-based migrations
+  credentials       Json?               // Encrypted credentials
+  uploadedFiles     Json?               // Array of uploaded file paths
+
+  // Field mapping
+  fieldMapping      Json?               // Custom field mappings
+
+  // Progress tracking
+  currentStep       Int                 @default(1) // 1-7
+  itemsTotal        Int                 @default(0)
+  itemsMigrated     Int                 @default(0)
+  itemsFailed       Int                 @default(0)
+  itemsSkipped      Int                 @default(0)
+
+  // Timing
+  startedAt         DateTime?
+  completedAt       DateTime?
+  estimatedDuration Int?                // Estimated minutes
+
+  // Results
+  successLog        Json?               // Array of successful items
+  errorLog          Json?               // Array of errors
+  summary           Json?               // Migration summary report
+
+  // Retry options
+  allowRetry        Boolean             @default(true)
+  retryCount        Int                 @default(0)
+  lastRetryAt       DateTime?
+
+  // Metadata
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  migratedItems     MigratedItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([sourcePlatform])
+}
+
+enum MigrationPlatform {
+  WIX
+  SHOPIFY
+  WORDPRESS
+  SQUARESPACE
+  KAJABI
+  TEACHABLE
+  MAILCHIMP
+  CONVERTKIT
+  WEBFLOW
+  GHOST
+  MEDIUM
+  SUBSTACK
+  CARRD
+  OTHER
+}
+
+enum MigrationStatus {
+  PENDING           // Project created, not started
+  CONNECTING        // Connecting to source platform
+  ANALYZING         // Analyzing source data
+  MAPPING           // User mapping fields
+  READY             // Ready to migrate
+  IN_PROGRESS       // Migration running
+  PAUSED            // Migration paused
+  COMPLETED         // Successfully completed
+  COMPLETED_WITH_ERRORS // Completed but some items failed
+  FAILED            // Migration failed
+  CANCELLED         // User cancelled
+}
+
+// Individual migrated items
+model MigratedItem {
+  id                String              @id @default(cuid())
+
+  // Project reference
+  migrationProjectId String
+  project           MigrationProject    @relation(fields: [migrationProjectId], references: [id], onDelete: Cascade)
+
+  // Item details
+  itemType          MigrationItemType
+  originalId        String?             // ID in source platform
+  originalData      Json?               // Full original item data
+
+  // New dAItaniverse entity
+  newId             String?             // ID in dAItaniverse
+  newType           String?             // Type in dAItaniverse (may differ)
+  newData           Json?               // Created item data
+
+  // Status
+  status            ItemMigrationStatus @default(PENDING)
+  errorMessage      String?
+  warningMessage    String?
+
+  // Processing
+  attempts          Int                 @default(0)
+  migratedAt        DateTime?
+
+  // Metadata
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([migrationProjectId])
+  @@index([status])
+  @@index([itemType])
+}
+
+enum MigrationItemType {
+  PAGE
+  BLOG_POST
+  PRODUCT
+  PRODUCT_VARIANT
+  CUSTOMER
+  ORDER
+  TRANSACTION
+  EMAIL_TEMPLATE
+  EMAIL_SUBSCRIBER
+  CATEGORY
+  TAG
+  IMAGE
+  VIDEO
+  FILE
+  COURSE
+  LESSON
+  FORM
+  MENU
+  COMMENT
+  REVIEW
+  OTHER
+}
+
+enum ItemMigrationStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  SKIPPED
+  NEEDS_REVIEW      // Item needs manual review
+}
+
+// Migration template (for common configurations)
+model MigrationTemplate {
+  id                String              @id @default(cuid())
+
+  // Template info
+  name              String
+  description       String?
+  sourcePlatform    MigrationPlatform
+  targetUseCase     String?             // "ecommerce", "blog", "course", etc.
+
+  // Default settings
+  defaultDataTypes  String[]            // Default data to migrate
+  defaultMapping    Json                // Default field mappings
+
+  // Usage
+  timesUsed         Int                 @default(0)
+  isOfficial        Boolean             @default(false) // Created by dAItaniverse
+  createdBy         String?             // User ID if custom
+
+  // Metadata
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([sourcePlatform])
+  @@index([isOfficial])
+}
+
+// Migration Guide (step-by-step export instructions)
+model MigrationGuide {
+  id                String              @id @default(cuid())
+
+  // Platform
+  platform          MigrationPlatform   @unique
+
+  // Guide content
+  title             String
+  description       String              @db.Text
+  steps             Json                // Array of step objects
+  screenshots       Json?               // Array of screenshot URLs
+  videoUrl          String?             // Tutorial video
+  officialDocsUrl   String?             // Link to platform's official docs
+
+  // Tips and notes
+  tips              Json?               // Array of helpful tips
+  commonIssues      Json?               // Array of common problems and solutions
+
+  // Metadata
+  views             Int                 @default(0)
+  helpful           Int                 @default(0)
+  notHelpful        Int                 @default(0)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
