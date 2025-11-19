@@ -1,0 +1,152 @@
+{
+  "collectionName": "PinterestPins",
+  "displayName": "Pinterest Pins",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "pinterestAccountId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Pinterest account"
+    },
+    {
+      "name": "boardId",
+      "type": "text",
+      "required": true,
+      "description": "Board this pin belongs to"
+    },
+    {
+      "name": "pinId",
+      "type": "text",
+      "required": false,
+      "description": "Pinterest's pin ID (null until published)"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "description": "Pin title (max 100 chars)"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Pin description (max 500 chars)"
+    },
+    {
+      "name": "link",
+      "type": "url",
+      "required": false,
+      "description": "Destination URL"
+    },
+    {
+      "name": "imageUrl",
+      "type": "image",
+      "required": true,
+      "description": "Pin image URL"
+    },
+    {
+      "name": "altText",
+      "type": "text",
+      "required": false,
+      "description": "Image alt text for accessibility"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Pin status (draft, scheduled, published, failed)"
+    },
+    {
+      "name": "scheduledFor",
+      "type": "date",
+      "required": false,
+      "description": "Scheduled publish date/time"
+    },
+    {
+      "name": "publishedAt",
+      "type": "date",
+      "required": false,
+      "description": "Actual publish timestamp"
+    },
+    {
+      "name": "impressions",
+      "type": "number",
+      "required": false,
+      "description": "Number of impressions"
+    },
+    {
+      "name": "saves",
+      "type": "number",
+      "required": false,
+      "description": "Number of saves/repins"
+    },
+    {
+      "name": "clicks",
+      "type": "number",
+      "required": false,
+      "description": "Number of clicks to destination"
+    },
+    {
+      "name": "closeups",
+      "type": "number",
+      "required": false,
+      "description": "Number of closeup views"
+    },
+    {
+      "name": "errorMessage",
+      "type": "text",
+      "required": false,
+      "description": "Error message if publish failed"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "pinterestAccountId_index",
+      "fields": ["pinterestAccountId"],
+      "unique": false
+    },
+    {
+      "name": "boardId_index",
+      "fields": ["boardId"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    },
+    {
+      "name": "scheduledFor_index",
+      "fields": ["scheduledFor"],
+      "unique": false
+    },
+    {
+      "name": "publishedAt_index",
+      "fields": ["publishedAt"],
+      "unique": false
+    }
+  ]
+}

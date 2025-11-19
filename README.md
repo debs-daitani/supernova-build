@@ -20,6 +20,21 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 - **Session Management**: Active session tracking and management
 - **Wix Data Integration**: Optimized for Wix Data Collections
 
+### Pinterest Integration
+
+- **Account Connection**: OAuth 2.0 Pinterest integration
+- **Pin Creation & Publishing**: Create, edit, and publish pins to Pinterest
+- **Smart Scheduling**: Auto-schedule pins at optimal times based on analytics
+- **Queue Management**: Add pins to queue for automatic distribution
+- **Analytics Dashboard**: Track impressions, saves, clicks, and engagement rates
+- **Board Management**: Create and organize Pinterest boards
+- **Top Performers**: Identify best performing pins and boards
+- **RSS Auto-Pinning**: Automatically create pins from blog RSS feeds
+- **Repinning Automation**: Recycle top-performing content
+- **Bulk Operations**: Create multiple pins at once
+- **Content Templates**: Pre-designed pin templates
+- **Trend Analysis**: Growth metrics and engagement trends
+
 ### Book Writing Suite (Premium Add-On - £10/month)
 
 - **Project Management**: Track multiple book projects simultaneously
@@ -52,6 +67,10 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 - [Database Schema](./docs/DATABASE_SCHEMA.md)
 - [Implementation Plan](./docs/IMPLEMENTATION_PLAN.md)
 - [API Reference](./docs/API_REFERENCE.md)
+
+### Pinterest Integration
+- [Pinterest Integration Guide](./docs/PINTEREST_INTEGRATION.md) - Complete implementation guide
+- [Example Implementation](./examples/pinterest-implementation.js) - Full code examples
 
 ### Book Writing Suite
 - [Book Writing Suite Guide](./docs/BOOK_WRITING_SUITE.md) - Complete implementation guide

@@ -1,0 +1,76 @@
+{
+  "collectionName": "PinterestSchedules",
+  "displayName": "Pinterest Posting Schedules",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "pinterestAccountId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Pinterest account"
+    },
+    {
+      "name": "dayOfWeek",
+      "type": "number",
+      "required": true,
+      "description": "Day of week (0=Sunday, 6=Saturday)"
+    },
+    {
+      "name": "timeSlots",
+      "type": "object",
+      "required": false,
+      "description": "Array of time slots (HH:MM format)"
+    },
+    {
+      "name": "isActive",
+      "type": "boolean",
+      "required": true,
+      "description": "Whether this schedule is active"
+    },
+    {
+      "name": "timezone",
+      "type": "text",
+      "required": true,
+      "description": "Timezone for schedule (e.g., America/New_York)"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "pinterestAccountId_index",
+      "fields": ["pinterestAccountId"],
+      "unique": false
+    },
+    {
+      "name": "account_day_unique",
+      "fields": ["pinterestAccountId", "dayOfWeek"],
+      "unique": true
+    },
+    {
+      "name": "isActive_index",
+      "fields": ["isActive"],
+      "unique": false
+    }
+  ]
+}

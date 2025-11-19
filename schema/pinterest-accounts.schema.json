@@ -1,0 +1,136 @@
+{
+  "collectionName": "PinterestAccounts",
+  "displayName": "Pinterest Accounts",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Owner user ID"
+    },
+    {
+      "name": "pinterestUserId",
+      "type": "text",
+      "required": true,
+      "description": "Pinterest user ID"
+    },
+    {
+      "name": "username",
+      "type": "text",
+      "required": true,
+      "description": "Pinterest username"
+    },
+    {
+      "name": "displayName",
+      "type": "text",
+      "required": false,
+      "description": "Display name on Pinterest"
+    },
+    {
+      "name": "profileUrl",
+      "type": "url",
+      "required": false,
+      "description": "Pinterest profile URL"
+    },
+    {
+      "name": "followerCount",
+      "type": "number",
+      "required": false,
+      "description": "Number of followers"
+    },
+    {
+      "name": "followingCount",
+      "type": "number",
+      "required": false,
+      "description": "Number of accounts following"
+    },
+    {
+      "name": "boardCount",
+      "type": "number",
+      "required": false,
+      "description": "Number of boards"
+    },
+    {
+      "name": "pinCount",
+      "type": "number",
+      "required": false,
+      "description": "Total number of pins"
+    },
+    {
+      "name": "monthlyViews",
+      "type": "number",
+      "required": false,
+      "description": "Monthly profile views"
+    },
+    {
+      "name": "accessToken",
+      "type": "text",
+      "required": true,
+      "description": "OAuth access token (encrypted)"
+    },
+    {
+      "name": "refreshToken",
+      "type": "text",
+      "required": false,
+      "description": "OAuth refresh token (encrypted)"
+    },
+    {
+      "name": "tokenExpiresAt",
+      "type": "date",
+      "required": false,
+      "description": "Token expiration date"
+    },
+    {
+      "name": "isConnected",
+      "type": "boolean",
+      "required": true,
+      "description": "Whether account is currently connected"
+    },
+    {
+      "name": "lastSyncedAt",
+      "type": "date",
+      "required": false,
+      "description": "Last sync timestamp"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "userId_unique",
+      "fields": ["userId"],
+      "unique": true
+    },
+    {
+      "name": "pinterestUserId_index",
+      "fields": ["pinterestUserId"],
+      "unique": false
+    },
+    {
+      "name": "isConnected_index",
+      "fields": ["isConnected"],
+      "unique": false
+    }
+  ]
+}

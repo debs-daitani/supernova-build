@@ -1,0 +1,100 @@
+{
+  "collectionName": "PinterestAnalytics",
+  "displayName": "Pinterest Analytics",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "pinterestAccountId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Pinterest account"
+    },
+    {
+      "name": "date",
+      "type": "date",
+      "required": true,
+      "description": "Date for this analytics data"
+    },
+    {
+      "name": "impressions",
+      "type": "number",
+      "required": false,
+      "description": "Total impressions for the day"
+    },
+    {
+      "name": "saves",
+      "type": "number",
+      "required": false,
+      "description": "Total saves for the day"
+    },
+    {
+      "name": "clicks",
+      "type": "number",
+      "required": false,
+      "description": "Total clicks for the day"
+    },
+    {
+      "name": "closeups",
+      "type": "number",
+      "required": false,
+      "description": "Total closeup views for the day"
+    },
+    {
+      "name": "profileVisits",
+      "type": "number",
+      "required": false,
+      "description": "Profile visits for the day"
+    },
+    {
+      "name": "topPins",
+      "type": "object",
+      "required": false,
+      "description": "Array of top performing pins for the day"
+    },
+    {
+      "name": "topBoards",
+      "type": "object",
+      "required": false,
+      "description": "Array of top performing boards for the day"
+    },
+    {
+      "name": "audience",
+      "type": "object",
+      "required": false,
+      "description": "Audience demographics data"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "pinterestAccountId_index",
+      "fields": ["pinterestAccountId"],
+      "unique": false
+    },
+    {
+      "name": "date_index",
+      "fields": ["date"],
+      "unique": false
+    },
+    {
+      "name": "account_date_unique",
+      "fields": ["pinterestAccountId", "date"],
+      "unique": true
+    }
+  ]
+}

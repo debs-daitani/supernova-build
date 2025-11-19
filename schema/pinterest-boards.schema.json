@@ -1,0 +1,100 @@
+{
+  "collectionName": "PinterestBoards",
+  "displayName": "Pinterest Boards",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "pinterestAccountId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to Pinterest account"
+    },
+    {
+      "name": "boardId",
+      "type": "text",
+      "required": true,
+      "description": "Pinterest's board ID"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "description": "Board name"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Board description"
+    },
+    {
+      "name": "privacy",
+      "type": "text",
+      "required": true,
+      "description": "Privacy setting (public, secret)"
+    },
+    {
+      "name": "pinCount",
+      "type": "number",
+      "required": false,
+      "description": "Number of pins on board"
+    },
+    {
+      "name": "followerCount",
+      "type": "number",
+      "required": false,
+      "description": "Number of board followers"
+    },
+    {
+      "name": "coverImageUrl",
+      "type": "image",
+      "required": false,
+      "description": "Board cover image URL"
+    },
+    {
+      "name": "url",
+      "type": "url",
+      "required": false,
+      "description": "Board URL on Pinterest"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "pinterestAccountId_index",
+      "fields": ["pinterestAccountId"],
+      "unique": false
+    },
+    {
+      "name": "boardId_unique",
+      "fields": ["boardId"],
+      "unique": true
+    },
+    {
+      "name": "privacy_index",
+      "fields": ["privacy"],
+      "unique": false
+    }
+  ]
+}
