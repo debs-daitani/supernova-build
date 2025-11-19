@@ -186,6 +186,12 @@ import LandingPageAnalytics from './pages/landingPages/Analytics';
 import SignupFlowsDashboard from './pages/signupFlows/Dashboard';
 import SignupFlowBuilder from './pages/signupFlows/Builder';
 
+// Phase 2BC - Checkout Pages
+import CheckoutDashboard from './pages/checkout/Dashboard';
+import CheckoutBuilder from './pages/checkout/Builder';
+import Coupons from './pages/checkout/Coupons';
+import Orders from './pages/checkout/Orders';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -374,6 +380,12 @@ function App() {
         {/* Phase 2BB - Signup Flow Builder */}
         <Route path="/signup-flows" element={<SignupFlowsDashboard />} />
         <Route path="/signup-flows/:id/builder" element={<SignupFlowBuilder />} />
+
+        {/* Phase 2BC - Checkout Pages */}
+        <Route path="/checkout" element={<CheckoutDashboard />} />
+        <Route path="/checkout/:id/builder" element={<CheckoutBuilder />} />
+        <Route path="/coupons" element={<Coupons />} />
+        <Route path="/orders" element={<Orders />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

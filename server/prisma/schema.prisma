@@ -251,6 +251,12 @@ model User {
   signupFlows         SignupFlow[]
   signupSubmissions   SignupSubmission[]
 
+  // Phase 2BC - Checkout Pages
+  checkoutPages       CheckoutPage[]
+  sellerOrders        Order[]         @relation("SellerOrders")
+  customerOrders      Order[]         @relation("CustomerOrders")
+  coupons             Coupon[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5745,4 +5751,216 @@ model SignupFlowTemplate {
   createdAt     DateTime      @default(now())
 
   @@index([category])
+}
+
+// ============================================
+// PHASE 2BC: CHECKOUT SYSTEM
+// ============================================
+
+model CheckoutPage {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Page info
+  name          String
+  slug          String        @unique
+
+  // What's being sold
+  productType   String        // "product", "course", "service", "membership", "digital"
+  productIds    String[]      // Array of product IDs being sold
+
+  // Pricing
+  basePrice     Float
+  currency      String        @default("GBP")
+
+  // Payment options
+  allowOneTime  Boolean       @default(true)
+  allowSubscription Boolean   @default(false)
+  subscriptionInterval String? // "monthly", "yearly"
+
+  allowPaymentPlan Boolean    @default(false)
+  paymentPlanConfig Json?     // {installments: 3, interval: "monthly"}
+
+  // Upsells
+  hasUpsell     Boolean       @default(false)
+  upsellOffer   Json?         // {productId, price, headline, description}
+
+  // Order bumps
+  orderBumps    Json[]        // [{productId, price, label, checked: false}]
+
+  // Coupons
+  allowCoupons  Boolean       @default(true)
+
+  // Content sections (JSON)
+  sections      Json          // Array of section configs
+
+  // Trust elements
+  showGuarantee Boolean       @default(true)
+  guaranteeText String?       @db.Text
+  showSecurity  Boolean       @default(true)
+  showTestimonials Boolean    @default(false)
+  testimonials  Json[]
+
+  // Design
+  theme         String        @default("default")
+  customCSS     String?       @db.Text
+
+  // SEO
+  metaTitle     String?
+  metaDescription String?
+
+  // Status
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
+
+  // Stats
+  views         Int           @default(0)
+  checkouts     Int           @default(0)
+  completedOrders Int         @default(0)
+  revenue       Float         @default(0)
+  conversionRate Float?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  orders        Order[]
+  abandonedCheckouts AbandonedCheckout[]
+
+  @@index([userId])
+  @@index([slug])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+
+  // Buyer
+  customerId    String?
+  customer      User?         @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Seller
+  sellerId      String
+  seller        User          @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  // Checkout page used
+  checkoutPageId String?
+  checkoutPage  CheckoutPage? @relation(fields: [checkoutPageId], references: [id], onDelete: SetNull)
+
+  // Order details
+  orderNumber   String        @unique
+
+  // Items
+  items         Json          // [{productId, name, price, quantity}]
+
+  // Pricing
+  subtotal      Float
+  discount      Float         @default(0)
+  tax           Float         @default(0)
+  total         Float
+  currency      String        @default("GBP")
+
+  // Coupon used
+  couponCode    String?
+
+  // Payment
+  paymentMethod String        // "stripe", "paypal", "card"
+  paymentStatus String        @default("pending")  // "pending", "paid", "failed", "refunded"
+
+  // Payment provider IDs
+  stripePaymentIntentId String?
+  stripeChargeId String?
+  paypalOrderId String?
+
+  // Payment plan
+  isPaymentPlan Boolean       @default(false)
+  paymentPlanConfig Json?
+
+  // Subscription
+  isSubscription Boolean      @default(false)
+  subscriptionId String?
+
+  // Customer info
+  customerEmail String
+  customerName  String
+  billingAddress Json?
+
+  // Fulfillment
+  fulfillmentStatus String    @default("pending")  // "pending", "processing", "completed"
+  trackingNumber String?
+
+  // Timestamps
+  createdAt     DateTime      @default(now())
+  paidAt        DateTime?
+  fulfilledAt   DateTime?
+
+  @@index([customerId])
+  @@index([sellerId])
+  @@index([orderNumber])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Coupon info
+  code          String        @unique
+  description   String?
+
+  // Discount
+  discountType  String        // "percentage", "fixed_amount"
+  discountValue Float         // 20 (for 20% off) or 10 (for £10 off)
+
+  // Restrictions
+  minPurchase   Float?
+  maxDiscount   Float?        // Cap for percentage discounts
+
+  // Products
+  applicableProducts String[]  // Empty = all products
+
+  // Usage limits
+  usageLimit    Int?          // Total times can be used
+  usageCount    Int           @default(0)
+  perUserLimit  Int?          // Times per customer
+
+  // Validity
+  startDate     DateTime?
+  expiryDate    DateTime?
+
+  // Status
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([code])
+  @@index([userId])
+}
+
+model AbandonedCheckout {
+  id            String        @id @default(cuid())
+
+  checkoutPageId String
+  checkoutPage  CheckoutPage  @relation(fields: [checkoutPageId], references: [id], onDelete: Cascade)
+
+  // Visitor
+  visitorId     String
+  customerEmail String?
+
+  // Cart data
+  items         Json
+  subtotal      Float
+
+  // Recovery
+  recoveryEmailSent Boolean   @default(false)
+  recoveryEmailSentAt DateTime?
+  recovered     Boolean       @default(false)
+  recoveredAt   DateTime?
+
+  abandonedAt   DateTime      @default(now())
+
+  @@index([checkoutPageId])
+  @@index([recoveryEmailSent])
 }
