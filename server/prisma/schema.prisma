@@ -211,6 +211,9 @@ model User {
   videoTestimonials   VideoTestimonial[]
   screenRecordings    ScreenRecording[]
 
+  // Phase 2AU - Launch Assets & Comparisons
+  roiCalculations     ROICalculation[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4627,4 +4630,107 @@ model ScreenRecording {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+// ============================================
+// PHASE 2AU - LAUNCH ASSETS & COMPARISONS
+// ============================================
+
+model CompetitorTool {
+  id            String        @id @default(cuid())
+
+  // Tool info
+  name          String
+  category      String        // "website_builder", "crm", "ecommerce", etc.
+  logo          String?
+  website       String?
+
+  // Pricing
+  priceMonthly  Float
+  priceYearly   Float?
+
+  // Features (what they offer)
+  features      Json          // Array of feature names
+
+  // Limitations
+  limitations   String[]      // What they DON'T have
+
+  // Our equivalent
+  ourEquivalent String        // Which dAItaniverse feature replaces this
+
+  // Display
+  isActive      Boolean       @default(true)
+  order         Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model FeatureComparison {
+  id            String        @id @default(cuid())
+
+  // Feature name
+  feature       String
+  category      String?
+
+  // Who has it
+  daitaniverse  Boolean       @default(true)
+  competitor1   String?       // Competitor name
+  competitor1Has Boolean?
+  competitor2   String?
+  competitor2Has Boolean?
+  competitor3   String?
+  competitor3Has Boolean?
+  competitor4   String?
+  competitor4Has Boolean?
+
+  // Details
+  ourImplementation String?    @db.Text
+  notes         String?       @db.Text
+
+  // Display
+  order         Int           @default(0)
+  highlighted   Boolean       @default(false)
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+  @@index([order])
+  @@index([isActive])
+}
+
+model ROICalculation {
+  id            String        @id @default(cuid())
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // User's current stack
+  currentTools  Json          // [{tool: "Wix", monthly: 30}, {tool: "Shopify", monthly: 29}]
+
+  // Calculated savings
+  currentCost   Float
+  daitaniverseCost Float      @default(26)
+  monthlySavings Float
+  yearlySavings Float
+
+  // Email (for lead capture)
+  email         String?
+  name          String?
+
+  // Stats
+  shared        Boolean       @default(false)
+  converted     Boolean       @default(false)
+
+  // Source
+  referrer      String?
+
+  calculatedAt  DateTime      @default(now())
+
+  @@index([userId])
+  @@index([email])
+  @@index([calculatedAt])
 }

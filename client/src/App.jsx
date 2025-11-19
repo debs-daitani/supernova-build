@@ -154,6 +154,11 @@ import SubmitTestimonial from './pages/testimonials/Submit';
 import DemoVideosAdmin from './pages/admin/DemoVideos';
 import TestimonialsAdmin from './pages/admin/Testimonials';
 
+// Phase 2AU - Launch Assets & Comparisons
+import ComparisonChart from './pages/compare/ComparisonChart';
+import ROICalculator from './pages/compare/ROICalculator';
+import ComparisonsAdmin from './pages/admin/Comparisons';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -318,11 +323,18 @@ function App() {
         {/* Admin - Demo Videos */}
         <Route path="/admin/demo-videos" element={<DemoVideosAdmin />} />
         <Route path="/admin/testimonials" element={<TestimonialsAdmin />} />
+
+        {/* Admin - Comparisons */}
+        <Route path="/admin/comparisons" element={<ComparisonsAdmin />} />
       </Route>
 
       {/* Public Demo Video Routes (Outside protected routes) */}
       <Route path="/demos" element={<VideoGallery />} />
       <Route path="/demos/watch/:id" element={<VideoPlayer />} />
+
+      {/* Public Comparison Routes (Outside protected routes) */}
+      <Route path="/compare" element={<ComparisonChart />} />
+      <Route path="/compare/calculator" element={<ROICalculator />} />
 
       {/* Redirects */}
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />

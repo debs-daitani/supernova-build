@@ -103,6 +103,9 @@ import microRoutes from './routes/micro.js';
 // Phase 2AT - Demo Video & Screen Recording
 import demosRoutes from './routes/demos.js';
 
+// Phase 2AU - Launch Assets & Comparisons
+import comparisonsRoutes from './routes/comparisons.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -225,6 +228,9 @@ app.use('/api/micro', microRoutes);
 
 // Phase 2AT - Demo Video & Screen Recording
 app.use('/api/demos', demosRoutes);
+
+// Phase 2AU - Launch Assets & Comparisons
+app.use('/api/comparisons', comparisonsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
