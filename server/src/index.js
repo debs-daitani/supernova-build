@@ -118,6 +118,9 @@ import onboardingRoutes from './routes/onboarding.js';
 // Phase 2AY - SUPERNova AI Brain
 import supernovaRoutes from './routes/supernova.js';
 
+// Phase 2AZ - Email Automation Sequences
+import emailSequencesRoutes from './routes/email-sequences.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -255,6 +258,9 @@ app.use('/api/onboarding', onboardingRoutes);
 
 // Phase 2AY - SUPERNova AI Brain
 app.use('/api/supernova', supernovaRoutes);
+
+// Phase 2AZ - Email Automation Sequences
+app.use('/api/email-sequences', emailSequencesRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

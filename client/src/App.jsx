@@ -172,6 +172,10 @@ import ReferralAnalytics from './pages/admin/ReferralAnalytics';
 // Phase 2AX - Onboarding Flow
 import Tutorials from './pages/onboarding/Tutorials';
 
+// Phase 2AZ - Email Automation Sequences
+import EmailSequences from './components/admin/EmailSequences';
+import EmailSequenceEditor from './components/admin/EmailSequenceEditor';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -346,6 +350,10 @@ function App() {
 
         {/* Admin - Referrals */}
         <Route path="/admin/referrals" element={<ReferralAnalytics />} />
+
+        {/* Phase 2AZ - Email Automation Sequences */}
+        <Route path="/admin/email-sequences" element={<EmailSequences />} />
+        <Route path="/admin/email-sequences/:id" element={<EmailSequenceEditor />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

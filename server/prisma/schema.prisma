@@ -239,6 +239,10 @@ model User {
   coachingLogs        UserCoachingLog[]
   aiInsights          AIInsight[]
 
+  // Phase 2AZ - Email Automation
+  sequenceEnrollments SequenceEnrollment[]
+  emailDeliveries     EmailDelivery[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5300,4 +5304,151 @@ model AIInsight {
 
   @@index([userId])
   @@index([insightType])
+}
+
+// ============================================
+// PHASE 2AZ - EMAIL AUTOMATION SEQUENCES
+// ============================================
+
+model EmailSequence {
+  id            String        @id @default(cuid())
+
+  // Sequence info
+  name          String
+  description   String?       @db.Text
+
+  // Type
+  sequenceType  String        // "welcome", "onboarding", "upgrade", "engagement", "launch", etc.
+
+  // Trigger
+  triggerEvent  String        // "user_signup", "trial_start", "inactive_7days", etc.
+  triggerDelay  Int?          // Minutes to wait before starting (0 = immediate)
+
+  // Conditions
+  conditions    Json?         // {userType: "free", hasCompletedOnboarding: false}
+
+  // Status
+  isActive      Boolean       @default(true)
+
+  // Stats
+  recipientsCount Int         @default(0)
+  openRate      Float?
+  clickRate     Float?
+  conversionRate Float?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  emails        SequenceEmail[]
+  enrollments   SequenceEnrollment[]
+
+  @@index([sequenceType])
+  @@index([isActive])
+}
+
+model SequenceEmail {
+  id            String        @id @default(cuid())
+  sequenceId    String
+  sequence      EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  // Email order
+  order         Int
+
+  // Timing
+  delayDays     Int           // Days after previous email (0 for first email)
+  delayHours    Int           @default(0)  // Additional hours
+
+  // Content
+  subject       String
+  previewText   String?
+  htmlContent   String        @db.Text
+  textContent   String        @db.Text
+
+  // Personalization
+  variables     String[]      // Available merge tags: {{name}}, {{preferredName}}, etc.
+
+  // CTA
+  ctaText       String?
+  ctaUrl        String?
+
+  // A/B Testing
+  variantOf     String?       // If A/B test, link to original
+
+  // Stats
+  sentCount     Int           @default(0)
+  openCount     Int           @default(0)
+  clickCount    Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([sequenceId])
+  @@index([order])
+}
+
+model SequenceEnrollment {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sequenceId    String
+  sequence      EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  // Progress
+  currentStep   Int           @default(0)  // Which email they're on
+
+  // Status
+  status        String        @default("active")  // "active", "completed", "paused", "unsubscribed"
+
+  // Tracking
+  enrolledAt    DateTime      @default(now())
+  completedAt   DateTime?
+  pausedAt      DateTime?
+
+  // Next email
+  nextEmailAt   DateTime?
+
+  @@unique([userId, sequenceId])
+  @@index([userId])
+  @@index([sequenceId])
+  @@index([status])
+  @@index([nextEmailAt])
+}
+
+model EmailDelivery {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sequenceId    String?
+  emailId       String?       // Which email in sequence
+
+  // Content sent
+  subject       String
+  content       String        @db.Text
+
+  // Delivery
+  status        String        @default("pending")  // "pending", "sent", "delivered", "bounced", "failed"
+
+  // Engagement
+  opened        Boolean       @default(false)
+  openedAt      DateTime?
+  clicked       Boolean       @default(false)
+  clickedAt     DateTime?
+  clickedUrl    String?
+
+  // Metadata
+  provider      String?       // "sendgrid", "mailgun", "aws_ses"
+  providerId    String?       // External tracking ID
+
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+
+  @@index([userId])
+  @@index([sequenceId])
+  @@index([status])
+  @@index([sentAt])
 }
