@@ -224,6 +224,11 @@ model User {
   referralCode        ReferralCode?
   referralRewards     ReferralReward[]
 
+  // Phase 2AX - Onboarding System
+  onboardingProgress  OnboardingProgress?
+  userQuickWins       UserQuickWin[]
+  tutorialProgress    TutorialProgress[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4981,4 +4986,167 @@ model ReferralCampaign {
   updatedAt     DateTime      @updatedAt
 
   @@index([isActive])
+}
+
+// ============================================
+// PHASE 2AX - ONBOARDING SYSTEM
+// ============================================
+
+model OnboardingProgress {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Progress tracking
+  currentStep   String?       // Current step ID
+  completedSteps Json         @default("[]")  // Array of completed step IDs
+  progressPercent Int         @default(0)
+
+  // User selections
+  primaryGoal   String?       // "website", "courses", "ecommerce", "crm", "all"
+  selectedFeatures Json?      // Array of features user wants to use
+
+  // Milestones
+  hasCompletedWelcome     Boolean   @default(false)
+  hasCompletedTour        Boolean   @default(false)
+  hasSeenQuickWins        Boolean   @default(false)
+  firstWebsiteCreated     Boolean   @default(false)
+  firstCourseCreated      Boolean   @default(false)
+  firstProductAdded       Boolean   @default(false)
+  firstContactAdded       Boolean   @default(false)
+  firstSaleMade           Boolean   @default(false)
+
+  // Settings
+  showTips      Boolean       @default(true)
+  skipOnboarding Boolean      @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([primaryGoal])
+}
+
+model OnboardingStep {
+  id            String        @id @default(cuid())
+
+  // Step info
+  stepId        String        @unique  // e.g., "welcome", "goal-selection"
+  title         String
+  description   String        @db.Text
+  icon          String?
+
+  // Content
+  videoUrl      String?
+  imageUrl      String?
+  ctaText       String?
+  ctaUrl        String?
+
+  // Requirements
+  prerequisiteSteps Json?     // Array of step IDs that must be completed first
+  requiredForGoals  Json?     // Array of goals this step is required for
+
+  // Action to complete
+  completionAction  String?   // "click_button", "create_website", "add_product", etc.
+
+  // Display
+  order         Int           @default(0)
+  category      String?       // "setup", "first_steps", "advanced"
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([stepId])
+  @@index([category])
+  @@index([order])
+}
+
+model QuickWin {
+  id            String        @id @default(cuid())
+
+  // Quick win info
+  title         String
+  description   String        @db.Text
+  icon          String?
+
+  // Goal association
+  relatedGoal   String?       // "website", "courses", "ecommerce", "crm", "all"
+
+  // Action
+  actionUrl     String?       // Where to go to complete
+  actionType    String?       // "create", "customize", "publish", "share"
+  actionText    String?       // Button text
+
+  // Rewards
+  rewardPoints  Int           @default(0)
+  rewardBadge   String?
+
+  // Metadata
+  estimatedTime String?       // "2 min", "5 min", etc.
+  difficulty    String?       // "easy", "medium", "hard"
+  order         Int           @default(0)
+
+  // Relations
+  userQuickWins UserQuickWin[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([relatedGoal])
+  @@index([order])
+}
+
+model UserQuickWin {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  quickWinId    String
+  quickWin      QuickWin      @relation(fields: [quickWinId], references: [id], onDelete: Cascade)
+
+  // Completion
+  completed     Boolean       @default(false)
+  completedAt   DateTime?
+
+  // Points earned
+  pointsEarned  Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@unique([userId, quickWinId])
+  @@index([userId])
+  @@index([quickWinId])
+  @@index([completed])
+}
+
+model TutorialProgress {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Tutorial info
+  tutorialId    String        // e.g., "website-basics", "ecommerce-setup"
+  tutorialTitle String
+  category      String?
+
+  // Progress
+  currentStep   Int           @default(0)
+  totalSteps    Int
+  watchTime     Int           @default(0)  // Seconds watched
+
+  // Status
+  completed     Boolean       @default(false)
+  completedAt   DateTime?
+
+  // Bookmarks
+  bookmarked    Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, tutorialId])
+  @@index([userId])
+  @@index([tutorialId])
+  @@index([completed])
 }

@@ -112,6 +112,9 @@ import testimonialsRoutes from './routes/testimonials.js';
 // Phase 2AW - Referral Program
 import referralsRoutes from './routes/referrals.js';
 
+// Phase 2AX - Onboarding Flow
+import onboardingRoutes from './routes/onboarding.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -243,6 +246,9 @@ app.use('/api/testimonials', testimonialsRoutes);
 
 // Phase 2AW - Referral Program
 app.use('/api/referrals', referralsRoutes);
+
+// Phase 2AX - Onboarding Flow
+app.use('/api/onboarding', onboardingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

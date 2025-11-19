@@ -169,6 +169,9 @@ import Leaderboard from './pages/referral/Leaderboard';
 import Rewards from './pages/referral/Rewards';
 import ReferralAnalytics from './pages/admin/ReferralAnalytics';
 
+// Phase 2AX - Onboarding Flow
+import Tutorials from './pages/onboarding/Tutorials';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -343,6 +346,9 @@ function App() {
 
         {/* Admin - Referrals */}
         <Route path="/admin/referrals" element={<ReferralAnalytics />} />
+
+        {/* Phase 2AX - Onboarding Flow */}
+        <Route path="/tutorials" element={<Tutorials />} />
       </Route>
 
       {/* Public Demo Video Routes (Outside protected routes) */}
