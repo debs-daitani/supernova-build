@@ -176,6 +176,12 @@ import Tutorials from './pages/onboarding/Tutorials';
 import EmailSequences from './components/admin/EmailSequences';
 import EmailSequenceEditor from './components/admin/EmailSequenceEditor';
 
+// Phase 2BA - Landing Page System
+import LandingPagesDashboard from './pages/landingPages/Dashboard';
+import LandingPageTemplates from './pages/landingPages/Templates';
+import LandingPageBuilder from './pages/landingPages/Builder';
+import LandingPageAnalytics from './pages/landingPages/Analytics';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -354,6 +360,12 @@ function App() {
         {/* Phase 2AZ - Email Automation Sequences */}
         <Route path="/admin/email-sequences" element={<EmailSequences />} />
         <Route path="/admin/email-sequences/:id" element={<EmailSequenceEditor />} />
+
+        {/* Phase 2BA - Landing Page System */}
+        <Route path="/landing-pages" element={<LandingPagesDashboard />} />
+        <Route path="/landing-pages/templates" element={<LandingPageTemplates />} />
+        <Route path="/landing-pages/:id/builder" element={<LandingPageBuilder />} />
+        <Route path="/landing-pages/:id/analytics" element={<LandingPageAnalytics />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

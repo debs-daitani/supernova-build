@@ -243,6 +243,10 @@ model User {
   sequenceEnrollments SequenceEnrollment[]
   emailDeliveries     EmailDelivery[]
 
+  // Phase 2BA - Landing Page System
+  landingPages        LandingPage[]
+  pageConversions     LandingPageConversion[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5451,4 +5455,163 @@ model EmailDelivery {
   @@index([sequenceId])
   @@index([status])
   @@index([sentAt])
+}
+
+// ============================================
+// PHASE 2BA: LANDING PAGE SYSTEM
+// ============================================
+
+model LandingPage {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Page info
+  title         String
+  slug          String        @unique
+
+  // Template
+  templateType  String        // "sales", "webinar", "product", "waitlist", "launch"
+
+  // Content (JSON structure)
+  sections      Json          // Array of section configs
+
+  // SEO
+  metaTitle     String?
+  metaDescription String?     @db.Text
+  ogImage       String?
+
+  // Conversion elements
+  primaryCTA    String        // "Start Free Trial", "Join Waitlist", etc.
+  ctaUrl        String        // Where CTA button goes
+
+  // Settings
+  customCSS     String?       @db.Text
+  customJS      String?       @db.Text
+  headerCode    String?       @db.Text  // Analytics, pixels
+  footerCode    String?       @db.Text
+
+  // Exit intent
+  exitIntentEnabled Boolean   @default(false)
+  exitIntentContent Json?
+
+  // A/B Testing
+  isVariant     Boolean       @default(false)
+  variantOf     String?       // Original page ID
+  trafficSplit  Int           @default(50)  // % of traffic to this variant
+
+  // Status
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
+
+  // Stats
+  views         Int           @default(0)
+  uniqueViews   Int           @default(0)
+  conversions   Int           @default(0)
+  conversionRate Float?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  pageViews     LandingPageView[]
+  conversions   LandingPageConversion[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model LandingPageView {
+  id            String        @id @default(cuid())
+
+  pageId        String
+  page          LandingPage   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  // Visitor tracking
+  visitorId     String        // Anonymous ID (cookie)
+  userId        String?       // If logged in
+
+  // Source
+  referrer      String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+
+  // Device
+  device        String?       // "desktop", "mobile", "tablet"
+  browser       String?
+  os            String?
+
+  // Location
+  country       String?
+  city          String?
+
+  // Behavior
+  timeOnPage    Int?          // Seconds
+  scrollDepth   Int?          // Percentage
+
+  viewedAt      DateTime      @default(now())
+
+  @@index([pageId])
+  @@index([visitorId])
+  @@index([viewedAt])
+}
+
+model LandingPageConversion {
+  id            String        @id @default(cuid())
+
+  pageId        String
+  page          LandingPage   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  // Who converted
+  visitorId     String
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // What action
+  conversionType String       // "signup", "purchase", "waitlist", "download"
+
+  // Value
+  value         Float?        // Revenue if applicable
+
+  // Attribution
+  referrer      String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+
+  convertedAt   DateTime      @default(now())
+
+  @@index([pageId])
+  @@index([userId])
+  @@index([convertedAt])
+}
+
+model LandingPageTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  description   String?       @db.Text
+  category      String        // "sales", "product", "webinar", "waitlist"
+
+  // Preview
+  thumbnail     String?
+  demoUrl       String?
+
+  // Structure
+  sections      Json          // Default section configs
+
+  // Conversion rate (from all pages using this)
+  avgConversionRate Float?
+
+  // Status
+  isActive      Boolean       @default(true)
+  isPremium     Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+  @@index([isActive])
 }
