@@ -218,6 +218,12 @@ model User {
   testimonials        Testimonial[]
   testimonialRequests TestimonialRequest[]
 
+  // Phase 2AW - Referral Program
+  referrals           Referral[]        @relation("Referrals")
+  referredBy          Referral[]        @relation("ReferredBy")
+  referralCode        ReferralCode?
+  referralRewards     ReferralReward[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -4846,4 +4852,133 @@ model TestimonialWidget {
   updatedAt     DateTime      @updatedAt
 
   @@index([widgetType])
+}
+
+// ============================================
+// PHASE 2AW: REFERRAL PROGRAM
+// ============================================
+
+model Referral {
+  id            String        @id @default(cuid())
+
+  // Referrer (person who shared)
+  referrerId    String
+  referrer      User          @relation("Referrals", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  // Referred user (new signup)
+  referredId    String
+  referred      User          @relation("ReferredBy", fields: [referredId], references: [id], onDelete: Cascade)
+
+  // Tracking
+  referralCode  String        // Unique code used
+
+  // Status
+  status        String        @default("pending")  // "pending", "qualified", "rewarded"
+
+  // Qualification (e.g., referred user must subscribe)
+  qualified     Boolean       @default(false)
+  qualifiedAt   DateTime?
+
+  // Reward
+  rewardType    String?       // "free_month", "credit", "cash"
+  rewardAmount  Float?
+  rewardGiven   Boolean       @default(false)
+  rewardGivenAt DateTime?
+
+  // Source
+  source        String?       // "email", "social", "link", "whatsapp"
+
+  createdAt     DateTime      @default(now())
+
+  // Relations
+  rewards       ReferralReward[]
+
+  @@unique([referrerId, referredId])
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([referralCode])
+  @@index([status])
+}
+
+model ReferralCode {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Code
+  code          String        @unique  // e.g., "DEBS2026" or random
+
+  // Stats
+  clicks        Int           @default(0)
+  signups       Int           @default(0)
+  conversions   Int           @default(0)
+
+  // Rewards earned
+  totalRewards  Float         @default(0)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([code])
+}
+
+model ReferralReward {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Reward details
+  rewardType    String        // "free_month", "credit", "cash", "upgrade"
+  amount        Float?
+  description   String
+
+  // Status
+  status        String        @default("pending")  // "pending", "issued", "redeemed"
+
+  // Related referral
+  referralId    String?
+  referral      Referral?     @relation(fields: [referralId], references: [id], onDelete: SetNull)
+
+  // Milestone (if milestone reward)
+  milestone     String?       // "5_referrals", "10_referrals", "25_referrals", "50_referrals"
+
+  // Dates
+  earnedAt      DateTime      @default(now())
+  issuedAt      DateTime?
+  redeemedAt    DateTime?
+  expiresAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([referralId])
+}
+
+model ReferralCampaign {
+  id            String        @id @default(cuid())
+
+  // Campaign info
+  name          String
+  description   String?       @db.Text
+
+  // Reward structure
+  referrerReward String       // "1_month_free"
+  referredReward String       // "1_month_free"
+
+  // Qualification rules
+  requiresPayment Boolean     @default(true)
+  minSubscriptionDays Int?    // Must stay subscribed X days
+
+  // Milestones
+  milestones    Json?         // [{count: 5, reward: "bonus_month"}, ...]
+
+  // Status
+  isActive      Boolean       @default(true)
+
+  // Dates
+  startDate     DateTime?
+  endDate       DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([isActive])
 }

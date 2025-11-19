@@ -109,6 +109,9 @@ import comparisonsRoutes from './routes/comparisons.js';
 // Phase 2AV - Testimonial Collection System
 import testimonialsRoutes from './routes/testimonials.js';
 
+// Phase 2AW - Referral Program
+import referralsRoutes from './routes/referrals.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -237,6 +240,9 @@ app.use('/api/comparisons', comparisonsRoutes);
 
 // Phase 2AV - Testimonial Collection System
 app.use('/api/testimonials', testimonialsRoutes);
+
+// Phase 2AW - Referral Program
+app.use('/api/referrals', referralsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -162,6 +162,13 @@ import SubmitTestimonial from './pages/testimonials/Submit';
 import TestimonialWall from './pages/testimonials/Wall';
 import TestimonialsAdmin from './pages/admin/TestimonialsAdmin';
 
+// Phase 2AW - Referral Program
+import ReferralDashboard from './pages/referral/Dashboard';
+import HowItWorks from './pages/referral/HowItWorks';
+import Leaderboard from './pages/referral/Leaderboard';
+import Rewards from './pages/referral/Rewards';
+import ReferralAnalytics from './pages/admin/ReferralAnalytics';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -329,6 +336,13 @@ function App() {
 
         {/* Admin - Comparisons */}
         <Route path="/admin/comparisons" element={<ComparisonsAdmin />} />
+
+        {/* Phase 2AW - Referral Program */}
+        <Route path="/referrals" element={<ReferralDashboard />} />
+        <Route path="/referrals/rewards" element={<Rewards />} />
+
+        {/* Admin - Referrals */}
+        <Route path="/admin/referrals" element={<ReferralAnalytics />} />
       </Route>
 
       {/* Public Demo Video Routes (Outside protected routes) */}
@@ -341,6 +355,10 @@ function App() {
 
       {/* Public Testimonial Routes (Outside protected routes) */}
       <Route path="/testimonials/wall" element={<TestimonialWall />} />
+
+      {/* Public Referral Routes (Outside protected routes) */}
+      <Route path="/referrals/how-it-works" element={<HowItWorks />} />
+      <Route path="/referrals/leaderboard" element={<Leaderboard />} />
 
       {/* Redirects */}
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
