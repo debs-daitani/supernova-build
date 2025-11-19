@@ -1,0 +1,154 @@
+{
+  "collectionName": "Characters",
+  "displayName": "Book Characters",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "description": "Character name"
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": true,
+      "description": "Character role (protagonist, antagonist, supporting, minor)"
+    },
+    {
+      "name": "age",
+      "type": "text",
+      "required": false,
+      "description": "Character age"
+    },
+    {
+      "name": "occupation",
+      "type": "text",
+      "required": false,
+      "description": "Character occupation"
+    },
+    {
+      "name": "physicalDescription",
+      "type": "richText",
+      "required": false,
+      "description": "Physical appearance description"
+    },
+    {
+      "name": "personality",
+      "type": "richText",
+      "required": false,
+      "description": "Personality traits and characteristics"
+    },
+    {
+      "name": "backstory",
+      "type": "richText",
+      "required": false,
+      "description": "Character backstory"
+    },
+    {
+      "name": "motivation",
+      "type": "richText",
+      "required": false,
+      "description": "Character motivation and goals"
+    },
+    {
+      "name": "internalConflict",
+      "type": "richText",
+      "required": false,
+      "description": "Internal conflict"
+    },
+    {
+      "name": "externalConflict",
+      "type": "richText",
+      "required": false,
+      "description": "External conflict/obstacles"
+    },
+    {
+      "name": "characterArc",
+      "type": "richText",
+      "required": false,
+      "description": "Character arc and transformation"
+    },
+    {
+      "name": "relationships",
+      "type": "object",
+      "required": false,
+      "description": "Relationships with other characters"
+    },
+    {
+      "name": "quirks",
+      "type": "text",
+      "required": false,
+      "description": "Character quirks and habits"
+    },
+    {
+      "name": "strengths",
+      "type": "text",
+      "required": false,
+      "description": "Character strengths"
+    },
+    {
+      "name": "weaknesses",
+      "type": "text",
+      "required": false,
+      "description": "Character weaknesses"
+    },
+    {
+      "name": "voiceNotes",
+      "type": "richText",
+      "required": false,
+      "description": "Notes on how character speaks"
+    },
+    {
+      "name": "imageUrl",
+      "type": "image",
+      "required": false,
+      "description": "Character portrait/image"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "role_index",
+      "fields": ["role"],
+      "unique": false
+    },
+    {
+      "name": "name_index",
+      "fields": ["name"],
+      "unique": false
+    }
+  ]
+}

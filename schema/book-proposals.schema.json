@@ -1,0 +1,107 @@
+{
+  "collectionName": "BookProposals",
+  "displayName": "Book Proposals",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "hook",
+      "type": "richText",
+      "required": false,
+      "description": "Compelling opening hook"
+    },
+    {
+      "name": "marketAnalysis",
+      "type": "richText",
+      "required": false,
+      "description": "Market analysis and opportunity"
+    },
+    {
+      "name": "targetAudience",
+      "type": "richText",
+      "required": false,
+      "description": "Target audience description"
+    },
+    {
+      "name": "competitorAnalysis",
+      "type": "richText",
+      "required": false,
+      "description": "Competitor analysis"
+    },
+    {
+      "name": "authorBio",
+      "type": "richText",
+      "required": false,
+      "description": "Author biography"
+    },
+    {
+      "name": "platformStats",
+      "type": "object",
+      "required": false,
+      "description": "Author platform statistics (followers, email list, etc.)"
+    },
+    {
+      "name": "chapterOutline",
+      "type": "object",
+      "required": false,
+      "description": "Chapter-by-chapter outline"
+    },
+    {
+      "name": "sampleChapters",
+      "type": "object",
+      "required": false,
+      "description": "Array of sample chapter IDs"
+    },
+    {
+      "name": "marketingPlan",
+      "type": "richText",
+      "required": false,
+      "description": "Marketing and promotion plan"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (draft, submitted, accepted, rejected)"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_unique",
+      "fields": ["bookProjectId"],
+      "unique": true
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    }
+  ]
+}

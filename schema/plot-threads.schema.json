@@ -1,0 +1,106 @@
+{
+  "collectionName": "PlotThreads",
+  "displayName": "Plot Threads",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "description": "Plot thread name"
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "required": true,
+      "description": "Thread type (main_plot, subplot, character_arc)"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Plot thread description"
+    },
+    {
+      "name": "startChapter",
+      "type": "number",
+      "required": false,
+      "description": "Starting chapter number"
+    },
+    {
+      "name": "endChapter",
+      "type": "number",
+      "required": false,
+      "description": "Ending chapter number"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (active, resolved, abandoned)"
+    },
+    {
+      "name": "relatedCharacters",
+      "type": "object",
+      "required": false,
+      "description": "Array of character IDs involved"
+    },
+    {
+      "name": "keyEvents",
+      "type": "object",
+      "required": false,
+      "description": "Array of key events in this thread"
+    },
+    {
+      "name": "resolution",
+      "type": "richText",
+      "required": false,
+      "description": "How the plot thread resolves"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "type_index",
+      "fields": ["type"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    }
+  ]
+}

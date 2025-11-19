@@ -1,0 +1,100 @@
+{
+  "collectionName": "WorldBuilding",
+  "displayName": "World Building Elements",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true,
+      "description": "Category (location, culture, magic_system, technology, history, religion, politics, economy)"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "description": "Element name"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Detailed description"
+    },
+    {
+      "name": "rules",
+      "type": "richText",
+      "required": false,
+      "description": "Rules and limitations (especially for magic/tech systems)"
+    },
+    {
+      "name": "significance",
+      "type": "richText",
+      "required": false,
+      "description": "Significance to the story"
+    },
+    {
+      "name": "relatedCharacters",
+      "type": "object",
+      "required": false,
+      "description": "Array of related character IDs"
+    },
+    {
+      "name": "relatedEvents",
+      "type": "object",
+      "required": false,
+      "description": "Array of related timeline events"
+    },
+    {
+      "name": "images",
+      "type": "object",
+      "required": false,
+      "description": "Array of image URLs"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "category_index",
+      "fields": ["category"],
+      "unique": false
+    },
+    {
+      "name": "name_index",
+      "fields": ["name"],
+      "unique": false
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "collectionName": "PublishingChecklists",
+  "displayName": "Publishing Checklists",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "itemType",
+      "type": "text",
+      "required": true,
+      "description": "Checklist item type (manuscript_format, cover_design, isbn, copyright, metadata, etc.)"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": true,
+      "description": "Item description"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (not_started, in_progress, complete)"
+    },
+    {
+      "name": "dueDate",
+      "type": "date",
+      "required": false,
+      "description": "Due date"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Additional notes"
+    },
+    {
+      "name": "completedAt",
+      "type": "date",
+      "required": false,
+      "description": "Completion timestamp"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    },
+    {
+      "name": "dueDate_index",
+      "fields": ["dueDate"],
+      "unique": false
+    }
+  ]
+}

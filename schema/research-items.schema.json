@@ -1,0 +1,106 @@
+{
+  "collectionName": "ResearchItems",
+  "displayName": "Research Items",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true,
+      "description": "Category (source, statistic, quote, case_study, expert, reference)"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "description": "Research item title"
+    },
+    {
+      "name": "content",
+      "type": "richText",
+      "required": false,
+      "description": "Research content/summary"
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "required": false,
+      "description": "Source citation"
+    },
+    {
+      "name": "url",
+      "type": "url",
+      "required": false,
+      "description": "Source URL if applicable"
+    },
+    {
+      "name": "credibility",
+      "type": "text",
+      "required": false,
+      "description": "Credibility rating (high, medium, low)"
+    },
+    {
+      "name": "chapterIds",
+      "type": "object",
+      "required": false,
+      "description": "Array of chapter IDs where this research is used"
+    },
+    {
+      "name": "tags",
+      "type": "object",
+      "required": false,
+      "description": "Array of tags for categorization"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Additional notes"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "category_index",
+      "fields": ["category"],
+      "unique": false
+    },
+    {
+      "name": "credibility_index",
+      "fields": ["credibility"],
+      "unique": false
+    }
+  ]
+}

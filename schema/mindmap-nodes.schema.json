@@ -1,0 +1,94 @@
+{
+  "collectionName": "MindMapNodes",
+  "displayName": "Mind Map Nodes",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "nodeType",
+      "type": "text",
+      "required": true,
+      "description": "Node type (central_idea, theme, character, plot_point, chapter, research, question)"
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "required": true,
+      "description": "Node content/text"
+    },
+    {
+      "name": "parentNodeId",
+      "type": "text",
+      "required": false,
+      "description": "Parent node ID for hierarchy"
+    },
+    {
+      "name": "position",
+      "type": "object",
+      "required": false,
+      "description": "Node position {x, y} coordinates"
+    },
+    {
+      "name": "color",
+      "type": "text",
+      "required": false,
+      "description": "Node color for categorization"
+    },
+    {
+      "name": "connections",
+      "type": "object",
+      "required": false,
+      "description": "Array of connected node IDs"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Additional notes"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "nodeType_index",
+      "fields": ["nodeType"],
+      "unique": false
+    },
+    {
+      "name": "parentNodeId_index",
+      "fields": ["parentNodeId"],
+      "unique": false
+    }
+  ]
+}

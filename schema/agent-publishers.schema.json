@@ -1,0 +1,123 @@
+{
+  "collectionName": "AgentPublishers",
+  "displayName": "Agents & Publishers",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "User ID who added this contact"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "description": "Agent or publisher name"
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "required": true,
+      "description": "Type (agent, publisher, editor)"
+    },
+    {
+      "name": "agency",
+      "type": "text",
+      "required": false,
+      "description": "Agency or publishing house name"
+    },
+    {
+      "name": "genres",
+      "type": "object",
+      "required": false,
+      "description": "Array of genres they represent"
+    },
+    {
+      "name": "submissionGuidelines",
+      "type": "richText",
+      "required": false,
+      "description": "Submission guidelines"
+    },
+    {
+      "name": "contactEmail",
+      "type": "text",
+      "required": false,
+      "description": "Contact email address"
+    },
+    {
+      "name": "website",
+      "type": "url",
+      "required": false,
+      "description": "Website URL"
+    },
+    {
+      "name": "responseTime",
+      "type": "text",
+      "required": false,
+      "description": "Typical response time"
+    },
+    {
+      "name": "manuscriptStatus",
+      "type": "text",
+      "required": false,
+      "description": "Manuscript status (considering, requested, rejected, accepted)"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Personal notes"
+    },
+    {
+      "name": "lastContactDate",
+      "type": "date",
+      "required": false,
+      "description": "Last contact date"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "type_index",
+      "fields": ["type"],
+      "unique": false
+    },
+    {
+      "name": "name_index",
+      "fields": ["name"],
+      "unique": false
+    },
+    {
+      "name": "manuscriptStatus_index",
+      "fields": ["manuscriptStatus"],
+      "unique": false
+    }
+  ]
+}

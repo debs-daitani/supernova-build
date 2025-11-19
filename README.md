@@ -1,10 +1,16 @@
-# SUPERNova AI Memory System
+# SUPERNova AI Memory System & The dAItaniverse Platform
 
 ## Overview
 
-SUPERNova AI is an intelligent conversational AI system designed for the Wix platform. This repository contains the comprehensive memory system architecture that enables SUPERNova to maintain context, remember user preferences, and provide personalized experiences across sessions.
+SUPERNova AI is an intelligent conversational AI system designed for the Wix platform. This repository contains:
+
+1. **SUPERNova AI Memory System** - Comprehensive memory architecture for conversational AI
+2. **The dAItaniverse Platform** - Complete business coaching and book writing platform
+3. **Book Writing Suite** - Premium add-on for fiction and non-fiction authors
 
 ## Key Features
+
+### SUPERNova AI Memory System
 
 - **Multi-User Support**: Individual memory spaces for each user
 - **Conversation History**: Complete conversation tracking with metadata
@@ -13,6 +19,23 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 - **Knowledge Base**: Persistent knowledge and learned information
 - **Session Management**: Active session tracking and management
 - **Wix Data Integration**: Optimized for Wix Data Collections
+
+### Book Writing Suite (Premium Add-On - £10/month)
+
+- **Project Management**: Track multiple book projects simultaneously
+- **Chapter & Scene Organization**: Structure your book with chapters and scenes
+- **Character Development**: Comprehensive character profiles and relationship mapping (fiction)
+- **World Building**: Organize locations, magic systems, cultures, and more (fiction)
+- **Plot Thread Tracking**: Monitor main plots, subplots, and character arcs
+- **Timeline Management**: Ensure chronological consistency
+- **Research Organization**: Manage sources, case studies, and expert interviews (non-fiction)
+- **Book Proposal Generator**: Create professional book proposals (non-fiction)
+- **Mind Mapping**: Visual brainstorming and story planning
+- **Writing Sessions**: Track productivity, word count goals, and writing streaks
+- **Distraction-Free Writing**: Focused writing mode with auto-save
+- **Analysis Tools**: Plot hole detection, pacing analysis, readability scores
+- **Publishing Prep**: Query letters, agent tracking, publishing checklists
+- **Manuscript Export**: Format and export your completed manuscript
 
 ## Architecture Components
 
@@ -24,10 +47,15 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 
 ## Documentation
 
+### SUPERNova AI Memory System
 - [Architecture Overview](./docs/ARCHITECTURE.md)
 - [Database Schema](./docs/DATABASE_SCHEMA.md)
 - [Implementation Plan](./docs/IMPLEMENTATION_PLAN.md)
 - [API Reference](./docs/API_REFERENCE.md)
+
+### Book Writing Suite
+- [Book Writing Suite Guide](./docs/BOOK_WRITING_SUITE.md) - Complete implementation guide
+- [Example Implementation](./examples/book-writing-implementation.js) - Full code examples
 
 ## Quick Start
 

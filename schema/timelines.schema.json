@@ -1,0 +1,94 @@
+{
+  "collectionName": "Timelines",
+  "displayName": "Story Timeline Events",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "eventName",
+      "type": "text",
+      "required": true,
+      "description": "Event name/title"
+    },
+    {
+      "name": "eventDate",
+      "type": "text",
+      "required": false,
+      "description": "In-story date/time (can be text for fictional dates)"
+    },
+    {
+      "name": "chapterId",
+      "type": "text",
+      "required": false,
+      "description": "Reference to chapter where event occurs"
+    },
+    {
+      "name": "sceneId",
+      "type": "text",
+      "required": false,
+      "description": "Reference to scene where event occurs"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Event description"
+    },
+    {
+      "name": "involvedCharacters",
+      "type": "object",
+      "required": false,
+      "description": "Array of character IDs involved"
+    },
+    {
+      "name": "significance",
+      "type": "text",
+      "required": false,
+      "description": "Event significance to story"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "chapterId_index",
+      "fields": ["chapterId"],
+      "unique": false
+    },
+    {
+      "name": "eventDate_index",
+      "fields": ["eventDate"],
+      "unique": false
+    }
+  ]
+}

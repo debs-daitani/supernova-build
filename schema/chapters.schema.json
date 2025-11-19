@@ -1,0 +1,112 @@
+{
+  "collectionName": "Chapters",
+  "displayName": "Book Chapters",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "chapterNumber",
+      "type": "number",
+      "required": true,
+      "description": "Chapter sequence number"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "description": "Chapter title"
+    },
+    {
+      "name": "synopsis",
+      "type": "richText",
+      "required": false,
+      "description": "Chapter synopsis/outline"
+    },
+    {
+      "name": "wordCount",
+      "type": "number",
+      "required": true,
+      "description": "Current word count"
+    },
+    {
+      "name": "targetWordCount",
+      "type": "number",
+      "required": false,
+      "description": "Target word count for this chapter"
+    },
+    {
+      "name": "content",
+      "type": "richText",
+      "required": false,
+      "description": "Chapter content/manuscript"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Author notes for this chapter"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (outline, draft, revision, complete)"
+    },
+    {
+      "name": "povCharacterId",
+      "type": "text",
+      "required": false,
+      "description": "POV character for this chapter (fiction)"
+    },
+    {
+      "name": "setting",
+      "type": "text",
+      "required": false,
+      "description": "Setting/location for this chapter"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "bookProject_chapter_unique",
+      "fields": ["bookProjectId", "chapterNumber"],
+      "unique": true
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    }
+  ]
+}

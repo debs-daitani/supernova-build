@@ -1,0 +1,106 @@
+{
+  "collectionName": "ExpertInterviews",
+  "displayName": "Expert Interviews",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "expertName",
+      "type": "text",
+      "required": true,
+      "description": "Expert's name"
+    },
+    {
+      "name": "expertise",
+      "type": "text",
+      "required": false,
+      "description": "Area of expertise"
+    },
+    {
+      "name": "credentials",
+      "type": "text",
+      "required": false,
+      "description": "Expert credentials"
+    },
+    {
+      "name": "interviewDate",
+      "type": "date",
+      "required": false,
+      "description": "Interview date"
+    },
+    {
+      "name": "questions",
+      "type": "object",
+      "required": false,
+      "description": "Array of questions asked"
+    },
+    {
+      "name": "answers",
+      "type": "object",
+      "required": false,
+      "description": "Array of answers received"
+    },
+    {
+      "name": "keyQuotes",
+      "type": "object",
+      "required": false,
+      "description": "Array of key quotes to use"
+    },
+    {
+      "name": "usageNotes",
+      "type": "richText",
+      "required": false,
+      "description": "Notes on how to use this interview"
+    },
+    {
+      "name": "chapterIds",
+      "type": "object",
+      "required": false,
+      "description": "Array of chapter IDs where this interview is referenced"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "expertName_index",
+      "fields": ["expertName"],
+      "unique": false
+    },
+    {
+      "name": "interviewDate_index",
+      "fields": ["interviewDate"],
+      "unique": false
+    }
+  ]
+}

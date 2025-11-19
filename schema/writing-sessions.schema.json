@@ -1,0 +1,94 @@
+{
+  "collectionName": "WritingSessions",
+  "displayName": "Writing Sessions",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "User ID"
+    },
+    {
+      "name": "chapterId",
+      "type": "text",
+      "required": false,
+      "description": "Chapter worked on (if specific)"
+    },
+    {
+      "name": "startTime",
+      "type": "date",
+      "required": true,
+      "description": "Session start time"
+    },
+    {
+      "name": "endTime",
+      "type": "date",
+      "required": false,
+      "description": "Session end time"
+    },
+    {
+      "name": "wordsWritten",
+      "type": "number",
+      "required": true,
+      "description": "Number of words written in session"
+    },
+    {
+      "name": "goalMet",
+      "type": "boolean",
+      "required": false,
+      "description": "Whether daily goal was met"
+    },
+    {
+      "name": "mood",
+      "type": "text",
+      "required": false,
+      "description": "Writer mood (energized, focused, struggling, flowing)"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Session notes"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "startTime_index",
+      "fields": ["startTime"],
+      "unique": false
+    }
+  ]
+}

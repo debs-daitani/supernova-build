@@ -1,0 +1,95 @@
+{
+  "collectionName": "CaseStudies",
+  "displayName": "Case Studies",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "required": true,
+      "description": "Case study subject (person/company name)"
+    },
+    {
+      "name": "problem",
+      "type": "richText",
+      "required": false,
+      "description": "The problem/challenge faced"
+    },
+    {
+      "name": "solution",
+      "type": "richText",
+      "required": false,
+      "description": "The solution implemented"
+    },
+    {
+      "name": "results",
+      "type": "richText",
+      "required": false,
+      "description": "Results and outcomes"
+    },
+    {
+      "name": "quotes",
+      "type": "object",
+      "required": false,
+      "description": "Array of quotes from the subject"
+    },
+    {
+      "name": "dataPoints",
+      "type": "object",
+      "required": false,
+      "description": "Array of data points and statistics"
+    },
+    {
+      "name": "lessons",
+      "type": "richText",
+      "required": false,
+      "description": "Key lessons and takeaways"
+    },
+    {
+      "name": "chapterIds",
+      "type": "object",
+      "required": false,
+      "description": "Array of chapter IDs where this case study is used"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "subject_index",
+      "fields": ["subject"],
+      "unique": false
+    }
+  ]
+}

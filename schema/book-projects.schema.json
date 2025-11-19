@@ -1,0 +1,147 @@
+{
+  "collectionName": "BookProjects",
+  "displayName": "Book Projects",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "userId",
+      "type": "text",
+      "required": true,
+      "description": "Owner user ID"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "description": "Book title"
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "required": false,
+      "description": "Book subtitle"
+    },
+    {
+      "name": "genre",
+      "type": "text",
+      "required": true,
+      "description": "Genre (fiction, non_fiction, memoir, business, self_help, etc.)"
+    },
+    {
+      "name": "targetWordCount",
+      "type": "number",
+      "required": true,
+      "description": "Target word count goal"
+    },
+    {
+      "name": "currentWordCount",
+      "type": "number",
+      "required": true,
+      "description": "Current total word count"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (planning, drafting, editing, publishing)"
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false,
+      "description": "Book description/synopsis"
+    },
+    {
+      "name": "elevatorPitch",
+      "type": "text",
+      "required": false,
+      "description": "One-sentence pitch"
+    },
+    {
+      "name": "targetAudience",
+      "type": "text",
+      "required": false,
+      "description": "Target audience description"
+    },
+    {
+      "name": "competingBooks",
+      "type": "object",
+      "required": false,
+      "description": "Competing/comparable books data"
+    },
+    {
+      "name": "uniqueSellingPoint",
+      "type": "text",
+      "required": false,
+      "description": "What makes this book unique"
+    },
+    {
+      "name": "coverImageUrl",
+      "type": "image",
+      "required": false,
+      "description": "Book cover image URL"
+    },
+    {
+      "name": "startedAt",
+      "type": "date",
+      "required": true,
+      "description": "Project start date"
+    },
+    {
+      "name": "targetCompletionDate",
+      "type": "date",
+      "required": false,
+      "description": "Target completion date"
+    },
+    {
+      "name": "publishedAt",
+      "type": "date",
+      "required": false,
+      "description": "Publication date"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "userId_index",
+      "fields": ["userId"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    },
+    {
+      "name": "genre_index",
+      "fields": ["genre"],
+      "unique": false
+    },
+    {
+      "name": "createdAt_index",
+      "fields": ["createdAt"],
+      "unique": false
+    }
+  ]
+}

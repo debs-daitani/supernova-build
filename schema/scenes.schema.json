@@ -1,0 +1,124 @@
+{
+  "collectionName": "Scenes",
+  "displayName": "Book Scenes",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "chapterId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent chapter"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "sceneNumber",
+      "type": "number",
+      "required": true,
+      "description": "Scene sequence number within chapter"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "description": "Scene title"
+    },
+    {
+      "name": "setting",
+      "type": "text",
+      "required": false,
+      "description": "Scene setting (time and place)"
+    },
+    {
+      "name": "characters",
+      "type": "object",
+      "required": false,
+      "description": "Array of character IDs present in scene"
+    },
+    {
+      "name": "purpose",
+      "type": "text",
+      "required": false,
+      "description": "Scene purpose (plot, character_development, world_building, tension, etc.)"
+    },
+    {
+      "name": "conflict",
+      "type": "text",
+      "required": false,
+      "description": "Conflict/obstacle in scene"
+    },
+    {
+      "name": "resolution",
+      "type": "text",
+      "required": false,
+      "description": "Scene resolution/outcome"
+    },
+    {
+      "name": "wordCount",
+      "type": "number",
+      "required": true,
+      "description": "Scene word count"
+    },
+    {
+      "name": "content",
+      "type": "richText",
+      "required": false,
+      "description": "Scene content"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Scene notes"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (outline, draft, revision, complete)"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "chapterId_index",
+      "fields": ["chapterId"],
+      "unique": false
+    },
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "chapter_scene_unique",
+      "fields": ["chapterId", "sceneNumber"],
+      "unique": true
+    }
+  ]
+}

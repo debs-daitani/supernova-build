@@ -1,0 +1,124 @@
+{
+  "collectionName": "QueryLetters",
+  "displayName": "Query Letters",
+  "permissions": {
+    "read": "Anyone",
+    "write": "Author",
+    "delete": "Author"
+  },
+  "fields": [
+    {
+      "name": "_id",
+      "type": "text",
+      "required": true,
+      "description": "Auto-generated unique identifier"
+    },
+    {
+      "name": "bookProjectId",
+      "type": "text",
+      "required": true,
+      "description": "Reference to parent book project"
+    },
+    {
+      "name": "version",
+      "type": "number",
+      "required": true,
+      "description": "Query letter version number"
+    },
+    {
+      "name": "hook",
+      "type": "richText",
+      "required": false,
+      "description": "Opening hook paragraph"
+    },
+    {
+      "name": "bookDescription",
+      "type": "richText",
+      "required": false,
+      "description": "Book description/synopsis"
+    },
+    {
+      "name": "authorBio",
+      "type": "richText",
+      "required": false,
+      "description": "Author bio paragraph"
+    },
+    {
+      "name": "comparableTitles",
+      "type": "text",
+      "required": false,
+      "description": "Comparable titles (X meets Y)"
+    },
+    {
+      "name": "wordCount",
+      "type": "number",
+      "required": false,
+      "description": "Book word count"
+    },
+    {
+      "name": "genre",
+      "type": "text",
+      "required": false,
+      "description": "Book genre"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "description": "Status (draft, sent, rejected, accepted)"
+    },
+    {
+      "name": "sentTo",
+      "type": "text",
+      "required": false,
+      "description": "Agent/publisher name sent to"
+    },
+    {
+      "name": "sentDate",
+      "type": "date",
+      "required": false,
+      "description": "Date sent"
+    },
+    {
+      "name": "responseDate",
+      "type": "date",
+      "required": false,
+      "description": "Date of response"
+    },
+    {
+      "name": "notes",
+      "type": "richText",
+      "required": false,
+      "description": "Additional notes"
+    },
+    {
+      "name": "createdAt",
+      "type": "date",
+      "required": true,
+      "description": "Record creation timestamp"
+    },
+    {
+      "name": "updatedAt",
+      "type": "date",
+      "required": true,
+      "description": "Last update timestamp"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "bookProjectId_index",
+      "fields": ["bookProjectId"],
+      "unique": false
+    },
+    {
+      "name": "status_index",
+      "fields": ["status"],
+      "unique": false
+    },
+    {
+      "name": "sentDate_index",
+      "fields": ["sentDate"],
+      "unique": false
+    }
+  ]
+}
