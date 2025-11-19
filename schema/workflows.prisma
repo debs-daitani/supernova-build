@@ -1,0 +1,227 @@
+/**
+ * Workflow Automation Schema
+ * Visual automation builder (Zapier killer)
+ */
+
+// Add to your main User model:
+model User {
+  // ... existing fields
+
+  // Workflow relations
+  workflows         Workflow[]
+  workflowExecutions WorkflowExecution[]
+}
+
+// Workflow Definition
+model Workflow {
+  id                String              @id @default(cuid())
+
+  // Owner
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  name              String
+  description       String?             @db.Text
+  isActive          Boolean             @default(false)
+
+  // Workflow definition
+  trigger           Json                // { type: "user_signup", config: {...} }
+  nodes             Json                // Array of nodes with positions
+  edges             Json                // Array of connections between nodes
+
+  // Legacy fields for backward compatibility
+  actions           Json?               // Array of actions (deprecated, use nodes)
+  conditions        Json?               // Conditions (deprecated, use nodes)
+
+  // Execution tracking
+  executionCount    Int                 @default(0)
+  lastExecutedAt    DateTime?
+
+  // Stats
+  successCount      Int                 @default(0)
+  failureCount      Int                 @default(0)
+
+  // Metadata
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  executions        WorkflowExecution[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// Workflow Execution (history of runs)
+model WorkflowExecution {
+  id                String              @id @default(cuid())
+
+  // Workflow
+  workflowId        String
+  workflow          Workflow            @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // User who triggered it
+  userId            String?
+  user              User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Status
+  status            ExecutionStatus     @default(RUNNING)
+
+  // Data
+  triggerData       Json                // What triggered this execution
+  executedActions   Json                // Array of executed actions with results
+  errors            Json?               // Any errors that occurred
+  output            Json?               // Final output data
+
+  // Timing
+  startedAt         DateTime            @default(now())
+  completedAt       DateTime?
+  duration          Int?                // Milliseconds
+
+  @@index([workflowId])
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum ExecutionStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+  TIMEOUT
+}
+
+// Pre-built Workflow Templates
+model WorkflowTemplate {
+  id                String              @id @default(cuid())
+
+  // Template info
+  name              String
+  description       String              @db.Text
+  category          String              // "ecommerce", "courses", "crm", "marketing"
+
+  // Workflow definition
+  workflow          Json                // Complete workflow config (trigger, nodes, edges)
+
+  // Preview
+  thumbnail         String?             // Screenshot/preview image
+
+  // Metadata
+  usageCount        Int                 @default(0)
+  isOfficial        Boolean             @default(false) // Created by dAItaniverse team
+  isFeatured        Boolean             @default(false)
+
+  // Tags for search
+  tags              String[]
+
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([category])
+  @@index([isOfficial])
+  @@index([isFeatured])
+}
+
+// Scheduled Workflow Runs
+model ScheduledWorkflow {
+  id                String              @id @default(cuid())
+
+  workflowId        String
+
+  // Schedule configuration
+  scheduleType      ScheduleType        // ONCE, HOURLY, DAILY, WEEKLY, MONTHLY, CRON
+  scheduleConfig    Json                // { hour: 9, minute: 0, dayOfWeek: 1, ... }
+  cronExpression    String?             // For CRON type
+
+  // Next run
+  nextRunAt         DateTime
+  lastRunAt         DateTime?
+
+  // Status
+  isActive          Boolean             @default(true)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([workflowId])
+  @@index([nextRunAt])
+  @@index([isActive])
+}
+
+enum ScheduleType {
+  ONCE
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  CRON
+}
+
+// Workflow Queue (for async execution)
+model WorkflowQueue {
+  id                String              @id @default(cuid())
+
+  workflowId        String
+  userId            String?
+
+  // Execution data
+  triggerType       String              // "user_signup", "purchase_complete", etc.
+  triggerData       Json
+
+  // Queue management
+  status            QueueStatus         @default(PENDING)
+  attempts          Int                 @default(0)
+  maxAttempts       Int                 @default(3)
+
+  // Timing
+  scheduledFor      DateTime            @default(now())
+  processingStarted DateTime?
+  processedAt       DateTime?
+
+  // Error handling
+  lastError         String?             @db.Text
+
+  createdAt         DateTime            @default(now())
+
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+enum QueueStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Webhook Triggers (external systems can trigger workflows)
+model WorkflowWebhook {
+  id                String              @id @default(cuid())
+
+  workflowId        String
+
+  // Webhook details
+  webhookUrl        String              @unique // /api/webhooks/:id
+  secret            String?             // For verification
+
+  // Config
+  method            String              @default("POST") // POST, GET, etc.
+  headers           Json?               // Expected headers
+
+  // Stats
+  callCount         Int                 @default(0)
+  lastCalledAt      DateTime?
+
+  // Status
+  isActive          Boolean             @default(true)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([workflowId])
+  @@index([webhookUrl])
+}
