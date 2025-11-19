@@ -201,6 +201,12 @@ import SignupFlow from './pages/signup/SignupFlow';
 import SignupSuccess from './pages/signup/SignupSuccess';
 import VerifyEmail from './pages/signup/VerifyEmail';
 
+// Phase 2BG - Payment & Subscription System
+import BillingOverview from './pages/billing/BillingOverview';
+import PaymentMethods from './pages/billing/PaymentMethods';
+import BillingInvoices from './pages/billing/Invoices';
+import ChangePlan from './pages/billing/ChangePlan';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -403,6 +409,12 @@ function App() {
         {/* Phase 2BD - Thank You Pages */}
         <Route path="/thank-you-pages" element={<ThankYouPagesDashboard />} />
         <Route path="/thank-you-pages/:id/builder" element={<ThankYouPageBuilder />} />
+
+        {/* Phase 2BG - Payment & Subscription System */}
+        <Route path="/billing" element={<BillingOverview />} />
+        <Route path="/billing/payment-methods" element={<PaymentMethods />} />
+        <Route path="/billing/invoices" element={<BillingInvoices />} />
+        <Route path="/billing/change-plan" element={<ChangePlan />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

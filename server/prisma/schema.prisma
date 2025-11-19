@@ -31,12 +31,19 @@ model User {
   emailVerified Boolean  @default(false)
 
   // Phase 2BF - Trial & Subscription Management
-  planType      String?     // "trial", "pro", "enterprise"
-  planStatus    String      @default("active")  // "active", "cancelled", "expired", "past_due"
+  planType      String?     // "trial", "pro_monthly", "pro_yearly", "supernova_lte"
+  planStatus    String      @default("active")  // "active", "canceled", "past_due", "incomplete"
   trialStartDate DateTime?
   trialEndDate  DateTime?
   stripeCustomerId String?  @unique
   stripeSubscriptionId String?  @unique
+
+  // Phase 2BG - Billing Management
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean  @default(false)
+  hasPaymentMethod   Boolean  @default(false)
+  defaultPaymentMethod String?  // last 4 digits of card
 
   // Phase 2BF - Signup & Referral Tracking
   referralSource String?    // Where they came from
@@ -278,11 +285,17 @@ model User {
   // Phase 2BF - Signup Flow
   signupFlowSessions  SignupFlowSession[]
 
+  // Phase 2BG - Payments & Billing
+  payments            Payment[]
+  invoices            Invoice[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
   @@index([verificationToken])
   @@index([trialEndDate])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
 }
 
 enum AccountType {
@@ -6157,4 +6170,82 @@ model SignupFlowSession {
   @@index([isCompleted])
   @@index([abandonedAt])
   @@index([createdAt])
+}
+
+// ============================================
+// PHASE 2BG: PAYMENT & BILLING SYSTEM
+// ============================================
+
+model Payment {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe IDs
+  stripePaymentIntentId String @unique
+  stripeChargeId     String?
+  stripeInvoiceId    String?
+
+  // Amount
+  amount        Float
+  currency      String        @default("GBP")
+
+  // Status
+  status        String        // "succeeded", "failed", "refunded", "partially_refunded"
+
+  // Type
+  type          String        // "subscription", "one_time", "upgrade"
+
+  // Description
+  description   String?
+
+  // Refund
+  refundedAmount Float?       @default(0)
+  refundReason  String?
+
+  // Metadata
+  metadata      Json?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe
+  stripeInvoiceId String      @unique
+
+  // Invoice details
+  invoiceNumber String        @unique
+  amount        Float
+  tax           Float         @default(0)
+  total         Float
+  currency      String        @default("GBP")
+
+  // Status
+  status        String        // "draft", "open", "paid", "void", "uncollectible"
+
+  // Period
+  periodStart   DateTime
+  periodEnd     DateTime
+
+  // PDF
+  invoicePdf    String?       // URL to Stripe PDF
+
+  // Dates
+  dueDate       DateTime?
+  paidAt        DateTime?
+
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([status])
 }

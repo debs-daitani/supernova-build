@@ -1,9 +1,15 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { processSocialMessage, handleCommentTrigger } from '../services/socialAutomationEngine.js';
+import Stripe from 'stripe';
+import {
+  getReceiptEmailTemplate,
+  getPaymentFailedEmailTemplate
+} from '../utils/email-templates.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy');
 
 const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || 'supernova_verify_token';
 
@@ -237,6 +243,211 @@ async function findAccountByPlatformId(platformId, platform) {
       accountId: platformId
     }
   });
+}
+
+// ============================================
+// STRIPE WEBHOOKS (Phase 2BG)
+// ============================================
+
+/**
+ * Handle Stripe webhooks
+ * POST /api/webhooks/stripe
+ *
+ * IMPORTANT: This endpoint needs raw body, not JSON
+ * Configure in server/src/index.js with express.raw()
+ */
+router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  console.log(`Received Stripe event: ${event.type}`);
+
+  // Handle the event
+  try {
+    switch (event.type) {
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+        await handleSubscriptionUpdated(event.data.object);
+        break;
+
+      case 'customer.subscription.deleted':
+        await handleSubscriptionDeleted(event.data.object);
+        break;
+
+      case 'invoice.payment_succeeded':
+        await handleInvoicePaymentSucceeded(event.data.object);
+        break;
+
+      case 'invoice.payment_failed':
+        await handleInvoicePaymentFailed(event.data.object);
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    res.status(500).json({ error: 'Webhook handler failed' });
+  }
+});
+
+// Stripe webhook event handlers
+async function handleSubscriptionUpdated(subscription) {
+  console.log('Subscription updated:', subscription.id);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { stripeCustomerId: subscription.customer },
+        { stripeSubscriptionId: subscription.id }
+      ]
+    }
+  });
+
+  if (!user) {
+    console.error('User not found for subscription:', subscription.id);
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      stripeSubscriptionId: subscription.id,
+      planStatus: subscription.status,
+      currentPeriodStart: new Date(subscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end
+    }
+  });
+}
+
+async function handleSubscriptionDeleted(subscription) {
+  console.log('Subscription deleted:', subscription.id);
+
+  const user = await prisma.user.findUnique({
+    where: { stripeSubscriptionId: subscription.id }
+  });
+
+  if (!user) return;
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      planStatus: 'canceled',
+      planType: 'trial',
+      cancelAtPeriodEnd: false
+    }
+  });
+}
+
+async function handleInvoicePaymentSucceeded(invoice) {
+  console.log('Payment succeeded:', invoice.id);
+
+  const user = await prisma.user.findUnique({
+    where: { stripeCustomerId: invoice.customer }
+  });
+
+  if (!user) return;
+
+  // Update subscription status
+  if (invoice.subscription) {
+    const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        planStatus: 'active',
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000)
+      }
+    });
+  }
+
+  // Log payment
+  await prisma.payment.create({
+    data: {
+      userId: user.id,
+      stripePaymentIntentId: invoice.payment_intent,
+      stripeInvoiceId: invoice.id,
+      stripeChargeId: invoice.charge,
+      amount: invoice.amount_paid / 100,
+      currency: invoice.currency.toUpperCase(),
+      status: 'succeeded',
+      type: invoice.subscription ? 'subscription' : 'one_time'
+    }
+  });
+
+  // Create invoice record
+  await prisma.invoice.create({
+    data: {
+      userId: user.id,
+      stripeInvoiceId: invoice.id,
+      invoiceNumber: invoice.number,
+      amount: invoice.subtotal / 100,
+      tax: (invoice.tax || 0) / 100,
+      total: invoice.total / 100,
+      currency: invoice.currency.toUpperCase(),
+      status: 'paid',
+      periodStart: new Date(invoice.period_start * 1000),
+      periodEnd: new Date(invoice.period_end * 1000),
+      invoicePdf: invoice.invoice_pdf,
+      paidAt: new Date()
+    }
+  });
+
+  // Send receipt email
+  try {
+    const emailTemplate = getReceiptEmailTemplate(
+      user.name,
+      user.email,
+      invoice.amount_paid / 100,
+      invoice.currency.toUpperCase(),
+      invoice.invoice_pdf
+    );
+    console.log('Receipt email would be sent to:', user.email);
+  } catch (emailError) {
+    console.error('Failed to send receipt email:', emailError);
+  }
+}
+
+async function handleInvoicePaymentFailed(invoice) {
+  console.log('Payment failed:', invoice.id);
+
+  const user = await prisma.user.findUnique({
+    where: { stripeCustomerId: invoice.customer }
+  });
+
+  if (!user) return;
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { planStatus: 'past_due' }
+  });
+
+  // Send payment failed email
+  try {
+    const emailTemplate = getPaymentFailedEmailTemplate(
+      user.name,
+      invoice.amount_due / 100,
+      invoice.currency.toUpperCase(),
+      invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000) : null
+    );
+    console.log('Payment failed email would be sent to:', user.email);
+  } catch (emailError) {
+    console.error('Failed to send payment failed email:', emailError);
+  }
 }
 
 export default router;
