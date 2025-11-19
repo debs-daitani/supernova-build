@@ -247,6 +247,10 @@ model User {
   landingPages        LandingPage[]
   pageConversions     LandingPageConversion[]
 
+  // Phase 2BB - Signup Flow Builder
+  signupFlows         SignupFlow[]
+  signupSubmissions   SignupSubmission[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5614,4 +5618,131 @@ model LandingPageTemplate {
 
   @@index([category])
   @@index([isActive])
+}
+
+// ============================================
+// PHASE 2BB: SIGNUP FLOW BUILDER
+// ============================================
+
+model SignupFlow {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Flow info
+  name          String
+  slug          String        @unique
+
+  // Type
+  flowType      String        // "lead_magnet", "waitlist", "trial", "newsletter", "event", "quiz"
+
+  // Steps (JSON array of step configs)
+  steps         Json          // [{stepId, title, fields: [...]}]
+
+  // Settings
+  showProgress  Boolean       @default(true)
+  allowBack     Boolean       @default(true)  // Can go back to previous step
+
+  // Confirmation
+  confirmationType String     @default("page")  // "page", "redirect", "inline"
+  confirmationMessage String? @db.Text
+  confirmationUrl String?
+
+  // Lead magnet (if applicable)
+  leadMagnetUrl String?
+  leadMagnetName String?
+
+  // Email integration
+  sendToEmail   String?       // Admin notification email
+  emailListId   String?       // Which email list to add to
+  autoResponder String?       // Auto-reply email template
+
+  // Design
+  theme         String        @default("default")
+  customCSS     String?       @db.Text
+
+  // SEO
+  metaTitle     String?
+  metaDescription String?
+
+  // Status
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
+
+  // Stats
+  views         Int           @default(0)
+  starts        Int           @default(0)  // Started filling form
+  completions   Int           @default(0)
+  conversionRate Float?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  submissions   SignupSubmission[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([flowType])
+}
+
+model SignupSubmission {
+  id            String        @id @default(cuid())
+
+  flowId        String
+  flow          SignupFlow    @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  // Submitter
+  visitorId     String        // Anonymous tracking
+  userId        String?       // If logged in
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Form data
+  data          Json          // All field values
+
+  // Progress
+  currentStep   Int           @default(0)
+  totalSteps    Int
+  completed     Boolean       @default(false)
+
+  // Source
+  referrer      String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+
+  // Timing
+  timeToComplete Int?         // Seconds
+
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+
+  @@index([flowId])
+  @@index([completed])
+  @@index([completedAt])
+}
+
+model SignupFlowTemplate {
+  id            String        @id @default(cuid())
+
+  // Template info
+  name          String
+  description   String?       @db.Text
+  category      String        // "lead_magnet", "waitlist", "trial", etc.
+
+  // Preview
+  thumbnail     String?
+
+  // Structure
+  steps         Json          // Default steps config
+
+  // Stats
+  avgConversionRate Float?
+
+  // Status
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
 }

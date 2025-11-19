@@ -182,6 +182,10 @@ import LandingPageTemplates from './pages/landingPages/Templates';
 import LandingPageBuilder from './pages/landingPages/Builder';
 import LandingPageAnalytics from './pages/landingPages/Analytics';
 
+// Phase 2BB - Signup Flow Builder
+import SignupFlowsDashboard from './pages/signupFlows/Dashboard';
+import SignupFlowBuilder from './pages/signupFlows/Builder';
+
 // Error Pages
 import NotFound from './pages/errors/NotFound';
 
@@ -366,6 +370,10 @@ function App() {
         <Route path="/landing-pages/templates" element={<LandingPageTemplates />} />
         <Route path="/landing-pages/:id/builder" element={<LandingPageBuilder />} />
         <Route path="/landing-pages/:id/analytics" element={<LandingPageAnalytics />} />
+
+        {/* Phase 2BB - Signup Flow Builder */}
+        <Route path="/signup-flows" element={<SignupFlowsDashboard />} />
+        <Route path="/signup-flows/:id/builder" element={<SignupFlowBuilder />} />
 
         {/* Phase 2AX - Onboarding Flow */}
         <Route path="/tutorials" element={<Tutorials />} />

@@ -124,6 +124,9 @@ import emailSequencesRoutes from './routes/email-sequences.js';
 // Phase 2BA - Landing Page System
 import landingPagesRoutes from './routes/landing-pages.js';
 
+// Phase 2BB - Signup Flow Builder
+import signupFlowsRoutes from './routes/signup-flows.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -267,6 +270,9 @@ app.use('/api/email-sequences', emailSequencesRoutes);
 
 // Phase 2BA - Landing Page System
 app.use('/api/landing-pages', landingPagesRoutes);
+
+// Phase 2BB - Signup Flow Builder
+app.use('/api/signup-flows', signupFlowsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
