@@ -1,0 +1,47 @@
+{
+  "displayName": "Competitor Snapshots",
+  "id": "CompetitorSnapshots",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "snapshotType",
+      "type": "text",
+      "description": "Type: website, pricing, product, social, seo, content"
+    },
+    {
+      "key": "data",
+      "type": "object",
+      "description": "JSON object containing captured data"
+    },
+    {
+      "key": "changes",
+      "type": "object",
+      "description": "JSON object showing what changed since last snapshot"
+    },
+    {
+      "key": "hasChanges",
+      "type": "boolean",
+      "description": "Whether any changes were detected"
+    },
+    {
+      "key": "significance",
+      "type": "text",
+      "description": "Change significance: minor, medium, important, critical"
+    },
+    {
+      "key": "capturedAt",
+      "type": "datetime",
+      "description": "When snapshot was taken"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "displayName": "Competitor Comparisons",
+  "id": "CompetitorComparisons",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User who created this comparison"
+    },
+    {
+      "key": "name",
+      "type": "text",
+      "description": "Comparison name (e.g., 'My Business vs Top 3 Competitors')"
+    },
+    {
+      "key": "comparisonType",
+      "type": "text",
+      "description": "Type: pricing, features, social, seo, content, traffic, overall"
+    },
+    {
+      "key": "competitorIds",
+      "type": "object",
+      "description": "JSON array of competitor IDs being compared"
+    },
+    {
+      "key": "metrics",
+      "type": "object",
+      "description": "JSON object defining which metrics to compare"
+    },
+    {
+      "key": "reportData",
+      "type": "object",
+      "description": "JSON object with comparison results and analysis"
+    },
+    {
+      "key": "insights",
+      "type": "object",
+      "description": "JSON array of AI-generated insights from the comparison"
+    },
+    {
+      "key": "visualizations",
+      "type": "object",
+      "description": "JSON object with chart configurations for visualizing data"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "When comparison was created"
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "description": "Last update"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Owner",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

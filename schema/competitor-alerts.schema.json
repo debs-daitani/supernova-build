@@ -1,0 +1,72 @@
+{
+  "displayName": "Competitor Alerts",
+  "id": "CompetitorAlerts",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User receiving this alert"
+    },
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "competitorName",
+      "type": "text",
+      "description": "Competitor name (for quick display)"
+    },
+    {
+      "key": "alertType",
+      "type": "text",
+      "description": "Type: website_change, pricing_change, new_product, new_content, social_spike, seo_change, news, funding"
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "description": "Alert title"
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "Alert description"
+    },
+    {
+      "key": "data",
+      "type": "object",
+      "description": "JSON object with alert details"
+    },
+    {
+      "key": "severity",
+      "type": "text",
+      "description": "Severity: info, warning, important, critical"
+    },
+    {
+      "key": "isRead",
+      "type": "boolean",
+      "description": "Whether user has read this alert"
+    },
+    {
+      "key": "isDismissed",
+      "type": "boolean",
+      "description": "Whether user has dismissed this alert"
+    },
+    {
+      "key": "actionTaken",
+      "type": "text",
+      "description": "User notes on action taken"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "When alert was created"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Owner",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

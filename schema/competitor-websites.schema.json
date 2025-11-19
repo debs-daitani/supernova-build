@@ -1,0 +1,77 @@
+{
+  "displayName": "Competitor Websites",
+  "id": "CompetitorWebsites",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "url",
+      "type": "text",
+      "description": "Website URL"
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "description": "Page title"
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "Meta description"
+    },
+    {
+      "key": "keywords",
+      "type": "object",
+      "description": "Array of meta keywords"
+    },
+    {
+      "key": "mainProducts",
+      "type": "object",
+      "description": "JSON array of main products/services mentioned"
+    },
+    {
+      "key": "pricing",
+      "type": "object",
+      "description": "JSON object with pricing information"
+    },
+    {
+      "key": "features",
+      "type": "object",
+      "description": "JSON array of features mentioned"
+    },
+    {
+      "key": "ctaText",
+      "type": "text",
+      "description": "Primary call-to-action text"
+    },
+    {
+      "key": "screenshots",
+      "type": "object",
+      "description": "JSON array of screenshot URLs {homepage, pricing, about, etc.}"
+    },
+    {
+      "key": "contentHash",
+      "type": "text",
+      "description": "Hash of page content for change detection"
+    },
+    {
+      "key": "lastChecked",
+      "type": "datetime",
+      "description": "Last time website was checked"
+    },
+    {
+      "key": "lastChanged",
+      "type": "datetime",
+      "description": "Last time changes were detected"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

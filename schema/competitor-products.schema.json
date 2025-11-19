@@ -1,0 +1,77 @@
+{
+  "displayName": "Competitor Products",
+  "id": "CompetitorProducts",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "name",
+      "type": "text",
+      "description": "Product name"
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "Product description"
+    },
+    {
+      "key": "price",
+      "type": "number",
+      "description": "Product price"
+    },
+    {
+      "key": "currency",
+      "type": "text",
+      "description": "Currency code (GBP, USD, EUR)"
+    },
+    {
+      "key": "pricingModel",
+      "type": "text",
+      "description": "Pricing model: one_time, subscription, freemium, usage_based, tiered"
+    },
+    {
+      "key": "features",
+      "type": "object",
+      "description": "JSON array of product features"
+    },
+    {
+      "key": "url",
+      "type": "text",
+      "description": "Product page URL"
+    },
+    {
+      "key": "status",
+      "type": "text",
+      "description": "Status: new, active, updated, discontinued"
+    },
+    {
+      "key": "category",
+      "type": "text",
+      "description": "Product category"
+    },
+    {
+      "key": "firstSeen",
+      "type": "datetime",
+      "description": "When product was first detected"
+    },
+    {
+      "key": "lastSeen",
+      "type": "datetime",
+      "description": "Last time product was seen on website"
+    },
+    {
+      "key": "lastChanged",
+      "type": "datetime",
+      "description": "Last time product info changed"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

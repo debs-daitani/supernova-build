@@ -1,0 +1,82 @@
+{
+  "displayName": "Competitor SEO",
+  "id": "CompetitorSEO",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "domain",
+      "type": "text",
+      "description": "Domain being tracked"
+    },
+    {
+      "key": "domainAuthority",
+      "type": "number",
+      "description": "Domain authority score (0-100)"
+    },
+    {
+      "key": "domainAuthorityChange",
+      "type": "number",
+      "description": "Change in DA since last check"
+    },
+    {
+      "key": "organicKeywords",
+      "type": "number",
+      "description": "Number of keywords ranking organically"
+    },
+    {
+      "key": "organicTraffic",
+      "type": "number",
+      "description": "Estimated monthly organic traffic"
+    },
+    {
+      "key": "organicTrafficChange",
+      "type": "number",
+      "description": "Change in traffic since last check"
+    },
+    {
+      "key": "backlinks",
+      "type": "number",
+      "description": "Total backlinks"
+    },
+    {
+      "key": "backlinksChange",
+      "type": "number",
+      "description": "Change in backlinks"
+    },
+    {
+      "key": "referringDomains",
+      "type": "number",
+      "description": "Number of unique referring domains"
+    },
+    {
+      "key": "topRankings",
+      "type": "object",
+      "description": "JSON array of top keyword rankings: [{keyword, position, url, volume, difficulty}]"
+    },
+    {
+      "key": "topBacklinks",
+      "type": "object",
+      "description": "JSON array of high-quality backlinks"
+    },
+    {
+      "key": "topPages",
+      "type": "object",
+      "description": "JSON array of pages with most traffic"
+    },
+    {
+      "key": "capturedAt",
+      "type": "datetime",
+      "description": "When SEO data was captured"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

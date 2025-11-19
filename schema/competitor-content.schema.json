@@ -1,0 +1,72 @@
+{
+  "displayName": "Competitor Content",
+  "id": "CompetitorContent",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "contentType",
+      "type": "text",
+      "description": "Type: blog_post, video, podcast, webinar, ebook, case_study, whitepaper"
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "description": "Content title"
+    },
+    {
+      "key": "url",
+      "type": "text",
+      "description": "Content URL"
+    },
+    {
+      "key": "author",
+      "type": "text",
+      "description": "Content author"
+    },
+    {
+      "key": "publishedAt",
+      "type": "datetime",
+      "description": "When content was published"
+    },
+    {
+      "key": "topic",
+      "type": "text",
+      "description": "Main topic or category"
+    },
+    {
+      "key": "keywords",
+      "type": "object",
+      "description": "Array of keywords/tags"
+    },
+    {
+      "key": "summary",
+      "type": "text",
+      "description": "Content summary or excerpt"
+    },
+    {
+      "key": "engagement",
+      "type": "object",
+      "description": "JSON object with engagement metrics: {shares, comments, likes, views}"
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform where content is hosted (company blog, YouTube, Medium, etc.)"
+    },
+    {
+      "key": "capturedAt",
+      "type": "datetime",
+      "description": "When this content was first discovered"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

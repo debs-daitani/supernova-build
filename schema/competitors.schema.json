@@ -1,0 +1,97 @@
+{
+  "displayName": "Competitors",
+  "id": "Competitors",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User who is tracking this competitor"
+    },
+    {
+      "key": "name",
+      "type": "text",
+      "description": "Competitor company name"
+    },
+    {
+      "key": "website",
+      "type": "text",
+      "description": "Primary website URL"
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "Company description"
+    },
+    {
+      "key": "industry",
+      "type": "text",
+      "description": "Industry/sector"
+    },
+    {
+      "key": "size",
+      "type": "text",
+      "description": "Company size: startup, small, medium, large, enterprise"
+    },
+    {
+      "key": "founded",
+      "type": "text",
+      "description": "Year founded"
+    },
+    {
+      "key": "location",
+      "type": "text",
+      "description": "Headquarters location"
+    },
+    {
+      "key": "status",
+      "type": "text",
+      "description": "Status: active, inactive, acquired, defunct"
+    },
+    {
+      "key": "relationship",
+      "type": "text",
+      "description": "Competitive relationship: direct, indirect, adjacent"
+    },
+    {
+      "key": "logo",
+      "type": "text",
+      "description": "Logo URL"
+    },
+    {
+      "key": "socialProfiles",
+      "type": "object",
+      "description": "JSON object with social media URLs: {twitter, linkedin, instagram, facebook, youtube, tiktok}"
+    },
+    {
+      "key": "notes",
+      "type": "text",
+      "description": "User notes about this competitor"
+    },
+    {
+      "key": "monitoringEnabled",
+      "type": "boolean",
+      "description": "Whether automated monitoring is active"
+    },
+    {
+      "key": "lastMonitored",
+      "type": "datetime",
+      "description": "Last time monitoring ran"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "When competitor was added"
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "description": "Last update"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Owner",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

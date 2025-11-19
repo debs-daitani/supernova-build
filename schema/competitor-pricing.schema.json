@@ -1,0 +1,82 @@
+{
+  "displayName": "Competitor Pricing",
+  "id": "CompetitorPricing",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "productName",
+      "type": "text",
+      "description": "Product or service name"
+    },
+    {
+      "key": "plan",
+      "type": "text",
+      "description": "Plan name (e.g., Free, Basic, Pro, Enterprise)"
+    },
+    {
+      "key": "price",
+      "type": "number",
+      "description": "Plan price"
+    },
+    {
+      "key": "currency",
+      "type": "text",
+      "description": "Currency code (GBP, USD, EUR)"
+    },
+    {
+      "key": "billingCycle",
+      "type": "text",
+      "description": "Billing cycle: monthly, annual, one_time, usage_based"
+    },
+    {
+      "key": "features",
+      "type": "object",
+      "description": "JSON array of features included in this plan"
+    },
+    {
+      "key": "limitations",
+      "type": "object",
+      "description": "JSON object with usage limits (users, storage, API calls, etc.)"
+    },
+    {
+      "key": "promotion",
+      "type": "text",
+      "description": "Active promotion or discount"
+    },
+    {
+      "key": "changes",
+      "type": "object",
+      "description": "JSON object showing what changed from previous version"
+    },
+    {
+      "key": "previousPrice",
+      "type": "number",
+      "description": "Price before latest change"
+    },
+    {
+      "key": "priceChangePercentage",
+      "type": "number",
+      "description": "Percentage change in price"
+    },
+    {
+      "key": "effectiveDate",
+      "type": "datetime",
+      "description": "When this pricing became effective"
+    },
+    {
+      "key": "capturedAt",
+      "type": "datetime",
+      "description": "When this pricing snapshot was captured"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

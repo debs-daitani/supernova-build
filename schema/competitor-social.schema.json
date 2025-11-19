@@ -1,0 +1,87 @@
+{
+  "displayName": "Competitor Social Media",
+  "id": "CompetitorSocial",
+  "fields": [
+    {
+      "key": "competitorId",
+      "type": "text",
+      "description": "Reference to Competitors collection"
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform: twitter, linkedin, instagram, facebook, youtube, tiktok"
+    },
+    {
+      "key": "handle",
+      "type": "text",
+      "description": "Social media handle/username"
+    },
+    {
+      "key": "profileUrl",
+      "type": "text",
+      "description": "Profile URL"
+    },
+    {
+      "key": "followers",
+      "type": "number",
+      "description": "Current follower count"
+    },
+    {
+      "key": "followersChange",
+      "type": "number",
+      "description": "Change in followers since last check"
+    },
+    {
+      "key": "followersChangePercentage",
+      "type": "number",
+      "description": "Percentage change in followers"
+    },
+    {
+      "key": "following",
+      "type": "number",
+      "description": "Number of accounts they follow"
+    },
+    {
+      "key": "postCount",
+      "type": "number",
+      "description": "Total posts"
+    },
+    {
+      "key": "postFrequency",
+      "type": "number",
+      "description": "Average posts per week"
+    },
+    {
+      "key": "engagementRate",
+      "type": "number",
+      "description": "Average engagement rate (percentage)"
+    },
+    {
+      "key": "recentPosts",
+      "type": "object",
+      "description": "JSON array of recent posts with engagement data"
+    },
+    {
+      "key": "topPosts",
+      "type": "object",
+      "description": "JSON array of top-performing posts"
+    },
+    {
+      "key": "hashtags",
+      "type": "object",
+      "description": "JSON array of commonly used hashtags"
+    },
+    {
+      "key": "capturedAt",
+      "type": "datetime",
+      "description": "When this snapshot was taken"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}
