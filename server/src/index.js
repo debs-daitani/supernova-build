@@ -115,6 +115,9 @@ import referralsRoutes from './routes/referrals.js';
 // Phase 2AX - Onboarding Flow
 import onboardingRoutes from './routes/onboarding.js';
 
+// Phase 2AY - SUPERNova AI Brain
+import supernovaRoutes from './routes/supernova.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -249,6 +252,9 @@ app.use('/api/referrals', referralsRoutes);
 
 // Phase 2AX - Onboarding Flow
 app.use('/api/onboarding', onboardingRoutes);
+
+// Phase 2AY - SUPERNova AI Brain
+app.use('/api/supernova', supernovaRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

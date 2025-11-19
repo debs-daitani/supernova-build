@@ -229,6 +229,16 @@ model User {
   userQuickWins       UserQuickWin[]
   tutorialProgress    TutorialProgress[]
 
+  // Phase 2AY - SUPERNova AI Brain
+  preferredName       String?         // What to call them
+  pronouns            String?         // she/her, he/him, they/them, custom
+  addressStyle        String          @default("casual")  // "formal", "casual", "nickname"
+  supernovaIntroduced Boolean         @default(false)
+  firstContactAt      DateTime?
+  aiConversations     AIConversation[]
+  coachingLogs        UserCoachingLog[]
+  aiInsights          AIInsight[]
+
   @@index([email])
   @@index([accountType])
   @@index([createdAt])
@@ -5149,4 +5159,145 @@ model TutorialProgress {
   @@index([userId])
   @@index([tutorialId])
   @@index([completed])
+}
+
+// ============================================
+// PHASE 2AY - SUPERNova AI BRAIN SYSTEM
+// ============================================
+
+model KnowledgeBase {
+  id            String        @id @default(cuid())
+
+  // Version control
+  version       String        @unique  // "v1.0", "v1.1", etc.
+
+  // Content (your brain!)
+  content       String        @db.Text  // Full brain document
+
+  // Structured data
+  frameworks    Json?         // Your frameworks extracted
+  pillars       Json?         // 3 pillars: Body, Brain, Business
+  methodologies Json?         // Your coaching methodologies
+  voiceTone     Json?         // Voice guidelines
+  firstContactProtocol Json?  // How to greet new users
+
+  // Metadata
+  isActive      Boolean       @default(false)
+  description   String?       @db.Text
+
+  // Stats
+  tokenCount    Int?          // For AI context limits
+
+  // Dates
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  activatedAt   DateTime?
+
+  @@index([isActive])
+  @@index([version])
+}
+
+model AIConversation {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Conversation context
+  conversationType String      // "chat", "content_gen", "coaching", "support", "first_contact"
+
+  // Current topic
+  topic         String?
+  category      String?       // "business", "marketing", "mindset", etc.
+
+  // Messages
+  messages      Json          @default("[]")  // Array of {role, content, timestamp}
+
+  // Knowledge used
+  knowledgeVersion String?
+
+  // User preferences collected
+  preferencesCollected Boolean @default(false)
+
+  // Status
+  isActive      Boolean       @default(true)
+
+  // Dates
+  startedAt     DateTime      @default(now())
+  lastMessageAt DateTime      @default(now())
+
+  @@index([userId])
+  @@index([conversationType])
+  @@index([isActive])
+}
+
+model CoachingMoment {
+  id            String        @id @default(cuid())
+
+  // Trigger
+  triggerEvent  String        // "first_website", "stuck_on_task", "milestone_reached"
+
+  // Coaching content
+  title         String
+  message       String        @db.Text
+
+  // Related framework
+  framework     String?       // Which of your frameworks to reference
+  pillar        String?       // "body", "brain", "business"
+
+  // CTA
+  actionText    String?
+  actionUrl     String?
+
+  // Display settings
+  showOnce      Boolean       @default(false)
+  priority      Int           @default(0)
+
+  // Relations
+  userLogs      UserCoachingLog[]
+
+  createdAt     DateTime      @default(now())
+
+  @@index([triggerEvent])
+}
+
+model UserCoachingLog {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  momentId      String
+  moment        CoachingMoment @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  // When shown
+  shownAt       DateTime      @default(now())
+
+  // User action
+  dismissed     Boolean       @default(false)
+  actionTaken   Boolean       @default(false)
+
+  @@index([userId])
+  @@index([momentId])
+}
+
+model AIInsight {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Insight
+  insightType   String        // "stuck_pattern", "progress", "opportunity"
+  title         String
+  description   String        @db.Text
+
+  // Recommendation
+  recommendation String       @db.Text
+
+  // Status
+  viewed        Boolean       @default(false)
+  actedOn       Boolean       @default(false)
+
+  generatedAt   DateTime      @default(now())
+
+  @@index([userId])
+  @@index([insightType])
 }
