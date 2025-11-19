@@ -1,0 +1,127 @@
+{
+  "displayName": "Viral Trends",
+  "id": "ViralTrends",
+  "fields": [
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform: twitter, instagram, tiktok, youtube, linkedin, facebook, multi"
+    },
+    {
+      "key": "trend",
+      "type": "text",
+      "description": "Name/description of the trend"
+    },
+    {
+      "key": "trendType",
+      "type": "text",
+      "description": "Type: format, topic, challenge, hashtag, sound, effect, style"
+    },
+    {
+      "key": "category",
+      "type": "text",
+      "description": "Category: business, lifestyle, tech, health, entertainment, etc."
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "What the trend is about"
+    },
+    {
+      "key": "startDate",
+      "type": "datetime",
+      "description": "When trend started"
+    },
+    {
+      "key": "peakDate",
+      "type": "datetime",
+      "description": "When trend peaked"
+    },
+    {
+      "key": "endDate",
+      "type": "datetime",
+      "description": "When trend died (if applicable)"
+    },
+    {
+      "key": "status",
+      "type": "text",
+      "description": "Status: emerging, rising, peak, declining, dead"
+    },
+    {
+      "key": "velocity",
+      "type": "number",
+      "description": "How fast it's growing/declining"
+    },
+    {
+      "key": "participationCount",
+      "type": "number",
+      "description": "Estimated number of posts/videos using trend"
+    },
+    {
+      "key": "totalViews",
+      "type": "number",
+      "description": "Total views across all trend content"
+    },
+    {
+      "key": "exampleContent",
+      "type": "object",
+      "description": "JSON array of ViralContent IDs showing examples"
+    },
+    {
+      "key": "topCreators",
+      "type": "object",
+      "description": "Array of top creators in this trend"
+    },
+    {
+      "key": "howToCapitalize",
+      "type": "text",
+      "description": "Strategic advice on using this trend"
+    },
+    {
+      "key": "dosDonts",
+      "type": "object",
+      "description": "JSON with dos and don'ts for this trend"
+    },
+    {
+      "key": "estimatedDuration",
+      "type": "text",
+      "description": "How long trend is expected to last"
+    },
+    {
+      "key": "opportunityWindow",
+      "type": "text",
+      "description": "Time remaining to capitalize (days/weeks)"
+    },
+    {
+      "key": "difficulty",
+      "type": "text",
+      "description": "Difficulty to execute: easy, medium, hard"
+    },
+    {
+      "key": "tags",
+      "type": "object",
+      "description": "Array of tags"
+    },
+    {
+      "key": "relatedTrends",
+      "type": "object",
+      "description": "Array of related trend IDs"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Trend discovery timestamp"
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "description": "Last update timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Anyone",
+    "read": "Anyone"
+  }
+}

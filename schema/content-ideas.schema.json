@@ -1,0 +1,122 @@
+{
+  "displayName": "Content Ideas",
+  "id": "ContentIdeas",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User who owns this idea"
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Target platform: twitter, instagram, tiktok, youtube, linkedin, facebook"
+    },
+    {
+      "key": "idea",
+      "type": "text",
+      "description": "The content idea summary"
+    },
+    {
+      "key": "basedOnPatternId",
+      "type": "text",
+      "description": "ContentPattern ID that inspired this"
+    },
+    {
+      "key": "hook",
+      "type": "text",
+      "description": "Suggested hook/opening"
+    },
+    {
+      "key": "hookOptions",
+      "type": "object",
+      "description": "Array of alternative hook options"
+    },
+    {
+      "key": "structure",
+      "type": "object",
+      "description": "JSON describing content structure/outline"
+    },
+    {
+      "key": "mainPoints",
+      "type": "object",
+      "description": "Array of main points to cover"
+    },
+    {
+      "key": "callToAction",
+      "type": "text",
+      "description": "Suggested CTA"
+    },
+    {
+      "key": "hashtags",
+      "type": "object",
+      "description": "Suggested hashtags"
+    },
+    {
+      "key": "estimatedViralScore",
+      "type": "number",
+      "description": "Predicted viral potential (0-100)"
+    },
+    {
+      "key": "targetAudience",
+      "type": "text",
+      "description": "Who this content is for"
+    },
+    {
+      "key": "topic",
+      "type": "text",
+      "description": "Content topic"
+    },
+    {
+      "key": "tags",
+      "type": "object",
+      "description": "Array of tags for organization"
+    },
+    {
+      "key": "status",
+      "type": "text",
+      "description": "Status: idea, drafted, scheduled, published, archived"
+    },
+    {
+      "key": "draftContent",
+      "type": "text",
+      "description": "Actual drafted content if created"
+    },
+    {
+      "key": "scheduledFor",
+      "type": "datetime",
+      "description": "When to publish (if scheduled)"
+    },
+    {
+      "key": "publishedUrl",
+      "type": "text",
+      "description": "URL if published"
+    },
+    {
+      "key": "actualPerformance",
+      "type": "object",
+      "description": "JSON with actual results if published"
+    },
+    {
+      "key": "notes",
+      "type": "text",
+      "description": "User notes"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Idea creation timestamp"
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "description": "Last update timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Owner",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

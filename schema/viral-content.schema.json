@@ -1,0 +1,147 @@
+{
+  "displayName": "Viral Content",
+  "id": "ViralContent",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User who saved this (null if public trending content)"
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform: twitter, instagram, tiktok, youtube, linkedin, facebook"
+    },
+    {
+      "key": "url",
+      "type": "text",
+      "description": "Original content URL"
+    },
+    {
+      "key": "author",
+      "type": "text",
+      "description": "Content creator username/name"
+    },
+    {
+      "key": "authorFollowers",
+      "type": "number",
+      "description": "Author's follower count at time of capture"
+    },
+    {
+      "key": "contentType",
+      "type": "text",
+      "description": "Type: post, video, reel, thread, article, carousel, story"
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "description": "Content title or headline"
+    },
+    {
+      "key": "caption",
+      "type": "text",
+      "description": "Content text/caption"
+    },
+    {
+      "key": "transcript",
+      "type": "text",
+      "description": "Video transcript if available"
+    },
+    {
+      "key": "hashtags",
+      "type": "object",
+      "description": "Array of hashtags used"
+    },
+    {
+      "key": "mentions",
+      "type": "object",
+      "description": "Array of user mentions"
+    },
+    {
+      "key": "publishedAt",
+      "type": "datetime",
+      "description": "When content was originally published"
+    },
+    {
+      "key": "discoveredAt",
+      "type": "datetime",
+      "description": "When we discovered this content"
+    },
+    {
+      "key": "views",
+      "type": "number",
+      "description": "View count"
+    },
+    {
+      "key": "likes",
+      "type": "number",
+      "description": "Like count"
+    },
+    {
+      "key": "comments",
+      "type": "number",
+      "description": "Comment count"
+    },
+    {
+      "key": "shares",
+      "type": "number",
+      "description": "Share count"
+    },
+    {
+      "key": "saves",
+      "type": "number",
+      "description": "Save/bookmark count"
+    },
+    {
+      "key": "engagementRate",
+      "type": "number",
+      "description": "Calculated engagement rate percentage"
+    },
+    {
+      "key": "viralScore",
+      "type": "number",
+      "description": "AI-calculated viral score (0-100)"
+    },
+    {
+      "key": "topic",
+      "type": "text",
+      "description": "Main topic or subject"
+    },
+    {
+      "key": "industry",
+      "type": "text",
+      "description": "Industry/niche category"
+    },
+    {
+      "key": "thumbnailUrl",
+      "type": "text",
+      "description": "Thumbnail or preview image URL"
+    },
+    {
+      "key": "analysisData",
+      "type": "object",
+      "description": "JSON object with detailed analysis results"
+    },
+    {
+      "key": "isAnalyzed",
+      "type": "boolean",
+      "description": "Whether AI analysis has been completed"
+    },
+    {
+      "key": "isSaved",
+      "type": "boolean",
+      "description": "Whether user saved this to their library"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Record creation timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Anyone",
+    "read": "Anyone"
+  }
+}

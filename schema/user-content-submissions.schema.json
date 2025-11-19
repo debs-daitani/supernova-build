@@ -1,0 +1,102 @@
+{
+  "displayName": "User Content Submissions",
+  "id": "UserContentSubmissions",
+  "fields": [
+    {
+      "key": "userId",
+      "type": "text",
+      "description": "User who submitted content"
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform: twitter, instagram, tiktok, youtube, linkedin, facebook"
+    },
+    {
+      "key": "url",
+      "type": "text",
+      "description": "URL to user's content"
+    },
+    {
+      "key": "contentType",
+      "type": "text",
+      "description": "Type: post, video, reel, thread, article, carousel"
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "description": "Content title"
+    },
+    {
+      "key": "caption",
+      "type": "text",
+      "description": "Content text/caption"
+    },
+    {
+      "key": "publishedAt",
+      "type": "datetime",
+      "description": "When content was published"
+    },
+    {
+      "key": "yourPerformance",
+      "type": "object",
+      "description": "JSON with views, likes, comments, shares, saves"
+    },
+    {
+      "key": "yourAvgPerformance",
+      "type": "object",
+      "description": "JSON with user's average metrics for comparison"
+    },
+    {
+      "key": "performanceVsAvg",
+      "type": "number",
+      "description": "Performance vs average (percentage)"
+    },
+    {
+      "key": "analysisRequested",
+      "type": "boolean",
+      "description": "Whether analysis was requested"
+    },
+    {
+      "key": "analysisCompleted",
+      "type": "boolean",
+      "description": "Whether analysis is complete"
+    },
+    {
+      "key": "analysis",
+      "type": "object",
+      "description": "JSON object with analysis results"
+    },
+    {
+      "key": "recommendations",
+      "type": "object",
+      "description": "JSON array of improvement recommendations"
+    },
+    {
+      "key": "comparedToViralId",
+      "type": "text",
+      "description": "ID of similar viral content compared against"
+    },
+    {
+      "key": "comparisonResults",
+      "type": "object",
+      "description": "JSON with side-by-side comparison"
+    },
+    {
+      "key": "improvementScore",
+      "type": "number",
+      "description": "Potential improvement score (0-100)"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Submission timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Owner",
+    "remove": "Owner",
+    "read": "Anyone"
+  }
+}

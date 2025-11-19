@@ -9,7 +9,8 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 3. **AI Business Advisor** - Premium add-on providing AI-powered business insights and strategy
 4. **Pitch Deck Generator** - AI-powered investor presentation creator
 5. **Competitor Tracker** - Automated competitive intelligence and monitoring system
-6. **Book Writing Suite** - Premium add-on for fiction and non-fiction authors
+6. **Viral Content Analyzer** - AI-powered viral content analysis and creation system
+7. **Book Writing Suite** - Premium add-on for fiction and non-fiction authors
 
 ## Key Features
 
@@ -90,6 +91,22 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 - **Traffic Estimates**: Monitor competitor website traffic and trends
 - **News Tracking**: Aggregate funding announcements, partnerships, press releases
 
+### Viral Content Analyzer
+
+- **Discover Viral Content**: Curated feed of trending viral content across all major platforms
+- **Deep AI Analysis**: Understand WHY content went viral (hooks, emotions, structure, psychology)
+- **Hook Analysis**: Identify and learn from proven attention-grabbing hooks
+- **Pattern Recognition**: Discover content patterns that consistently drive engagement
+- **Analyze Your Content**: Get AI feedback on your own posts and learn how to improve
+- **A/B Comparison**: Compare your content vs viral content to see key differences
+- **Content Ideas Generator**: AI generates viral-worthy content ideas based on proven patterns
+- **Viral Content Builder**: Step-by-step wizard to create optimized content
+- **Virality Predictor**: Predict viral potential before you post (0-100 score)
+- **Trend Alerts**: Real-time alerts for emerging viral trends in your industry
+- **Content Library**: Searchable database of analyzed viral content
+- **Performance Analytics**: Track your content improvement over time
+- **Multi-Platform Support**: Twitter, Instagram, TikTok, YouTube, LinkedIn, Facebook
+
 ### Book Writing Suite (Premium Add-On - £10/month)
 
 - **Project Management**: Track multiple book projects simultaneously
@@ -138,6 +155,10 @@ SUPERNova AI is an intelligent conversational AI system designed for the Wix pla
 ### Competitor Tracker
 - [Competitor Tracker Guide](./docs/COMPETITOR_TRACKER.md) - Complete implementation guide
 - [Example Implementation](./examples/competitor-tracker-implementation.js) - Full code examples
+
+### Viral Content Analyzer
+- [Viral Content Analyzer Guide](./docs/VIRAL_CONTENT_ANALYZER.md) - Complete implementation guide
+- [Example Implementation](./examples/viral-content-implementation.js) - Full code examples
 
 ### Book Writing Suite
 - [Book Writing Suite Guide](./docs/BOOK_WRITING_SUITE.md) - Complete implementation guide

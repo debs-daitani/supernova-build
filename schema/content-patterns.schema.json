@@ -1,0 +1,97 @@
+{
+  "displayName": "Content Patterns",
+  "id": "ContentPatterns",
+  "fields": [
+    {
+      "key": "platform",
+      "type": "text",
+      "description": "Platform where pattern is effective"
+    },
+    {
+      "key": "patternType",
+      "type": "text",
+      "description": "Type: hook, format, structure, topic, style, timing"
+    },
+    {
+      "key": "patternName",
+      "type": "text",
+      "description": "Name of the pattern"
+    },
+    {
+      "key": "pattern",
+      "type": "text",
+      "description": "Description of the pattern"
+    },
+    {
+      "key": "template",
+      "type": "text",
+      "description": "Template for using this pattern"
+    },
+    {
+      "key": "exampleCount",
+      "type": "number",
+      "description": "Number of viral examples using this pattern"
+    },
+    {
+      "key": "avgEngagementRate",
+      "type": "number",
+      "description": "Average engagement rate for this pattern"
+    },
+    {
+      "key": "avgViralScore",
+      "type": "number",
+      "description": "Average viral score for this pattern"
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "description": "Detailed description of the pattern"
+    },
+    {
+      "key": "howToUse",
+      "type": "text",
+      "description": "Step-by-step guide to using this pattern"
+    },
+    {
+      "key": "bestFor",
+      "type": "text",
+      "description": "What industries/topics this works best for"
+    },
+    {
+      "key": "examples",
+      "type": "object",
+      "description": "JSON array of ViralContent IDs using this pattern"
+    },
+    {
+      "key": "tags",
+      "type": "object",
+      "description": "Array of tags for categorization"
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "description": "Whether this pattern is still effective"
+    },
+    {
+      "key": "effectiveness",
+      "type": "text",
+      "description": "Effectiveness level: high, medium, low"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Pattern discovery timestamp"
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "description": "Last update timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Anyone",
+    "read": "Anyone"
+  }
+}

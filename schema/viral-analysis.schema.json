@@ -1,0 +1,107 @@
+{
+  "displayName": "Viral Analysis",
+  "id": "ViralAnalysis",
+  "fields": [
+    {
+      "key": "viralContentId",
+      "type": "text",
+      "description": "Reference to ViralContent collection"
+    },
+    {
+      "key": "hookType",
+      "type": "text",
+      "description": "Type of hook: question, bold_claim, story, statistic, controversy, curiosity_gap, pattern_interrupt, etc."
+    },
+    {
+      "key": "hookText",
+      "type": "text",
+      "description": "The actual hook/opening"
+    },
+    {
+      "key": "hookScore",
+      "type": "number",
+      "description": "Hook effectiveness score (0-100)"
+    },
+    {
+      "key": "emotionalTriggers",
+      "type": "object",
+      "description": "Array of emotions: surprise, anger, joy, fear, inspiration, nostalgia, fomo, validation, etc."
+    },
+    {
+      "key": "structuralElements",
+      "type": "object",
+      "description": "JSON object describing content structure"
+    },
+    {
+      "key": "lengthAnalysis",
+      "type": "object",
+      "description": "JSON with word count, video duration, optimal length comparison"
+    },
+    {
+      "key": "timingAnalysis",
+      "type": "object",
+      "description": "JSON with posting time, day, trending event correlation"
+    },
+    {
+      "key": "visualElements",
+      "type": "object",
+      "description": "JSON describing visual aspects (colors, text overlays, thumbnail, etc.)"
+    },
+    {
+      "key": "callToAction",
+      "type": "text",
+      "description": "The CTA used (if any)"
+    },
+    {
+      "key": "ctaType",
+      "type": "text",
+      "description": "Type of CTA: question, command, invitation, challenge, etc."
+    },
+    {
+      "key": "engagementDrivers",
+      "type": "object",
+      "description": "JSON array of what specifically drove engagement"
+    },
+    {
+      "key": "psychologicalPrinciples",
+      "type": "object",
+      "description": "Array of psychology tactics: social_proof, authority, scarcity, reciprocity, storytelling, contrast, etc."
+    },
+    {
+      "key": "contentFormat",
+      "type": "text",
+      "description": "Format: listicle, story, tutorial, opinion, case_study, before_after, myth_busting, etc."
+    },
+    {
+      "key": "targetAudience",
+      "type": "text",
+      "description": "Who the content is for"
+    },
+    {
+      "key": "keyTakeaways",
+      "type": "object",
+      "description": "Array of main learnings from this content"
+    },
+    {
+      "key": "recommendations",
+      "type": "object",
+      "description": "JSON array of actionable recommendations"
+    },
+    {
+      "key": "similarPatterns",
+      "type": "object",
+      "description": "Array of related content pattern IDs"
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "description": "Analysis creation timestamp"
+    }
+  ],
+  "permissions": {
+    "insert": "Anyone",
+    "update": "Anyone",
+    "remove": "Anyone",
+    "read": "Anyone"
+  }
+}
