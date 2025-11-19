@@ -28,6 +28,9 @@ const useAuthStore = create((set) => ({
     try {
       const response = await users.getMe();
       const user = response.data;
+      const response = await authAPI.getMe();
+      const user = response.data.user;
+
       localStorage.setItem('user', JSON.stringify(user));
       set({ user });
     } catch (error) {
