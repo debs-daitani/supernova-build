@@ -1,310 +1,240 @@
-import React, { useState, useEffect, useRef } from 'react';
-import onboardingService from '../../services/onboarding';
+/**
+ * DashboardTour Component
+ * Interactive spotlight tour with 4 stops
+ */
 
-export default function DashboardTour({ onComplete, onSkip, steps: customSteps }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [spotlightPosition, setSpotlightPosition] = useState(null);
-  const tooltipRef = useRef(null);
+import { useState, useEffect, useRef } from 'react';
 
-  // Default tour steps
-  const defaultSteps = [
+export default function DashboardTour({ onComplete }) {
+  const [step, setStep] = useState(0);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+
+  const tourSteps = [
     {
-      target: '[data-tour="navigation"]',
-      title: 'Your Navigation',
-      content: 'Access all your tools from this sidebar. Everything you need is just one click away.',
+      target: '#sidebar',
+      title: 'This Is Your Main Navigation',
+      description: 'Click any tool to access it. Your top tools are pinned here based on your goal.',
       position: 'right'
     },
     {
-      target: '[data-tour="quick-actions"]',
-      title: 'Quick Actions',
-      content: 'Jump straight into creating content with these shortcuts. Perfect for when you know exactly what you want to do.',
-      position: 'bottom'
-    },
-    {
-      target: '[data-tour="stats"]',
-      title: 'Your Dashboard',
-      content: 'Track your key metrics at a glance. Monitor your growth, sales, and engagement all in one place.',
-      position: 'bottom'
-    },
-    {
-      target: '[data-tour="search"]',
-      title: 'Universal Search',
-      content: 'Find anything instantly with our powerful search. Works across all your content, contacts, and data.',
-      position: 'bottom'
-    },
-    {
-      target: '[data-tour="help"]',
-      title: 'Help & Support',
-      content: 'Get help anytime with our knowledge base, video tutorials, and live chat support.',
+      target: '#quick-wins',
+      title: 'Your Quick Wins Checklist',
+      description: 'Complete these 5 tasks to get your first win! Each takes just 1-3 minutes.',
       position: 'left'
+    },
+    {
+      target: '#supernova-chat',
+      title: 'Meet SUPERNova AI',
+      description: 'Stuck? Click here anytime. SUPERNova knows everything and speaks in Debs\' voice. Try asking: "Help me build a page"',
+      position: 'left'
+    },
+    {
+      target: '#profile-menu',
+      title: 'Your Profile',
+      description: 'Manage your account, billing, and preferences here.',
+      position: 'bottom'
     }
   ];
 
-  const steps = customSteps || defaultSteps;
-  const currentStepData = steps[currentStep];
+  const currentStep = tourSteps[step];
 
   useEffect(() => {
-    if (currentStepData) {
-      updateSpotlight();
-      window.addEventListener('resize', updateSpotlight);
-      window.addEventListener('scroll', updateSpotlight);
-
-      return () => {
-        window.removeEventListener('resize', updateSpotlight);
-        window.removeEventListener('scroll', updateSpotlight);
-      };
+    if (currentStep) {
+      updateTooltipPosition();
     }
-  }, [currentStep, currentStepData]);
+  }, [step]);
 
-  const updateSpotlight = () => {
-    if (!currentStepData) return;
+  const updateTooltipPosition = () => {
+    if (!currentStep) return;
 
-    const element = document.querySelector(currentStepData.target);
-    if (element) {
-      const rect = element.getBoundingClientRect();
-      setSpotlightPosition({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height
-      });
+    const targetElement = document.querySelector(currentStep.target);
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
 
-      // Scroll element into view if needed
-      element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      let top, left;
+
+      switch (currentStep.position) {
+        case 'right':
+          top = rect.top + scrollY + rect.height / 2;
+          left = rect.right + scrollX + 20;
+          break;
+        case 'left':
+          top = rect.top + scrollY + rect.height / 2;
+          left = rect.left + scrollX - 400;
+          break;
+        case 'bottom':
+          top = rect.bottom + scrollY + 20;
+          left = rect.left + scrollX + rect.width / 2 - 200;
+          break;
+        case 'top':
+          top = rect.top + scrollY - 200;
+          left = rect.left + scrollX + rect.width / 2 - 200;
+          break;
+        default:
+          top = rect.top + scrollY;
+          left = rect.right + scrollX + 20;
+      }
+
+      setTooltipPosition({ top, left });
+
+      // Scroll target into view
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (step < tourSteps.length - 1) {
+      setStep(step + 1);
     } else {
-      handleComplete();
+      onComplete();
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    if (step > 0) {
+      setStep(step - 1);
     }
   };
 
-  const handleComplete = async () => {
-    try {
-      await onboardingService.completeStep('dashboard-tour', 'tour');
-      onComplete?.();
-    } catch (error) {
-      console.error('Failed to complete tour:', error);
-      onComplete?.();
-    }
+  const handleSkip = () => {
+    onComplete();
   };
 
-  const handleSkipTour = async () => {
-    try {
-      await onboardingService.updateProgress({ showTips: false });
-      onSkip?.();
-    } catch (error) {
-      console.error('Failed to skip tour:', error);
-      onSkip?.();
-    }
-  };
-
-  const getTooltipPosition = () => {
-    if (!spotlightPosition || !currentStepData) return {};
-
-    const padding = 20;
-    const tooltipWidth = 400;
-    const tooltipHeight = 200; // Approximate
-
-    let top, left;
-
-    switch (currentStepData.position) {
-      case 'right':
-        top = spotlightPosition.top;
-        left = spotlightPosition.left + spotlightPosition.width + padding;
-        break;
-      case 'left':
-        top = spotlightPosition.top;
-        left = spotlightPosition.left - tooltipWidth - padding;
-        break;
-      case 'bottom':
-        top = spotlightPosition.top + spotlightPosition.height + padding;
-        left = spotlightPosition.left + (spotlightPosition.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'top':
-        top = spotlightPosition.top - tooltipHeight - padding;
-        left = spotlightPosition.left + (spotlightPosition.width / 2) - (tooltipWidth / 2);
-        break;
-      default:
-        top = spotlightPosition.top + spotlightPosition.height + padding;
-        left = spotlightPosition.left;
-    }
-
-    // Keep tooltip within viewport
-    const maxLeft = window.innerWidth - tooltipWidth - 20;
-    const maxTop = window.innerHeight - tooltipHeight - 20;
-    left = Math.max(20, Math.min(left, maxLeft));
-    top = Math.max(20, Math.min(top, maxTop));
-
-    return { top, left };
-  };
-
-  if (!currentStepData) return null;
+  if (!currentStep) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Dark overlay with spotlight cutout */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Top */}
-        {spotlightPosition && (
-          <>
-            <div
-              className="absolute bg-black bg-opacity-70 transition-all duration-300"
-              style={{
-                top: 0,
-                left: 0,
-                right: 0,
-                height: spotlightPosition.top
-              }}
-            />
-            {/* Left */}
-            <div
-              className="absolute bg-black bg-opacity-70 transition-all duration-300"
-              style={{
-                top: spotlightPosition.top,
-                left: 0,
-                width: spotlightPosition.left,
-                height: spotlightPosition.height
-              }}
-            />
-            {/* Right */}
-            <div
-              className="absolute bg-black bg-opacity-70 transition-all duration-300"
-              style={{
-                top: spotlightPosition.top,
-                left: spotlightPosition.left + spotlightPosition.width,
-                right: 0,
-                height: spotlightPosition.height
-              }}
-            />
-            {/* Bottom */}
-            <div
-              className="absolute bg-black bg-opacity-70 transition-all duration-300"
-              style={{
-                top: spotlightPosition.top + spotlightPosition.height,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }}
-            />
-          </>
-        )}
-      </div>
+    <>
+      {/* Dark overlay */}
+      <div className="fixed inset-0 bg-black/70 z-40" onClick={handleSkip} />
 
-      {/* Highlighted element border */}
-      {spotlightPosition && (
-        <div
-          className="absolute border-4 border-purple-500 rounded-lg pointer-events-none transition-all duration-300 shadow-2xl"
-          style={{
-            top: spotlightPosition.top - 4,
-            left: spotlightPosition.left - 4,
-            width: spotlightPosition.width + 8,
-            height: spotlightPosition.height + 8
-          }}
-        />
-      )}
+      {/* Spotlight effect on target */}
+      <SpotlightHighlight target={currentStep.target} />
 
       {/* Tooltip */}
-      {spotlightPosition && (
-        <div
-          ref={tooltipRef}
-          className="absolute bg-white rounded-xl shadow-2xl p-6 w-[400px] transition-all duration-300 pointer-events-auto"
-          style={getTooltipPosition()}
-        >
-          {/* Arrow indicator */}
-          <div
-            className={`absolute w-4 h-4 bg-white transform rotate-45 ${
-              currentStepData.position === 'right'
-                ? '-left-2 top-6'
-                : currentStepData.position === 'left'
-                ? '-right-2 top-6'
-                : currentStepData.position === 'bottom'
-                ? 'left-1/2 -translate-x-1/2 -top-2'
-                : 'left-1/2 -translate-x-1/2 -bottom-2'
-            }`}
-          />
+      <div
+        className="fixed z-50 animate-fade-in"
+        style={{
+          top: `${tooltipPosition.top}px`,
+          left: `${tooltipPosition.left}px`,
+          transform: currentStep.position === 'bottom' || currentStep.position === 'top'
+            ? 'translateX(-50%)'
+            : 'translateY(-50%)'
+        }}
+      >
+        <div className="bg-white rounded-lg shadow-2xl p-6 max-w-sm border-2 border-orange-500">
+          <h3 className="text-xl font-bold mb-2 text-gray-900">{currentStep.title}</h3>
+          <p className="text-gray-700 mb-4">{currentStep.description}</p>
 
-          {/* Content */}
-          <div className="relative">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="text-purple-600 text-sm font-semibold mb-1">
-                  Step {currentStep + 1} of {steps.length}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">
-                  {currentStepData.title}
-                </h3>
-              </div>
-              <button
-                onClick={handleSkipTour}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">
+              Step {step + 1} of {tourSteps.length}
+            </span>
 
-            <p className="text-gray-700 mb-6">
-              {currentStepData.content}
-            </p>
-
-            {/* Progress dots */}
-            <div className="flex items-center gap-2 mb-6">
-              {steps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1.5 rounded-full transition-all ${
-                    index === currentStep
-                      ? 'w-8 bg-purple-600'
-                      : index < currentStep
-                      ? 'w-1.5 bg-purple-600'
-                      : 'w-1.5 bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                disabled={currentStep === 0}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  currentStep === 0
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Back
-              </button>
-
-              <button
-                onClick={handleSkipTour}
-                className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-              >
-                Skip tour
-              </button>
+            <div className="flex gap-2">
+              {step > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-all"
+                >
+                  ← Back
+                </button>
+              )}
 
               <button
                 onClick={handleNext}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-lg"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all"
               >
-                {currentStep === steps.length - 1 ? 'Got it!' : 'Next'}
+                {step < tourSteps.length - 1 ? 'Next →' : 'Finish Tour'}
               </button>
             </div>
           </div>
+
+          <button
+            onClick={handleSkip}
+            className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700 transition-all"
+          >
+            Skip Tour
+          </button>
         </div>
-      )}
+
+        {/* Arrow pointer */}
+        <div
+          className={`absolute w-0 h-0 ${
+            currentStep.position === 'right'
+              ? 'left-0 top-1/2 -translate-y-1/2 -translate-x-full border-r-white border-r-8 border-y-transparent border-y-8 border-l-0'
+              : currentStep.position === 'left'
+              ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full border-l-white border-l-8 border-y-transparent border-y-8 border-r-0'
+              : currentStep.position === 'bottom'
+              ? 'left-1/2 top-0 -translate-x-1/2 -translate-y-full border-b-white border-b-8 border-x-transparent border-x-8 border-t-0'
+              : 'left-1/2 bottom-0 -translate-x-1/2 translate-y-full border-t-white border-t-8 border-x-transparent border-x-8 border-b-0'
+          }`}
+        />
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
+    </>
+  );
+}
+
+/**
+ * Spotlight Highlight Component
+ * Creates a "cut-out" effect highlighting the target element
+ */
+function SpotlightHighlight({ target }) {
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
+
+  useEffect(() => {
+    const updatePosition = () => {
+      const element = document.querySelector(target);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const scrollX = window.scrollX;
+
+        setPosition({
+          top: rect.top + scrollY - 5,
+          left: rect.left + scrollX - 5,
+          width: rect.width + 10,
+          height: rect.height + 10
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [target]);
+
+  return (
+    <div
+      className="fixed z-45 pointer-events-none"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        width: `${position.width}px`,
+        height: `${position.height}px`
+      }}
+    >
+      <div className="absolute inset-0 bg-white/10 rounded-lg border-2 border-orange-500 shadow-2xl animate-pulse-slow" />
     </div>
   );
 }
