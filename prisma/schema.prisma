@@ -219,6 +219,66 @@ enum ProcessingStatus {
   ERROR
 }
 
+// Code assistant access level enum
+enum CodeAssistantLevel {
+  LOCKED
+  LANDING_PAGE
+  MULTI_PAGE
+  FULL_BUSINESS
+  ALL_IN_ROCKSTAR
+}
+
+// Code language enum
+enum CodeLanguage {
+  JAVASCRIPT
+  HTML
+  CSS
+  PYTHON
+  TYPESCRIPT
+  SQL
+  JSON
+}
+
+// Code deployment type enum
+enum CodeDeploymentType {
+  WIDGET
+  PAGE
+  INTEGRATION
+  COMPONENT
+  SCRIPT
+  STYLE
+}
+
+// Code generation status enum
+enum CodeGenerationStatus {
+  DRAFT
+  PREVIEW
+  DEPLOYED
+  ARCHIVED
+}
+
+// Code snippet category enum
+enum CodeSnippetCategory {
+  CALCULATOR
+  FORM
+  ANIMATION
+  INTEGRATION
+  TIMER
+  GALLERY
+  CHART
+  WIDGET
+  UTILITY
+  OTHER
+}
+
+// Code template difficulty enum
+enum CodeTemplateDifficulty {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
 // ============================================
 // USERS & AUTHENTICATION
 // ============================================
@@ -281,6 +341,12 @@ model User {
   repurposedContent     RepurposedContent[] @relation("UserRepurposedContent")
   repurposingJobs       RepurposingJob[] @relation("UserRepurposingJobs")
   contentCalendars      ContentCalendar[] @relation("UserContentCalendars")
+
+  // Code Assistant
+  codeAccess            CodeAssistantAccess?
+  codeConversations     CodeConversation[] @relation("UserCodeConversations")
+  codeSnippets          CodeSnippet[] @relation("UserCodeSnippets")
+  codeDeployments       CodeDeployment[] @relation("UserCodeDeployments")
 
   @@index([email])
   @@index([role])
@@ -1019,4 +1085,206 @@ model ContentCalendar {
   @@index([userId])
   @@index([date])
   @@index([platform])
+}
+
+// ============================================
+// CODE ASSISTANT (INTEGRATED AI DEVELOPER)
+// ============================================
+
+model CodeAssistantAccess {
+  id                    String                @id @default(cuid())
+  userId                String                @unique
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessLevel           CodeAssistantLevel    @default(LOCKED)
+
+  // Website metrics for tier calculation
+  websitePageCount      Int                   @default(0)
+  platformFeaturesUsed  String[]              // Array of feature names
+
+  // Unlock tracking
+  unlockedAt            DateTime?
+  lastCheckedAt         DateTime              @default(now())
+
+  // Usage stats
+  conversationsCount    Int                   @default(0)
+  deploymentsCount      Int                   @default(0)
+  linesOfCodeGenerated  Int                   @default(0)
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([accessLevel])
+}
+
+model CodeConversation {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation("UserCodeConversations", fields: [userId], references: [id], onDelete: Cascade)
+
+  title             String              @default("New Code Project")
+  status            String              @default("active") // active, archived
+
+  totalMessages     Int                 @default(0)
+
+  // Context
+  targetPage        String?             // Which page this is for
+  projectType       String?             // calculator, form, integration, etc.
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  lastMessageAt     DateTime            @default(now())
+
+  // Relations
+  messages          CodeMessage[]
+  generations       CodeGeneration[]
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([lastMessageAt])
+}
+
+model CodeMessage {
+  id                String              @id @default(cuid())
+  conversationId    String
+  conversation      CodeConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role              String              // user, assistant
+  content           String              @db.Text
+
+  // Code blocks extracted from message
+  codeBlocks        Json?               // Array of {language, code, fileName}
+
+  // Deployment reference
+  deploymentId      String?
+
+  timestamp         DateTime            @default(now())
+
+  @@index([conversationId])
+  @@index([timestamp])
+}
+
+model CodeGeneration {
+  id                String                @id @default(cuid())
+  conversationId    String
+  conversation      CodeConversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  messageId         String?               // Reference to message that generated this
+
+  language          CodeLanguage
+  code              String                @db.Text
+  explanation       String?               @db.Text
+  fileName          String?
+
+  status            CodeGenerationStatus  @default(DRAFT)
+
+  // Complexity metrics
+  linesOfCode       Int?
+  complexity        String?               // basic, intermediate, advanced
+
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  // Relations
+  deployments       CodeDeployment[]
+  snippet           CodeSnippet?
+
+  @@index([conversationId])
+  @@index([status])
+  @@index([language])
+}
+
+model CodeDeployment {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation("UserCodeDeployments", fields: [userId], references: [id], onDelete: Cascade)
+
+  generationId      String
+  generation        CodeGeneration      @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  deploymentType    CodeDeploymentType
+  targetPage        String?             // Which page it's deployed to
+  targetSection     String?             // Which section (header, footer, etc.)
+
+  isActive          Boolean             @default(true)
+
+  // Version tracking
+  version           Int                 @default(1)
+
+  deployedAt        DateTime            @default(now())
+  lastModifiedAt    DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([generationId])
+  @@index([isActive])
+  @@index([targetPage])
+}
+
+model CodeSnippet {
+  id                String                @id @default(cuid())
+  userId            String
+  user              User                  @relation("UserCodeSnippets", fields: [userId], references: [id], onDelete: Cascade)
+
+  generationId      String?               @unique
+  generation        CodeGeneration?       @relation(fields: [generationId], references: [id], onDelete: SetNull)
+
+  title             String
+  description       String?               @db.Text
+  language          CodeLanguage
+  code              String                @db.Text
+
+  category          CodeSnippetCategory   @default(OTHER)
+  tags              String[]
+
+  // Sharing
+  isPublic          Boolean               @default(false)
+  isFavorite        Boolean               @default(false)
+
+  // Usage tracking
+  uses              Int                   @default(0)
+  lastUsedAt        DateTime?
+
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@index([isFavorite])
+}
+
+model CodeTemplate {
+  id                String                    @id @default(cuid())
+
+  name              String
+  description       String?                   @db.Text
+  category          CodeSnippetCategory       @default(OTHER)
+
+  code              String                    @db.Text
+  language          CodeLanguage              @default(JAVASCRIPT)
+
+  // Customization
+  variables         Json?                     // Variables that can be customized
+
+  difficulty        CodeTemplateDifficulty    @default(BASIC)
+  accessLevel       CodeAssistantLevel        @default(LANDING_PAGE) // Which tier can use it
+
+  exampleUrl        String?                   // Preview/demo URL
+  previewImage      String?                   // Thumbnail
+
+  isActive          Boolean                   @default(true)
+  isFeatured        Boolean                   @default(false)
+
+  // Usage stats
+  usageCount        Int                       @default(0)
+
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([accessLevel])
+  @@index([isActive])
+  @@index([isFeatured])
 }

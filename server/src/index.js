@@ -145,6 +145,9 @@ import viralContentRoutes from './routes/viral-content.js';
 // Phase 2BV - Content Repurposer
 import contentRepurposeRoutes from './routes/content-repurpose.js';
 
+// Phase 2BW - Code Assistant
+import codeAssistantRoutes from './routes/code-assistant.js';
+
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -352,6 +355,9 @@ app.use('/api/viral', viralContentRoutes);
 
 // Phase 2BV - Content Repurposer
 app.use('/api/repurpose', contentRepurposeRoutes);
+
+// Phase 2BW - Code Assistant
+app.use('/api/code', codeAssistantRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
