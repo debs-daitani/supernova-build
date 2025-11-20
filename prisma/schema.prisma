@@ -158,6 +158,67 @@ enum ContentIdeaStatus {
   PUBLISHED
 }
 
+// Source content type enum
+enum SourceContentType {
+  VIDEO
+  PODCAST
+  BLOG_POST
+  WEBINAR
+  INTERVIEW
+  PRESENTATION
+  EBOOK
+  ARTICLE
+}
+
+// Repurposed output type enum
+enum RepurposedOutputType {
+  SHORT_VIDEO
+  INSTAGRAM_REEL
+  TIKTOK
+  YOUTUBE_SHORT
+  TWITTER_VIDEO
+  LINKEDIN_VIDEO
+  FACEBOOK_VIDEO
+  PINTEREST_VIDEO
+  TWITTER_THREAD
+  LINKEDIN_POST
+  INSTAGRAM_CAROUSEL
+  QUOTE_GRAPHIC
+  AUDIOGRAM
+  BLOG_SUMMARY
+  EMAIL
+  EMAIL_SERIES
+  LINKEDIN_ARTICLE
+  MEDIUM_ARTICLE
+  INFOGRAPHIC
+  SLIDE_DECK
+  STORY_FRAME
+  QUOTE_LIST
+  FAQ
+  TRANSCRIPT
+  SHOW_NOTES
+  COURSE_MODULE
+  HOW_TO_GUIDE
+}
+
+// Repurposed content status enum
+enum RepurposedContentStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+// Processing status enum
+enum ProcessingStatus {
+  QUEUED
+  PROCESSING
+  READY
+  ERROR
+}
+
 // ============================================
 // USERS & AUTHENTICATION
 // ============================================
@@ -214,6 +275,12 @@ model User {
   viralContent          ViralContent[] @relation("UserViralContent")
   contentSubmissions    UserContentSubmission[] @relation("UserContentSubmissions")
   contentIdeas          ContentIdea[] @relation("UserContentIdeas")
+
+  // Content Repurposer
+  sourceContent         SourceContent[] @relation("UserSourceContent")
+  repurposedContent     RepurposedContent[] @relation("UserRepurposedContent")
+  repurposingJobs       RepurposingJob[] @relation("UserRepurposingJobs")
+  contentCalendars      ContentCalendar[] @relation("UserContentCalendars")
 
   @@index([email])
   @@index([role])
@@ -769,4 +836,187 @@ model ViralTrend {
   @@index([status])
   @@index([category])
   @@index([peakDate])
+}
+
+// ============================================
+// CONTENT REPURPOSER
+// ============================================
+
+model SourceContent {
+  id                  String              @id @default(cuid())
+  userId              String
+  user                User                @relation("UserSourceContent", fields: [userId], references: [id], onDelete: Cascade)
+
+  title               String
+  contentType         SourceContentType
+  sourceFile          String?             // URL or file path
+  sourceUrl           String?             // Original URL if from web
+
+  // Content metrics
+  duration            Int?                // In seconds (for video/audio)
+  wordCount           Int?                // For text content
+  fileSize            Int?                // In bytes
+
+  // AI-extracted data
+  transcript          String?             @db.Text
+  keyTopics           Json?               // Array of topics
+  keyMoments          Json?               // Array of {timestamp, description, importance}
+  quotes              Json?               // Array of quotable moments
+  speakers            Json?               // Array of speaker names/IDs
+  chapters            Json?               // Array of chapter markers
+  sentiment           Json?               // Sentiment analysis data
+
+  // Processing status
+  status              ProcessingStatus    @default(QUEUED)
+  processingError     String?             @db.Text
+  processedAt         DateTime?
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  repurposedContent   RepurposedContent[]
+  repurposingJobs     RepurposingJob[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([contentType])
+  @@index([createdAt])
+}
+
+model RepurposedContent {
+  id                  String                    @id @default(cuid())
+  userId              String
+  user                User                      @relation("UserRepurposedContent", fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceContentId     String
+  sourceContent       SourceContent             @relation(fields: [sourceContentId], references: [id], onDelete: Cascade)
+
+  repurposingJobId    String?
+  repurposingJob      RepurposingJob?           @relation(fields: [repurposingJobId], references: [id], onDelete: SetNull)
+
+  // Output configuration
+  outputType          RepurposedOutputType
+  platform            SocialPlatform?
+  templateId          String?
+  template            ContentTemplate?          @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  // Content
+  title               String?
+  content             String?                   @db.Text
+  caption             String?                   @db.Text
+  hashtags            String[]
+  mentions            String[]
+
+  // Media
+  mediaUrl            String?                   // Generated media file URL
+  thumbnailUrl        String?                   // Thumbnail/preview
+  duration            Int?                      // For video/audio outputs
+
+  // Metadata
+  metadata            Json?                     // Additional data (dimensions, format, etc.)
+  keyMoment           Json?                     // Reference to source moment if applicable
+
+  // Status and publishing
+  status              RepurposedContentStatus   @default(DRAFT)
+  scheduledFor        DateTime?
+  publishedAt         DateTime?
+  publishedUrl        String?                   // URL after publishing
+
+  // Performance tracking
+  performance         Json?                     // Views, likes, shares, etc.
+
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  @@index([userId])
+  @@index([sourceContentId])
+  @@index([repurposingJobId])
+  @@index([outputType])
+  @@index([platform])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model ContentTemplate {
+  id                  String                    @id @default(cuid())
+
+  name                String
+  description         String?                   @db.Text
+  outputType          RepurposedOutputType
+  platform            SocialPlatform?
+
+  // Template configuration
+  template            Json                      // Structure/format definition
+  styleConfig         Json?                     // Colors, fonts, layout
+  exampleUrl          String?                   // Example output
+
+  isActive            Boolean                   @default(true)
+  isDefault           Boolean                   @default(false)
+
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  // Relations
+  repurposedContent   RepurposedContent[]
+
+  @@index([outputType])
+  @@index([platform])
+  @@index([isActive])
+}
+
+model RepurposingJob {
+  id                  String              @id @default(cuid())
+  userId              String
+  user                User                @relation("UserRepurposingJobs", fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceContentId     String
+  sourceContent       SourceContent       @relation(fields: [sourceContentId], references: [id], onDelete: Cascade)
+
+  // Job configuration
+  selectedOutputs     Json                // Array of output types to generate
+  config              Json?               // Generation configuration
+
+  // Processing status
+  status              ProcessingStatus    @default(QUEUED)
+  progress            Int                 @default(0) // 0-100
+  currentStep         String?             // Current processing step
+  outputsGenerated    Int                 @default(0)
+  totalOutputs        Int?
+
+  // Error handling
+  errors              Json?               // Array of errors if any
+
+  startedAt           DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime            @default(now())
+
+  // Relations
+  repurposedContent   RepurposedContent[]
+
+  @@index([userId])
+  @@index([sourceContentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ContentCalendar {
+  id                  String              @id @default(cuid())
+  userId              String
+  user                User                @relation("UserContentCalendars", fields: [userId], references: [id], onDelete: Cascade)
+
+  date                DateTime            @db.Date
+  platform            SocialPlatform?
+
+  // Scheduled content
+  contentPieces       Json                // Array of RepurposedContent IDs
+  notes               String?             @db.Text
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@unique([userId, date, platform])
+  @@index([userId])
+  @@index([date])
+  @@index([platform])
 }

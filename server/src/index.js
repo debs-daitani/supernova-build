@@ -142,6 +142,9 @@ import billingRoutes from './routes/billing.js';
 // Phase 2BU - Viral Content Analyzer
 import viralContentRoutes from './routes/viral-content.js';
 
+// Phase 2BV - Content Repurposer
+import contentRepurposeRoutes from './routes/content-repurpose.js';
+
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -346,6 +349,9 @@ app.use('/api/billing', billingRoutes);
 
 // Phase 2BU - Viral Content Analyzer
 app.use('/api/viral', viralContentRoutes);
+
+// Phase 2BV - Content Repurposer
+app.use('/api/repurpose', contentRepurposeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
