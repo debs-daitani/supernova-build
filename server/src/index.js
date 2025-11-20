@@ -138,6 +138,10 @@ import signupRoutes from './routes/signup.js';
 
 // Phase 2BG - Payment & Subscription System
 import billingRoutes from './routes/billing.js';
+
+// Phase 2BU - Viral Content Analyzer
+import viralContentRoutes from './routes/viral-content.js';
+
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -339,6 +343,9 @@ app.use('/api/signup', signupRoutes);
 
 // Phase 2BG - Payment & Subscription System
 app.use('/api/billing', billingRoutes);
+
+// Phase 2BU - Viral Content Analyzer
+app.use('/api/viral', viralContentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

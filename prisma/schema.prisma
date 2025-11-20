@@ -82,6 +82,82 @@ enum MemoryType {
   CONTEXT
 }
 
+// Social media platform enum
+enum SocialPlatform {
+  TWITTER
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  LINKEDIN
+  FACEBOOK
+}
+
+// Viral content type enum
+enum ViralContentType {
+  POST
+  VIDEO
+  REEL
+  THREAD
+  ARTICLE
+  CAROUSEL
+  STORY
+  SHORT
+}
+
+// Hook type enum
+enum HookType {
+  QUESTION
+  BOLD_CLAIM
+  STORY
+  STATISTIC
+  CONTROVERSY
+  CURIOSITY_GAP
+  PATTERN_INTERRUPT
+  PERSONAL_EXPERIENCE
+  LISTICLE
+  HOW_TO
+}
+
+// Emotional trigger enum
+enum EmotionalTrigger {
+  SURPRISE
+  ANGER
+  JOY
+  FEAR
+  INSPIRATION
+  NOSTALGIA
+  FOMO
+  VALIDATION
+  CURIOSITY
+  EMPATHY
+}
+
+// Content pattern type enum
+enum ContentPatternType {
+  HOOK
+  FORMAT
+  STRUCTURE
+  TOPIC
+  STYLE
+  TIMING
+}
+
+// Trend status enum
+enum TrendStatus {
+  RISING
+  PEAK
+  DECLINING
+  DEAD
+}
+
+// Content idea status enum
+enum ContentIdeaStatus {
+  IDEA
+  DRAFTED
+  SCHEDULED
+  PUBLISHED
+}
+
 // ============================================
 // USERS & AUTHENTICATION
 // ============================================
@@ -133,6 +209,11 @@ model User {
   communityComments     CommunityComment[]
   communityLikes        CommunityLike[]
   directMessages        DirectMessage[] @relation("DMSender")
+
+  // Viral Content Analyzer
+  viralContent          ViralContent[] @relation("UserViralContent")
+  contentSubmissions    UserContentSubmission[] @relation("UserContentSubmissions")
+  contentIdeas          ContentIdea[] @relation("UserContentIdeas")
 
   @@index([email])
   @@index([role])
@@ -474,4 +555,218 @@ model Payment {
   @@index([userId])
   @@index([status])
   @@index([type])
+}
+
+// ============================================
+// VIRAL CONTENT ANALYZER
+// ============================================
+
+model ViralContent {
+  id                  String              @id @default(cuid())
+  userId              String?
+  user                User?               @relation("UserViralContent", fields: [userId], references: [id], onDelete: SetNull)
+
+  platform            SocialPlatform
+  url                 String              @unique
+  author              String
+  authorFollowers     Int?
+  contentType         ViralContentType
+
+  title               String?
+  caption             String?             @db.Text
+  transcript          String?             @db.Text
+  hashtags            String[]
+  mentions            String[]
+
+  publishedAt         DateTime?
+  discoveredAt        DateTime            @default(now())
+
+  // Engagement metrics
+  views               Int?
+  likes               Int?
+  comments            Int?
+  shares              Int?
+  saves               Int?
+  engagementRate      Float?
+  viralScore          Float               @default(0) // 0-100
+
+  // Classification
+  topic               String?
+  industry            String?
+
+  // Analysis data stored as JSON
+  analysisData        Json?
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  analyses            ViralAnalysis[]
+  patterns            ContentPattern[]    @relation("PatternExamples")
+  trends              ViralTrend[]        @relation("TrendExamples")
+
+  @@index([platform])
+  @@index([viralScore])
+  @@index([topic])
+  @@index([industry])
+  @@index([publishedAt])
+  @@index([userId])
+}
+
+model ViralAnalysis {
+  id                      String                  @id @default(cuid())
+  viralContentId          String
+  viralContent            ViralContent            @relation(fields: [viralContentId], references: [id], onDelete: Cascade)
+
+  // Hook analysis
+  hookType                HookType?
+  hookText                String?                 @db.Text
+  hookEffectivenessScore  Float?
+
+  // Emotional triggers (stored as array)
+  emotionalTriggers       EmotionalTrigger[]
+
+  // Structural elements (stored as JSON)
+  structuralElements      Json?
+
+  // Analysis details
+  lengthAnalysis          Json?
+  timingAnalysis          Json?
+  visualElements          Json?
+  callToAction            String?                 @db.Text
+  engagementDrivers       Json?
+  psychologicalPrinciples String[]
+
+  // Recommendations (stored as JSON)
+  recommendations         Json?
+
+  createdAt               DateTime                @default(now())
+
+  @@index([viralContentId])
+  @@index([hookType])
+}
+
+model ContentPattern {
+  id                  String                @id @default(cuid())
+
+  platform            SocialPlatform
+  patternType         ContentPatternType
+  pattern             String                @db.Text
+
+  exampleCount        Int                   @default(0)
+  avgEngagementRate   Float?
+
+  description         String                @db.Text
+  howToUse            String                @db.Text
+
+  // Examples stored as JSON with references
+  examples            ViralContent[]        @relation("PatternExamples")
+
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  // Relations
+  contentIdeas        ContentIdea[]
+
+  @@index([platform])
+  @@index([patternType])
+  @@index([avgEngagementRate])
+}
+
+model UserContentSubmission {
+  id                  String              @id @default(cuid())
+  userId              String
+  user                User                @relation("UserContentSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+
+  platform            SocialPlatform
+  url                 String
+  contentType         ViralContentType
+
+  // User's performance metrics
+  yourViews           Int?
+  yourLikes           Int?
+  yourComments        Int?
+  yourShares          Int?
+  yourSaves           Int?
+  yourEngagementRate  Float?
+
+  // Analysis status
+  analysisRequested   Boolean             @default(true)
+  analysisCompleted   Boolean             @default(false)
+
+  // Analysis results (stored as JSON)
+  analysis            Json?
+  recommendations     Json?
+  comparisonData      Json? // Comparison with similar viral content
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([platform])
+  @@index([analysisCompleted])
+}
+
+model ContentIdea {
+  id                  String                @id @default(cuid())
+  userId              String
+  user                User                  @relation("UserContentIdeas", fields: [userId], references: [id], onDelete: Cascade)
+
+  platform            SocialPlatform
+  idea                String                @db.Text
+
+  basedOnPatternId    String?
+  basedOnPattern      ContentPattern?       @relation(fields: [basedOnPatternId], references: [id], onDelete: SetNull)
+
+  hook                String?               @db.Text
+  structure           Json?
+  estimatedViralScore Float?
+  tags                String[]
+
+  status              ContentIdeaStatus     @default(IDEA)
+
+  // Draft content
+  draftContent        String?               @db.Text
+  scheduledFor        DateTime?
+  publishedAt         DateTime?
+  publishedUrl        String?
+
+  // Actual performance (if published and tracked)
+  actualViralScore    Float?
+  actualEngagement    Json?
+
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([platform])
+  @@index([status])
+  @@index([estimatedViralScore])
+}
+
+model ViralTrend {
+  id                  String              @id @default(cuid())
+
+  platform            SocialPlatform
+  trend               String
+  category            String?
+
+  startDate           DateTime
+  peakDate            DateTime?
+  endDate             DateTime?
+
+  status              TrendStatus         @default(RISING)
+
+  // Example content references
+  exampleContent      ViralContent[]      @relation("TrendExamples")
+
+  howToCapitalize     String?             @db.Text
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([platform])
+  @@index([status])
+  @@index([category])
+  @@index([peakDate])
 }
