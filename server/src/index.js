@@ -148,6 +148,9 @@ import contentRepurposeRoutes from './routes/content-repurpose.js';
 // Phase 2BW - Code Assistant
 import codeAssistantRoutes from './routes/code-assistant.js';
 
+// Phase 2BX - SUPERNova AI
+import supernovaAIRoutes from './routes/supernova-ai.js';
+
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -358,6 +361,9 @@ app.use('/api/repurpose', contentRepurposeRoutes);
 
 // Phase 2BW - Code Assistant
 app.use('/api/code', codeAssistantRoutes);
+
+// Phase 2BX - SUPERNova AI
+app.use('/api/supernova', supernovaAIRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

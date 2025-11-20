@@ -311,6 +311,13 @@ model User {
   socialLinks           Json?
   avatar                String?
 
+  // SUPERNova AI Profile
+  preferredName         String?             // What they want to be called
+  pronouns              String?             // she/her, he/him, they/them, custom
+  communicationStyle    String?             // direct, gentle, motivational
+  onboardingCompleted   Boolean             @default(false)
+  firstInteractionAt    DateTime?
+
   // Relations
   conversations         Conversation[]
   messages              Message[]
@@ -348,6 +355,10 @@ model User {
   codeSnippets          CodeSnippet[] @relation("UserCodeSnippets")
   codeDeployments       CodeDeployment[] @relation("UserCodeDeployments")
 
+  // SUPERNova AI
+  coachingSessions      CoachingSession[] @relation("UserCoachingSessions")
+  platformContexts      PlatformContext[] @relation("UserPlatformContexts")
+
   @@index([email])
   @@index([role])
   @@index([subscriptionStatus])
@@ -368,6 +379,11 @@ model Conversation {
   folderId          String?
   folder            Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
+  // SUPERNova AI specific
+  mode              String?     @default("general") // body, brain, business, general
+  messageCount      Int         @default(0)
+  status            String      @default("active") // active, archived, completed
+
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   lastMessageAt     DateTime    @default(now())
@@ -380,6 +396,8 @@ model Conversation {
   @@index([userId, archived])
   @@index([userId, lastMessageAt])
   @@index([folderId])
+  @@index([mode])
+  @@index([status])
 }
 
 model Message {
@@ -390,8 +408,11 @@ model Message {
   userId            String
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  role              String        // 'user' or 'assistant'
+  role              String        // 'user', 'assistant', 'system'
   content           String        @db.Text
+
+  // SUPERNova AI specific
+  metadata          Json?         // context, tools used, memories referenced, etc.
 
   createdAt         DateTime      @default(now())
   tokensUsed        Int?
@@ -432,6 +453,14 @@ model UserMemory {
   sourceConversationId  String?
   sourceConversation    Conversation? @relation(fields: [sourceConversationId], references: [id], onDelete: SetNull)
 
+  // SUPERNova AI extended fields
+  category              String?       // personal, business, preferences, goals, challenges, wins
+  key                   String?       // Searchable key (e.g., "target_audience", "business_name")
+  value                 String?       @db.Text // Structured value
+  context               Json?         // When/where this was learned
+  lastUsed              DateTime?     // Last time memory was referenced
+  useCount              Int           @default(0) // How many times referenced
+
   importanceScore       Float         @default(0.5)
   pillarTags            Pillar[]
 
@@ -441,6 +470,9 @@ model UserMemory {
   @@index([userId])
   @@index([userId, memoryType])
   @@index([importanceScore])
+  @@index([userId, category])
+  @@index([userId, key])
+  @@index([lastUsed])
 }
 
 // ============================================
@@ -1287,4 +1319,56 @@ model CodeTemplate {
   @@index([accessLevel])
   @@index([isActive])
   @@index([isFeatured])
+}
+
+// ============================================
+// SUPERNOVA AI - COACHING & CONTEXT
+// ============================================
+
+model CoachingSession {
+  id                String      @id @default(cuid())
+  userId            String
+  user              User        @relation("UserCoachingSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  mode              String      // body, brain, business
+  topic             String?     // Main topic discussed
+  duration          Int?        // In minutes
+
+  messagesCount     Int         @default(0)
+  keyInsights       Json?       // Array of key insights extracted
+  actionItems       Json?       // Array of action items
+  progress          Json?       // Progress tracking
+
+  completedAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([mode])
+  @@index([createdAt])
+  @@index([completedAt])
+}
+
+model PlatformContext {
+  id                    String      @id @default(cuid())
+  userId                String
+  user                  User        @relation("UserPlatformContexts", fields: [userId], references: [id], onDelete: Cascade)
+
+  conversationId        String?     // Optional link to specific conversation
+
+  // Platform activity and metrics
+  platformActivity      Json?       // Recent actions on platform (last 7 days)
+  businessMetrics       Json?       // Current stats (revenue, traffic, engagement)
+  recentGoals           Json?       // Active goals
+  activeChallenges      Json?       // Current challenges
+  featureUsage          Json?       // Which features they use/don't use
+  performanceData       Json?       // What's working, what's not
+
+  lastRefreshed         DateTime    @default(now())
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([lastRefreshed])
 }
