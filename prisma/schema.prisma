@@ -15,10 +15,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile        UserProfile?
-  sessions       Session[]
-  passwordResets PasswordReset[]
-  subscription   Subscription?
+  profile          UserProfile?
+  sessions         Session[]
+  passwordResets   PasswordReset[]
+  subscription     Subscription?
+  conversations    Conversation[]
+  memories         Memory[]
+  coachingSessions CoachingSession[]
+  context          Context?
+  userProgress     UserProgress[]
 
   @@index([email])
 }
@@ -170,4 +175,185 @@ model AddOnPurchase {
 
   @@index([subscriptionId])
   @@index([addOnType])
+}
+
+// SUPERNova AI Models
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mode      String   @default("general")
+  title     String?
+  status    String   @default("active")
+
+  lastMessageAt DateTime?
+  messageCount  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+  sessions CoachingSession[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([mode])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role           String
+  content        String       @db.Text
+  metadata       Json?
+  tokens         Int?
+
+  timestamp DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([timestamp])
+}
+
+model Memory {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category   String
+  key        String
+  value      String @db.Text
+  context    Json?
+  importance String @default("medium")
+
+  lastUsed  DateTime?
+  useCount  Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([importance])
+}
+
+model CoachingSession {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  mode           String
+  topic          String?
+  duration       Int?
+  messagesCount  Int          @default(0)
+
+  keyInsights    Json?
+  actionItems    Json?
+  progress       Json?
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([mode])
+}
+
+model Context {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId String?
+
+  platformActivity  Json?
+  businessMetrics   Json?
+  recentGoals       Json?
+  activeChallenges  Json?
+
+  lastRefreshed DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
+
+model CoachingProgram {
+  id          String @id @default(cuid())
+  code        String @unique
+  name        String
+  description String @db.Text
+  tier        String
+
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  modules  ProgramModule[]
+  progress UserProgress[]
+
+  @@index([code])
+  @@index([tier])
+}
+
+model ProgramModule {
+  id        String          @id @default(cuid())
+  programId String
+  program   CoachingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String? @db.Text
+  order       Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lessons ProgramLesson[]
+
+  @@index([programId])
+  @@index([order])
+}
+
+model ProgramLesson {
+  id       String        @id @default(cuid())
+  moduleId String
+  module   ProgramModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  title       String
+  content     String @db.Text
+  contentType String @default("text")
+  duration    Int?
+  order       Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@index([order])
+}
+
+model UserProgress {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programId String
+  program   CoachingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  currentModuleId  String?
+  currentLessonId  String?
+  completedModules Json?
+  completedLessons Json?
+
+  progressPercent Int      @default(0)
+  startedAt       DateTime @default(now())
+  lastAccessedAt  DateTime @default(now())
+  completedAt     DateTime?
+
+  @@unique([userId, programId])
+  @@index([userId])
+  @@index([programId])
 }
