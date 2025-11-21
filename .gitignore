@@ -49,3 +49,9 @@ coverage/
 secrets/
 *.key
 *.pem
+
+# Prisma
+prisma/migrations/
+*.db
+*.db-journal
+node_modules/.prisma/

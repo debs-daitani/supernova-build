@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// User Management
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String?  @map("first_name")
+  lastName      String?  @map("last_name")
+  avatar        String?
+  bio           String?
+  isVerified    Boolean  @default(false) @map("is_verified")
+  isActive      Boolean  @default(true) @map("is_active")
+  role          UserRole @default(USER)
+
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+
+  // Relations
+  sessions      Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Session Management
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model Session {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  token         String   @unique
+  refreshToken  String?  @unique @map("refresh_token")
+  expiresAt     DateTime @map("expires_at")
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  isActive      Boolean  @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+  @@index([userId])
+  @@index([token])
+}
