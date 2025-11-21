@@ -1,0 +1,23 @@
+email,firstName,lastName,isQuizTester,quizPillar1Score,quizPillar2Score,quizPillar3Score,signupDate,emailConsent
+ria.jackson@example.com,Ria,Jackson,true,85,72,90,2024-10-15,true
+rachael.rocco@example.com,Rachael,Rocco,true,78,88,92,2024-10-14,true
+nina.desausmarez@example.com,Nina,de Sausmarez,true,82,75,88,2024-10-13,true
+natalie.ingham@example.com,Natalie,Ingham,true,90,81,85,2024-10-12,true
+felicity.pryke@example.com,Felicity,Pryke,true,76,89,91,2024-10-11,true
+anna.foxneal@example.com,Anna,Foxx Neal,true,88,84,87,2024-10-10,true
+catherine.nina@example.com,Catherine,Nina,true,79,92,83,2024-10-09,true
+georgia.norval@example.com,Georgia,Norval,true,91,78,86,2024-10-08,true
+helen.vasilou@example.com,Helen,Vasiliou Field,true,84,85,89,2024-10-07,true
+joanna.wood@example.com,Joanna,Wood,true,87,80,90,2024-10-06,true
+karen.colqhoun@example.com,Karen,Colqhoun,true,83,91,84,2024-10-05,true
+jo.swann@example.com,Jo,Swann,true,89,77,88,2024-10-04,true
+maddy.grout@example.com,Maddy,Alexander Grout,true,81,86,92,2024-10-03,true
+emma.last@example.com,Emma,Last,true,92,83,87,2024-10-02,true
+yuliya.poberezhnik@example.com,Yuliya,Poberezhnik,true,80,90,85,2024-10-01,true
+tee.murairwa@example.com,Tee,Murairwa,true,86,82,91,2024-09-30,true
+rachel.peru@example.com,Rachel,Peru,true,88,88,89,2024-09-29,true
+rachel.savory@example.com,Rachel,Savory,true,85,87,90,2024-09-28,true
+sara.cox@example.com,Sara,Cox,true,90,79,86,2024-09-27,true
+jane.subscriber@example.com,Jane,Subscriber,false,,,,,true
+john.subscriber@example.com,John,Subscriber,false,,,,,true
+sarah.member@example.com,Sarah,Member,false,,,,,true

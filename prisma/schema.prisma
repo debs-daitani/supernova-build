@@ -34,20 +34,25 @@ enum LessonType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      UserRole @default(FREE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  role             UserRole  @default(FREE)
+  mustResetPassword Boolean  @default(false)
+  migratedFromWix  Boolean   @default(false)
+  migrationDate    DateTime?
+  lifetimeAccess   Boolean   @default(false)
+  emailConsent     Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  profile          Profile?
-  progress         UserProgress[]
-  bookmarks        ContentBookmark[]
+  profile            Profile?
+  progress           UserProgress[]
+  bookmarks          ContentBookmark[]
   programEnrollments ProgramEnrollment[]
-  lessonProgress   LessonProgress[]
-  certificates     ProgramCertificate[]
-  usageTracking    UsageTracking[]
+  lessonProgress     LessonProgress[]
+  certificates       ProgramCertificate[]
+  usageTracking      UsageTracking[]
 
   @@map("users")
 }
@@ -297,4 +302,35 @@ model TierQuota {
   @@unique([tier, feature])
   @@index([tier])
   @@map("tier_quotas")
+}
+
+model MigrationLog {
+  id            String   @id @default(cuid())
+  adminUserId   String
+  csvFilename   String
+  importedCount Int      @default(0)
+  skippedCount  Int      @default(0)
+  errorCount    Int      @default(0)
+  errors        Json?
+  importedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([adminUserId])
+  @@index([importedAt])
+  @@map("migration_logs")
+}
+
+model QuizResult {
+  id              String   @id @default(cuid())
+  userId          String
+  quizType        String   @default("impact_authenticator")
+  bodyScore       Int?
+  brainScore      Int?
+  businessScore   Int?
+  recommendations Json?
+  completedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@map("quiz_results")
 }
