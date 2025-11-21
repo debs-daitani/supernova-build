@@ -187,6 +187,22 @@ async function main() {
   });
 
   console.log('✅ Created coaching programs:', { bbb01, bai01 });
+
+  // i•DEA Marketplace Categories
+  const categories = await prisma.ideaCategory.createMany({
+    data: [
+      { name: 'Tech & Apps', icon: '💻', order: 1 },
+      { name: 'E-commerce', icon: '🛍️', order: 2 },
+      { name: 'Content & Media', icon: '📺', order: 3 },
+      { name: 'Health & Wellness', icon: '🏃', order: 4 },
+      { name: 'Education', icon: '📚', order: 5 },
+      { name: 'Food & Beverage', icon: '🍕', order: 6 },
+      { name: 'Services', icon: '🤝', order: 7 },
+      { name: 'Entertainment', icon: '🎮', order: 8 }
+    ]
+  });
+
+  console.log('✅ Created idea categories:', categories.count);
   console.log('✅ Seed complete!');
 }
 

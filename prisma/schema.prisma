@@ -24,6 +24,16 @@ model User {
   coachingSessions CoachingSession[]
   context          Context?
   userProgress     UserProgress[]
+  ideas              Idea[]
+  builderProfile     BuilderProfile?
+  investorProfile    InvestorProfile?
+  ideaCollaborations IdeaCollaboration[]
+  sentMessages       IdeaMessage[]       @relation("SentMessages")
+  receivedMessages   IdeaMessage[]       @relation("ReceivedMessages")
+  reviewsGiven       IdeaReview[]        @relation("ReviewsGiven")
+  reviewsReceived    IdeaReview[]        @relation("ReviewsReceived")
+  ideaBookmarks      IdeaBookmark[]
+  ideaViews          IdeaView[]
 
   @@index([email])
 }
@@ -356,4 +366,469 @@ model UserProgress {
   @@unique([userId, programId])
   @@index([userId])
   @@index([programId])
+}
+
+// i•DEA Marketplace Models
+
+model Idea {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  tagline     String?
+  description String   @db.Text
+  problem     String?  @db.Text
+  solution    String?  @db.Text
+  targetAudience String? @db.Text
+
+  categoryId  String?
+  category    IdeaCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  pathway     String
+  status      String   @default("draft")
+  pricing     Float?
+  budget      Float?
+  fundingGoal Float?
+
+  featured    Boolean  @default(false)
+  views       Int      @default(0)
+  saves       Int      @default(0)
+  visibility  String   @default("public")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  flatpack         IdeaFlatpack?
+  buildRequest     BuildRequest?
+  fundingRequest   FundingRequest?
+  collaborations   IdeaCollaboration[]
+  messages         IdeaMessage[]
+  reviews          IdeaReview[]
+  bookmarks        IdeaBookmark[]
+  views_log        IdeaView[]
+  tags             IdeaTag[]
+  attachments      IdeaAttachment[]
+  transactions     IdeaTransaction[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([pathway])
+  @@index([status])
+  @@index([featured])
+}
+
+model IdeaCategory {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  icon        String?
+  order       Int    @default(0)
+
+  ideas Idea[]
+
+  @@index([name])
+}
+
+model IdeaFlatpack {
+  id     String @id @default(cuid())
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  packageIncludes      Json?
+  marketResearch       Json?
+  businessModel        Json?
+  revenueProjections   Json?
+  competitorAnalysis   Json?
+  brandAssets          Json?
+  implementationRoadmap Json?
+  legalDocuments       Json?
+
+  estimatedTimeToLaunch String?
+  estimatedStartupCost  Float?
+
+  pricing  Float
+  currency String @default("GBP")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ideaId])
+}
+
+model BuildRequest {
+  id     String @id @default(cuid())
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  budget       Float
+  currency     String @default("GBP")
+  timeline     String?
+  requirements Json?
+  techStack    String[]
+  deliverables Json?
+  skillsNeeded String[]
+  milestones   Json?
+
+  status            String  @default("open")
+  selectedBuilderId String?
+  selectedBuilder   BuilderProfile? @relation(fields: [selectedBuilderId], references: [id], onDelete: SetNull)
+  escrowAmount      Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  proposals         BuildProposal[]
+  milestones_detail BuildMilestone[]
+
+  @@index([ideaId])
+  @@index([status])
+  @@index([selectedBuilderId])
+}
+
+model BuilderProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio              String?  @db.Text
+  skills           String[]
+  specializations  String[]
+  portfolio        Json?
+  hourlyRate       Float?
+  availability     String?
+  yearsExperience  Int?
+  languages        String[]
+  timezone         String?
+
+  rating           Float?   @default(0)
+  completedProjects Int     @default(0)
+  successRate      Float?   @default(0)
+  responseTime     String?
+  verified         Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  buildRequests BuildRequest[]
+  proposals     BuildProposal[]
+  milestones    BuildMilestone[]
+  deliverables  BuildDeliverable[]
+
+  @@index([userId])
+}
+
+model BuildProposal {
+  id             String         @id @default(cuid())
+  buildRequestId String
+  buildRequest   BuildRequest   @relation(fields: [buildRequestId], references: [id], onDelete: Cascade)
+  builderId      String
+  builder        BuilderProfile @relation(fields: [builderId], references: [id], onDelete: Cascade)
+
+  proposedBudget   Float
+  proposedTimeline String?
+  approach         String  @db.Text
+  milestones       Json?
+  portfolio        Json?
+  questions        Json?
+
+  status String @default("pending")
+
+  submittedAt DateTime  @default(now())
+  respondedAt DateTime?
+
+  @@index([buildRequestId])
+  @@index([builderId])
+  @@index([status])
+}
+
+model BuildMilestone {
+  id             String         @id @default(cuid())
+  buildRequestId String
+  buildRequest   BuildRequest   @relation(fields: [buildRequestId], references: [id], onDelete: Cascade)
+  builderId      String
+  builder        BuilderProfile @relation(fields: [builderId], references: [id], onDelete: Cascade)
+
+  milestoneNumber Int
+  title           String
+  description     String? @db.Text
+  deliverables    Json?
+  payment         Float
+  dueDate         DateTime?
+
+  status String @default("pending")
+
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+
+  deliverables_detail BuildDeliverable[]
+
+  @@index([buildRequestId])
+  @@index([builderId])
+  @@index([status])
+}
+
+model BuildDeliverable {
+  id          String         @id @default(cuid())
+  milestoneId String
+  milestone   BuildMilestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  builderId   String
+  builder     BuilderProfile @relation(fields: [builderId], references: [id], onDelete: Cascade)
+
+  type        String
+  fileUrl     String?
+  description String? @db.Text
+  status      String  @default("pending_review")
+  feedback    String? @db.Text
+
+  submittedAt DateTime  @default(now())
+  approvedAt  DateTime?
+
+  @@index([milestoneId])
+  @@index([builderId])
+  @@index([status])
+}
+
+model FundingRequest {
+  id     String @id @default(cuid())
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  fundingGoal          Float
+  currency             String  @default("GBP")
+  useOfFunds           Json?
+  equityOffered        Float?
+  valuationEstimate    Float?
+  pitchDeck            Json?
+  financialProjections Json?
+  marketSize           Json?
+  competitiveAdvantage String? @db.Text
+  founderBackground    Json?
+  milestones           Json?
+  minimumInvestment    Float?
+
+  status        String @default("open")
+  amountRaised  Float  @default(0)
+  investorCount Int    @default(0)
+  closingDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers     InvestmentOffer[]
+  pitchDecks PitchDeck[]
+
+  @@index([ideaId])
+  @@index([status])
+}
+
+model InvestorProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio                String?  @db.Text
+  investmentFocus    String[]
+  minInvestmentSize  Float?
+  maxInvestmentSize  Float?
+  portfolio          Json?
+  preferredEquity    String?
+  preferredStage     String?
+  geography          String[]
+  accredited         Boolean  @default(false)
+  linkedInUrl        String?
+  verified           Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers InvestmentOffer[]
+
+  @@index([userId])
+}
+
+model InvestmentOffer {
+  id               String          @id @default(cuid())
+  fundingRequestId String
+  fundingRequest   FundingRequest  @relation(fields: [fundingRequestId], references: [id], onDelete: Cascade)
+  investorId       String
+  investor         InvestorProfile @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  amount          Float
+  equityRequested Float?
+  terms           Json?
+  conditions      Json?
+  message         String? @db.Text
+
+  status String @default("pending")
+
+  submittedAt  DateTime  @default(now())
+  respondedAt  DateTime?
+
+  @@index([fundingRequestId])
+  @@index([investorId])
+  @@index([status])
+}
+
+model PitchDeck {
+  id               String         @id @default(cuid())
+  fundingRequestId String
+  fundingRequest   FundingRequest @relation(fields: [fundingRequestId], references: [id], onDelete: Cascade)
+
+  slides  Json?
+  fileUrl String?
+  version Int    @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fundingRequestId])
+}
+
+model IdeaTransaction {
+  id     String @id @default(cuid())
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  transactionType String
+  buyerId         String?
+  builderId       String?
+  investorId      String?
+
+  amount         Float
+  currency       String @default("GBP")
+  escrowStatus   String?
+  paymentMethod  String?
+  paymentStatus  String @default("pending")
+  releaseConditions Json?
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([ideaId])
+  @@index([transactionType])
+  @@index([paymentStatus])
+}
+
+model IdeaCollaboration {
+  id     String @id @default(cuid())
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role        String
+  equity      Float?
+  permissions Json?
+  status      String @default("active")
+
+  joinedAt DateTime @default(now())
+
+  @@index([ideaId])
+  @@index([userId])
+}
+
+model IdeaMessage {
+  id          String @id @default(cuid())
+  ideaId      String
+  idea        Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  senderId    String
+  sender      User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User   @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  subject     String?
+  message     String  @db.Text
+  attachments Json?
+  isRead      Boolean @default(false)
+
+  sentAt DateTime @default(now())
+
+  @@index([ideaId])
+  @@index([senderId])
+  @@index([recipientId])
+}
+
+model IdeaReview {
+  id         String @id @default(cuid())
+  ideaId     String
+  idea       Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User   @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId String
+  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  rating          Int
+  review          String? @db.Text
+  transactionType String?
+  verified        Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([ideaId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+}
+
+model IdeaBookmark {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, ideaId])
+  @@index([userId])
+  @@index([ideaId])
+}
+
+model IdeaView {
+  id     String @id @default(cuid())
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+
+  viewedAt DateTime @default(now())
+
+  @@index([ideaId])
+  @@index([userId])
+}
+
+model IdeaTag {
+  id     String @id @default(cuid())
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  tag String
+
+  createdAt DateTime @default(now())
+
+  @@unique([ideaId, tag])
+  @@index([ideaId])
+  @@index([tag])
+}
+
+model IdeaAttachment {
+  id     String @id @default(cuid())
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  fileName String
+  fileUrl  String
+  fileType String?
+  fileSize Int?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([ideaId])
 }

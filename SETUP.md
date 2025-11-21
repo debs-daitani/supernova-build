@@ -8,6 +8,9 @@ Foundational database models for users, authentication, and subscriptions.
 ### Phase VERSE-002: SUPERNova AI Integration
 Conversational AI heart with coaching modes, memory system, and coaching programs.
 
+### Phase VERSE-003: i•DEA Marketplace Integration
+Complete marketplace system with SELL, BUILD, and FUND pathways for business ideas.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -77,6 +80,9 @@ This will create:
 - **BBB01** - The BADASS Branding Blueprint (2 modules, 3 lessons)
 - **BAI01** - Authentic Impact - BADASS AI Strategies (2 modules, 3 lessons)
 
+**i•DEA Marketplace Categories:**
+- 8 categories: Tech & Apps, E-commerce, Content & Media, Health & Wellness, Education, Food & Beverage, Services, Entertainment
+
 ### 6. Test Database Connection
 
 **Test Core Models:**
@@ -89,6 +95,12 @@ node src/test-db.js
 ```bash
 cd server
 node src/test-supernova.js
+```
+
+**Test i•DEA Marketplace Models:**
+```bash
+cd server
+node src/test-marketplace.js
 ```
 
 ## Database Schema
@@ -123,6 +135,36 @@ node src/test-supernova.js
 - `ProgramLesson` - Individual lessons with content
 - `UserProgress` - User progress tracking through programs
 
+### VERSE-003: i•DEA Marketplace Models
+
+**Core Marketplace:**
+- `Idea` - Main idea/project model with pathway support (SELL, BUILD, FUND)
+- `IdeaCategory` - Categories for organizing ideas
+- `IdeaTransaction` - Financial transactions and escrow
+- `IdeaCollaboration` - Team collaboration and equity management
+- `IdeaMessage` - Direct messaging between users
+- `IdeaReview` - User reviews and ratings
+- `IdeaBookmark` - User bookmarks and saved ideas
+- `IdeaView` - View tracking and analytics
+- `IdeaTag` - Tags for idea discovery
+- `IdeaAttachment` - File attachments for ideas
+
+**SELL Pathway:**
+- `IdeaFlatpack` - Complete business-in-a-box packages with market research, business model, etc.
+
+**BUILD Pathway:**
+- `BuildRequest` - Projects seeking builders
+- `BuilderProfile` - Builder profiles with skills, portfolio, ratings
+- `BuildProposal` - Builder proposals for build requests
+- `BuildMilestone` - Project milestones with payment tracking
+- `BuildDeliverable` - Deliverable submissions and approvals
+
+**FUND Pathway:**
+- `FundingRequest` - Ideas seeking investment
+- `InvestorProfile` - Investor profiles with investment focus and criteria
+- `InvestmentOffer` - Investment offers from investors
+- `PitchDeck` - Pitch deck storage and versioning
+
 ## Troubleshooting
 
 ### Prisma Generate Fails with 403 Error
@@ -140,11 +182,11 @@ This occurs when Prisma cannot download engine binaries from their CDN. Ensure:
 
 ## Next Steps
 
-With VERSE-001 and VERSE-002 complete, proceed to:
-- **VERSE-003**: i•DEA Marketplace Models
+With VERSE-001, VERSE-002, and VERSE-003 complete, proceed to:
 - **VERSE-004**: Content & Social Media Models
 - **VERSE-005**: Website Builder Models
-- **API Development**: Authentication, SUPERNova, Subscriptions
+- **VERSE-006**: Email Marketing Models
+- **API Development**: Authentication, SUPERNova, i•DEA Marketplace
 
 ## Useful Commands
 
