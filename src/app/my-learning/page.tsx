@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
-import { ProgramsClient } from './ProgramsClient'
+import { MyLearningClient } from './MyLearningClient'
 
-export default async function ProgramsPage() {
+export default async function MyLearningPage() {
   const session = await auth()
 
   if (!session?.user) {
     redirect('/login')
   }
 
-  return <ProgramsClient userId={session.user.id} />
+  return <MyLearningClient userId={session.user.id} />
 }

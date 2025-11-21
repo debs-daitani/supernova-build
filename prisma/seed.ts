@@ -427,6 +427,166 @@ Then combine into your magnetic message!`,
   }
 
   console.log('✅ Content items created')
+
+  // Create Programs
+  const antiBrandingProgram = await prisma.program.upsert({
+    where: { slug: 'anti-branding-masterclass' },
+    update: {},
+    create: {
+      title: 'Anti-Branding Masterclass',
+      slug: 'anti-branding-masterclass',
+      description:
+        'Master the art of anti-branding and learn how to build an authentic business that stands out by being yourself. This comprehensive programme covers everything from mindset shifts to practical implementation strategies.',
+      instructor: 'Debs Daitani',
+      durationMinutes: 240,
+      requiredRole: 'UPGRADE',
+      isPremium: true,
+      isPublished: true,
+      publishedAt: new Date(),
+      order: 1,
+    },
+  })
+
+  const menopreneurProgram = await prisma.program.upsert({
+    where: { slug: 'menopreneur-framework' },
+    update: {},
+    create: {
+      title: 'The Menopreneur Framework',
+      slug: 'menopreneur-framework',
+      description:
+        'Navigate menopause whilst building a thriving business. Learn strategies specifically designed for women experiencing perimenopause and menopause, covering energy management, business systems, and sustainable growth.',
+      instructor: 'Debs Daitani',
+      durationMinutes: 180,
+      requiredRole: 'MEMBER',
+      isPremium: true,
+      isPublished: true,
+      publishedAt: new Date(),
+      order: 2,
+    },
+  })
+
+  const adhdBusinessProgram = await prisma.program.upsert({
+    where: { slug: 'adhd-business-systems' },
+    update: {},
+    create: {
+      title: 'ADHD-Friendly Business Systems',
+      slug: 'adhd-business-systems',
+      description:
+        'Build a business that works with your ADHD brain, not against it. Discover systems, workflows, and strategies designed specifically for neurodivergent entrepreneurs.',
+      instructor: 'Debs Daitani',
+      durationMinutes: 150,
+      requiredRole: 'FREE',
+      isPremium: false,
+      isPublished: true,
+      publishedAt: new Date(),
+      order: 3,
+    },
+  })
+
+  console.log('✅ Programs created')
+
+  // Create Modules and Lessons for Anti-Branding Masterclass
+  const abModule1 = await prisma.module.create({
+    data: {
+      programId: antiBrandingProgram.id,
+      title: 'Module 1: Foundations of Anti-Branding',
+      description: 'Understand the core principles and mindset shifts required for anti-branding',
+      order: 1,
+      lessons: {
+        create: [
+          {
+            title: 'Welcome to Anti-Branding',
+            description: 'Introduction to the programme and what you can expect',
+            type: 'VIDEO',
+            videoUrl: 'https://player.vimeo.com/video/example',
+            duration: 15,
+            order: 1,
+            content: '<p>Welcome to the Anti-Branding Masterclass! In this lesson, we\'ll explore why traditional branding fails and how being authentically yourself is your biggest competitive advantage.</p>',
+          },
+          {
+            title: 'The Problem with Traditional Branding',
+            description: 'Why cookie-cutter branding advice doesn\'t work',
+            type: 'TEXT',
+            duration: 20,
+            order: 2,
+            content: '<h2>Traditional Branding vs Anti-Branding</h2><p>Traditional branding tells you to create a polished, perfect image. Anti-branding embraces authenticity, imperfection, and realness.</p><p>Key differences:</p><ul><li>Traditional: Hide your flaws</li><li>Anti-Branding: Share your truth</li><li>Traditional: Follow the rules</li><li>Anti-Branding: Break the mould</li></ul>',
+          },
+          {
+            title: 'Finding Your Authentic Voice',
+            description: 'Discover and embrace your unique voice',
+            type: 'MIXED',
+            videoUrl: 'https://player.vimeo.com/video/example2',
+            duration: 25,
+            order: 3,
+            content: '<p>Your authentic voice is already within you. This lesson helps you uncover it and use it confidently in your business.</p>',
+          },
+        ],
+      },
+    },
+  })
+
+  const abModule2 = await prisma.module.create({
+    data: {
+      programId: antiBrandingProgram.id,
+      title: 'Module 2: Building Your Anti-Brand',
+      description: 'Practical strategies for creating an authentic brand presence',
+      order: 2,
+      lessons: {
+        create: [
+          {
+            title: 'Your Story is Your Strategy',
+            description: 'How to use your personal story to connect with your ideal clients',
+            type: 'VIDEO',
+            videoUrl: 'https://player.vimeo.com/video/example3',
+            duration: 30,
+            order: 1,
+            content: '<p>Learn how to craft and share your story in a way that resonates deeply with your audience.</p>',
+          },
+          {
+            title: 'Content That Breaks the Rules',
+            description: 'Creating content that stands out by being real',
+            type: 'TEXT',
+            duration: 20,
+            order: 2,
+            content: '<h2>Anti-Branding Content Principles</h2><p>1. Share behind the scenes<br/>2. Be polarising (it\'s okay if not everyone likes you)<br/>3. Use your natural language<br/>4. Show your process, not just results</p>',
+          },
+        ],
+      },
+    },
+  })
+
+  // Create Modules for ADHD Business Programme
+  const adhdModule1 = await prisma.module.create({
+    data: {
+      programId: adhdBusinessProgram.id,
+      title: 'Understanding Your ADHD Brain',
+      description: 'Learn how your ADHD brain works and how to leverage its strengths',
+      order: 1,
+      lessons: {
+        create: [
+          {
+            title: 'Welcome to ADHD-Friendly Business',
+            description: 'Introduction and overview',
+            type: 'VIDEO',
+            videoUrl: 'https://player.vimeo.com/video/adhd1',
+            duration: 10,
+            order: 1,
+            content: '<p>Welcome! This programme is designed specifically for entrepreneurs with ADHD. You\'ll learn to work WITH your brain, not against it.</p>',
+          },
+          {
+            title: 'ADHD Strengths in Business',
+            description: 'Discover your superpowers',
+            type: 'TEXT',
+            duration: 15,
+            order: 2,
+            content: '<h2>Your ADHD Advantages</h2><p>ADHD isn\'t a deficit - it\'s a different way of thinking that comes with unique strengths:</p><ul><li>Hyperfocus: Deep concentration on interesting tasks</li><li>Creativity: Unique perspectives and ideas</li><li>Energy: Enthusiasm and passion</li><li>Problem-solving: Thinking outside the box</li></ul>',
+          },
+        ],
+      },
+    },
+  })
+
+  console.log('✅ Modules and lessons created')
   console.log('🎉 Seeding complete!')
 }
 
