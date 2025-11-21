@@ -11,7 +11,9 @@
     "format": "prettier --write \"src/**/*.{js,ts,json,md}\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "seed:tiers": "node server/src/seed-tiers.js",
+    "test:subscription": "node server/src/test-subscription.js"
   },
   "keywords": [
     "ai",

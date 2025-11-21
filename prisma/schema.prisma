@@ -34,6 +34,8 @@ model User {
 
   // Relations
   sessions      Session[]
+  subscription  UserSubscription?
+  usageTracking UsageTracking?
 
   @@map("users")
 }
@@ -68,4 +70,114 @@ model Session {
   @@map("sessions")
   @@index([userId])
   @@index([token])
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Subscription Management
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model SubscriptionTier {
+  id                String   @id @default(cuid())
+  name              String   @unique // "BRAVE", "BOLD", "BADASS"
+  displayName       String   @map("display_name") // "Brave", "Bold", "Badass"
+  price             Float    // Monthly price (6, 26, 260)
+  stripePriceId     String?  @map("stripe_price_id")
+
+  // Feature Limits (JSON for flexibility)
+  features          String   // JSON: {snMessages: 100, socialPlatforms: 1, ...}
+
+  // Status
+  isActive          Boolean  @default(true) @map("is_active")
+  sortOrder         Int      @default(0) @map("sort_order") // For display ordering
+
+  // Timestamps
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subscriptions     UserSubscription[]
+
+  @@map("subscription_tiers")
+}
+
+model UserSubscription {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  tierId            String   @map("tier_id")
+
+  // Subscription Status
+  status            SubscriptionStatus @default(ACTIVE)
+
+  // Billing
+  stripeCustomerId      String?  @map("stripe_customer_id")
+  stripeSubscriptionId  String?  @map("stripe_subscription_id")
+
+  // Dates
+  startedAt         DateTime @default(now()) @map("started_at")
+  currentPeriodStart DateTime @default(now()) @map("current_period_start")
+  currentPeriodEnd  DateTime @map("current_period_end")
+  cancelAt          DateTime? @map("cancel_at")
+  canceledAt        DateTime? @map("canceled_at")
+
+  // Timestamps
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier              SubscriptionTier @relation(fields: [tierId], references: [id])
+
+  @@map("user_subscriptions")
+  @@index([userId])
+  @@index([tierId])
+  @@index([status])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIALING
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Usage Tracking
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model UsageTracking {
+  id                    String   @id @default(cuid())
+  userId                String   @unique @map("user_id")
+
+  // Current Period
+  periodStart           DateTime @default(now()) @map("period_start")
+  periodEnd             DateTime @map("period_end")
+
+  // SUPERNova Usage
+  snMessagesUsed        Int      @default(0) @map("sn_messages_used")
+
+  // Social Media
+  socialPostsUsed       Int      @default(0) @map("social_posts_used")
+
+  // Content
+  contentRepurposeUsed  Int      @default(0) @map("content_repurpose_used")
+
+  // AI Generation
+  aiImagesUsed          Int      @default(0) @map("ai_images_used")
+  aiVideosUsed          Int      @default(0) @map("ai_videos_used")
+
+  // Other Features
+  mockupsUsed           Int      @default(0) @map("mockups_used")
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  lastResetAt           DateTime @default(now()) @map("last_reset_at")
+
+  // Relations
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("usage_tracking")
+  @@index([userId])
+  @@index([periodStart])
 }

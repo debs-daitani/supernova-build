@@ -13,6 +13,7 @@ const {
   checkDatabaseHealth,
 } = require('./utils/database');
 const authRoutes = require('./routes/auth');
+const subscriptionRoutes = require('./routes/subscription');
 
 /**
  * dAItaniverse Express Server
@@ -115,6 +116,7 @@ app.get('/health', async (req, res) => {
  * API Routes
  */
 app.use('/api/auth', authRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 /**
  * Root Endpoint
@@ -128,6 +130,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       auth: '/api/auth',
+      subscription: '/api/subscription',
     },
   });
 });
@@ -192,6 +195,7 @@ const startServer = async () => {
       console.log(`🌐 Server running on: http://localhost:${PORT}`);
       console.log(`🏥 Health check: http://localhost:${PORT}/health`);
       console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
+      console.log(`💳 Subscription API: http://localhost:${PORT}/api/subscription`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     });
 
