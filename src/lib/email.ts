@@ -270,3 +270,258 @@ export async function queueEmails(templates: EmailTemplate[]): Promise<void> {
     await sendEmail(template)
   }
 }
+
+/**
+ * Generate ticket creation confirmation email
+ */
+export function generateTicketCreationEmail(
+  email: string,
+  firstName: string,
+  ticketId: string,
+  subject: string,
+  slaHours: number
+): EmailTemplate {
+  const ticketUrl = `${process.env.NEXT_PUBLIC_APP_URL}/support/${ticketId}`
+
+  return {
+    to: email,
+    subject: `Ticket #${ticketId.slice(-8)} Created: ${subject}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .header h1 { color: white; margin: 0; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+    .ticket-box { background: white; border-left: 4px solid #8b5cf6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Support Ticket Created</h1>
+    </div>
+    <div class="content">
+      <h2>Hey ${firstName || 'there'}! 👋</h2>
+
+      <p>Thanks for reaching out! We've received your support request and our team is on it.</p>
+
+      <div class="ticket-box">
+        <p><strong>Ticket ID:</strong> #${ticketId.slice(-8)}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Expected Response Time:</strong> Within ${slaHours} hours</p>
+      </div>
+
+      <p>You'll receive an email notification as soon as an admin responds to your ticket.</p>
+
+      <div style="text-align: center;">
+        <a href="${ticketUrl}" class="cta-button">View Ticket</a>
+      </div>
+
+      <p><small>If the button doesn't work, copy and paste this link into your browser:<br>${ticketUrl}</small></p>
+
+      <p>Need urgent help? Check our <a href="${process.env.NEXT_PUBLIC_APP_URL}/support">support center</a> for common solutions.</p>
+
+      <p>Thanks for your patience,<br>
+      <strong>The dAItaniverse Support Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>The dAItaniverse | Building Authentic Brands with AI</p>
+    </div>
+  </div>
+</body>
+</html>
+    `,
+    text: `
+Hey ${firstName || 'there'}!
+
+Thanks for reaching out! We've received your support request and our team is on it.
+
+Ticket ID: #${ticketId.slice(-8)}
+Subject: ${subject}
+Expected Response Time: Within ${slaHours} hours
+
+You'll receive an email notification as soon as an admin responds to your ticket.
+
+View your ticket: ${ticketUrl}
+
+Need urgent help? Check our support center for common solutions: ${process.env.NEXT_PUBLIC_APP_URL}/support
+
+Thanks for your patience,
+The dAItaniverse Support Team
+
+---
+The dAItaniverse | Building Authentic Brands with AI
+    `,
+  }
+}
+
+/**
+ * Generate email when admin replies to ticket
+ */
+export function generateTicketReplyEmail(
+  email: string,
+  firstName: string,
+  ticketId: string,
+  subject: string,
+  replyMessage: string,
+  adminName: string
+): EmailTemplate {
+  const ticketUrl = `${process.env.NEXT_PUBLIC_APP_URL}/support/${ticketId}`
+
+  return {
+    to: email,
+    subject: `Re: Ticket #${ticketId.slice(-8)} - ${subject}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .header h1 { color: white; margin: 0; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+    .reply-box { background: white; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>New Reply to Your Ticket</h1>
+    </div>
+    <div class="content">
+      <h2>Hey ${firstName || 'there'}! 👋</h2>
+
+      <p><strong>${adminName}</strong> has replied to your support ticket:</p>
+
+      <div class="reply-box">
+        <p><strong>Ticket #${ticketId.slice(-8)}:</strong> ${subject}</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+        <p>${replyMessage.replace(/\n/g, '<br>')}</p>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="${ticketUrl}" class="cta-button">View & Reply</a>
+      </div>
+
+      <p><small>If the button doesn't work, copy and paste this link into your browser:<br>${ticketUrl}</small></p>
+
+      <p>Thanks,<br>
+      <strong>The dAItaniverse Support Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>The dAItaniverse | Building Authentic Brands with AI</p>
+    </div>
+  </div>
+</body>
+</html>
+    `,
+    text: `
+Hey ${firstName || 'there'}!
+
+${adminName} has replied to your support ticket:
+
+Ticket #${ticketId.slice(-8)}: ${subject}
+
+---
+${replyMessage}
+---
+
+View and reply to your ticket: ${ticketUrl}
+
+Thanks,
+The dAItaniverse Support Team
+
+---
+The dAItaniverse | Building Authentic Brands with AI
+    `,
+  }
+}
+
+/**
+ * Generate ticket resolved email
+ */
+export function generateTicketResolvedEmail(
+  email: string,
+  firstName: string,
+  ticketId: string,
+  subject: string
+): EmailTemplate {
+  const ticketUrl = `${process.env.NEXT_PUBLIC_APP_URL}/support/${ticketId}`
+
+  return {
+    to: email,
+    subject: `Ticket #${ticketId.slice(-8)} Resolved: ${subject}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .header h1 { color: white; margin: 0; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Ticket Resolved</h1>
+    </div>
+    <div class="content">
+      <h2>Hey ${firstName || 'there'}! 🎉</h2>
+
+      <p>Great news! Your support ticket has been marked as resolved:</p>
+
+      <p><strong>Ticket #${ticketId.slice(-8)}:</strong> ${subject}</p>
+
+      <p>If you're still experiencing issues, you can reopen this ticket by replying to it within the next 7 days. After that, the ticket will be automatically closed.</p>
+
+      <div style="text-align: center;">
+        <a href="${ticketUrl}" class="cta-button">View Ticket</a>
+      </div>
+
+      <p>Thanks for using The dAItaniverse!</p>
+
+      <p>Cheers,<br>
+      <strong>The dAItaniverse Support Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>The dAItaniverse | Building Authentic Brands with AI</p>
+    </div>
+  </div>
+</body>
+</html>
+    `,
+    text: `
+Hey ${firstName || 'there'}! 🎉
+
+Great news! Your support ticket has been marked as resolved:
+
+Ticket #${ticketId.slice(-8)}: ${subject}
+
+If you're still experiencing issues, you can reopen this ticket by replying to it within the next 7 days. After that, the ticket will be automatically closed.
+
+View your ticket: ${ticketUrl}
+
+Thanks for using The dAItaniverse!
+
+Cheers,
+The dAItaniverse Support Team
+
+---
+The dAItaniverse | Building Authentic Brands with AI
+    `,
+  }
+}
