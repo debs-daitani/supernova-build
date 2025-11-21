@@ -15,6 +15,16 @@ enum UserRole {
   MEMBER
 }
 
+enum ContentType {
+  FRAMEWORK
+  TEMPLATE
+  WORKSHEET
+  VIDEO
+  ARTICLE
+  COURSE
+  RESOURCE
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -23,7 +33,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile   Profile?
+  profile      Profile?
+  progress     UserProgress[]
+  bookmarks    ContentBookmark[]
 
   @@map("users")
 }
@@ -39,4 +51,84 @@ model Profile {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")
+}
+
+model ContentCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       ContentItem[]
+
+  @@map("content_categories")
+}
+
+model ContentItem {
+  id           String      @id @default(cuid())
+  title        String
+  slug         String      @unique
+  description  String?
+  thumbnail    String?
+  type         ContentType
+  fileUrl      String?
+  videoUrl     String?
+  content      String?     @db.Text
+  categoryId   String
+  tags         String[]
+  isPremium    Boolean     @default(false)
+  requiredRole UserRole    @default(FREE)
+  viewCount    Int         @default(0)
+  order        Int         @default(0)
+  isPublished  Boolean     @default(true)
+  publishedAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  category     ContentCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  progress     UserProgress[]
+  bookmarks    ContentBookmark[]
+
+  @@index([categoryId])
+  @@index([requiredRole])
+  @@index([isPublished])
+  @@map("content_items")
+}
+
+model UserProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  contentId    String
+  viewedAt     DateTime @default(now())
+  completedAt  DateTime?
+  progress     Int      @default(0)
+  lastPosition String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      ContentItem  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([contentId])
+  @@map("user_progress")
+}
+
+model ContentBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  contentId String
+  createdAt DateTime @default(now())
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   ContentItem  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@map("content_bookmarks")
 }

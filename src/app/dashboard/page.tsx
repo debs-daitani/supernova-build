@@ -27,6 +27,37 @@ export default async function DashboardPage() {
   const daysSinceJoined = differenceInDays(new Date(), user.createdAt)
   const joinDate = format(user.createdAt, 'dd MMMM yyyy', { locale: enGB })
 
+  // Fetch recent progress
+  const recentProgress = await prisma.userProgress.findMany({
+    where: {
+      userId: session.user.id,
+      completedAt: null, // Only show in-progress items
+    },
+    include: {
+      content: {
+        include: {
+          category: true,
+        },
+      },
+    },
+    orderBy: { updatedAt: 'desc' },
+    take: 3,
+  })
+
+  // Fetch bookmarked content
+  const bookmarkedContent = await prisma.contentBookmark.findMany({
+    where: { userId: session.user.id },
+    include: {
+      content: {
+        include: {
+          category: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 3,
+  })
+
   // Get account type styling
   const accountTypeStyles = {
     FREE: {
@@ -65,6 +96,68 @@ export default async function DashboardPage() {
             Your personalised dAItaniverse dashboard
           </p>
         </div>
+
+        {/* Continue Learning Widget */}
+        {(recentProgress.length > 0 || bookmarkedContent.length > 0) && (
+          <div className="bg-white rounded-xl shadow-md border-2 border-purple-200 p-6 mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-purple-600" />
+              Continue Learning
+            </h2>
+
+            {recentProgress.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">In Progress</h3>
+                <div className="space-y-3">
+                  {recentProgress.map((progress) => (
+                    <Link
+                      key={progress.id}
+                      href={`/content-library/${progress.content.id}`}
+                      className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors group"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors">
+                          {progress.content.title}
+                        </p>
+                        <p className="text-xs text-gray-600">{progress.content.category.name}</p>
+                      </div>
+                      <div className="w-24">
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                          <div
+                            className="bg-purple-600 h-2 rounded-full"
+                            style={{ width: `${progress.progress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-600 text-right">{progress.progress}%</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {bookmarkedContent.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Bookmarked</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {bookmarkedContent.map((bookmark) => (
+                    <Link
+                      key={bookmark.id}
+                      href={`/content-library/${bookmark.content.id}`}
+                      className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg hover:shadow-md transition-all group"
+                    >
+                      <Star className="w-4 h-4 text-yellow-600 fill-yellow-600 mb-2" />
+                      <p className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-2">
+                        {bookmark.content.title}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">{bookmark.content.category.name}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -120,13 +213,8 @@ export default async function DashboardPage() {
           {/* Content Library Tile */}
           <Link
             href="/content-library"
-            className="group bg-white border-2 border-pink-200 rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer relative"
+            className="group bg-white border-2 border-pink-200 rounded-xl p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
           >
-            <div className="absolute top-4 right-4">
-              <span className="bg-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                COMING SOON
-              </span>
-            </div>
             <div className="text-gray-800">
               <BookOpen className="w-12 h-12 mb-4 text-pink-500 group-hover:scale-110 transition-transform" />
               <h3 className="text-xl font-bold mb-2">Content Library</h3>
