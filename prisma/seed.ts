@@ -587,6 +587,93 @@ Then combine into your magnetic message!`,
   })
 
   console.log('✅ Modules and lessons created')
+
+  // Create Tier Quotas
+  const features = [
+    'supernovaMessages',
+    'emailSubscribers',
+    'socialPostsScheduled',
+    'contentVideosRepurposed',
+    'aiImagesGenerated',
+    'aiVideosGenerated',
+    'storageUsedBytes',
+    'coursesHosted',
+    'productsListed',
+  ]
+
+  const tierLimits = {
+    FREE: {
+      supernovaMessages: 0, // No access - view quiz results only
+      emailSubscribers: 0,
+      socialPostsScheduled: 0,
+      contentVideosRepurposed: 0,
+      aiImagesGenerated: 0,
+      aiVideosGenerated: 0,
+      storageUsedBytes: 0,
+      coursesHosted: 0, // View only
+      productsListed: 0,
+    },
+    UPGRADE: {
+      supernovaMessages: 100, // 100 messages per month
+      emailSubscribers: 300, // Max 300 subscribers
+      socialPostsScheduled: 20, // 20 posts per month
+      contentVideosRepurposed: 0, // Not available
+      aiImagesGenerated: 0,
+      aiVideosGenerated: 0,
+      storageUsedBytes: 0,
+      coursesHosted: 0,
+      productsListed: 0,
+    },
+    MEMBER: {
+      supernovaMessages: 300, // 300 messages per month
+      emailSubscribers: 1000, // Max 1000 subscribers
+      socialPostsScheduled: 60, // 60 posts per month
+      contentVideosRepurposed: 4, // 4 videos per month
+      aiImagesGenerated: 10, // 10 images per month
+      aiVideosGenerated: 2, // 2 videos per month
+      storageUsedBytes: 5368709120, // 5GB in bytes
+      coursesHosted: 6, // Max 6 courses
+      productsListed: 50, // Max 50 products
+    },
+    ADMIN: {
+      supernovaMessages: -1, // Unlimited
+      emailSubscribers: -1,
+      socialPostsScheduled: -1,
+      contentVideosRepurposed: -1,
+      aiImagesGenerated: -1,
+      aiVideosGenerated: -1,
+      storageUsedBytes: -1,
+      coursesHosted: -1,
+      productsListed: -1,
+    },
+  }
+
+  for (const tier of Object.keys(tierLimits)) {
+    for (const feature of features) {
+      await prisma.tierQuota.upsert({
+        where: {
+          tier_feature: {
+            tier,
+            feature,
+          },
+        },
+        update: {
+          monthlyLimit: tierLimits[tier as keyof typeof tierLimits][
+            feature as keyof (typeof tierLimits)['FREE']
+          ],
+        },
+        create: {
+          tier,
+          feature,
+          monthlyLimit: tierLimits[tier as keyof typeof tierLimits][
+            feature as keyof (typeof tierLimits)['FREE']
+          ],
+        },
+      })
+    }
+  }
+
+  console.log('✅ Tier quotas created')
   console.log('🎉 Seeding complete!')
 }
 
