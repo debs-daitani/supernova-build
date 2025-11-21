@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../server/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile        UserProfile?
+  sessions       Session[]
+  passwordResets PasswordReset[]
+  subscription   Subscription?
+
+  @@index([email])
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName            String
+  preferredName       String
+  pronouns            String?
+  communicationStyle  String?
+  onboardingCompleted Boolean  @default(false)
+  firstInteractionAt  DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model SubscriptionTier {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  price       Float
+  currency    String   @default("GBP")
+  features    Json
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([name])
+}
+
+model Subscription {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tierId           String
+  tier             SubscriptionTier @relation(fields: [tierId], references: [id])
+
+  status           String           @default("active")
+
+  isVIP            Boolean          @default(false)
+  vipStartDate     DateTime?
+  vipFreeMonthEnd  DateTime?
+  vipHalfPriceEnd  DateTime?
+
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean        @default(false)
+
+  stripeCustomerId       String?  @unique
+  stripeSubscriptionId   String?  @unique
+  stripePriceId          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments Payment[]
+  addOns   AddOnPurchase[]
+
+  @@index([userId])
+  @@index([tierId])
+  @@index([status])
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  amount         Float
+  currency       String       @default("GBP")
+  status         String
+  paymentMethod  String?
+
+  stripePaymentIntentId String? @unique
+  stripeInvoiceId       String? @unique
+
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([subscriptionId])
+  @@index([status])
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  userId         String
+
+  amount         Float
+  currency       String   @default("GBP")
+  status         String
+  description    String?
+
+  stripeInvoiceId String? @unique
+  invoiceUrl      String?
+  invoicePdf      String?
+
+  dueDate   DateTime?
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AddOnPurchase {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  addOnType      String
+  price          Float
+  currency       String       @default("GBP")
+  status         String       @default("active")
+
+  purchasedAt DateTime @default(now())
+  expiresAt   DateTime?
+
+  @@index([subscriptionId])
+  @@index([addOnType])
+}
