@@ -11,6 +11,9 @@ Conversational AI heart with coaching modes, memory system, and coaching program
 ### Phase VERSE-003: i•DEA Marketplace Integration
 Complete marketplace system with SELL, BUILD, and FUND pathways for business ideas.
 
+### Phase VERSE-004: Authentication System
+Complete authentication system with JWT tokens, password hashing, and session management.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -101,6 +104,12 @@ node src/test-supernova.js
 ```bash
 cd server
 node src/test-marketplace.js
+```
+
+**Test Authentication System:**
+```bash
+cd server
+node src/test-auth.js
 ```
 
 ## Database Schema
