@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VENUED 🎸
+
+**Strategic project planning for ADHD brains who build like rockstars**
+
+Get VENUED. Get it Done. Plan your projects like a tour. Execute like a headliner.
+
+## What is VENUED?
+
+VENUED is a comprehensive project management and productivity app designed specifically for ADHD entrepreneurs and creatives. With a rockstar/tour aesthetic and ADHD-friendly features throughout, VENUED helps you:
+
+- Break down overwhelming projects into manageable phases
+- Match tasks to your energy levels
+- Track time blindness patterns
+- Manage hyperfocus sessions
+- Keep momentum with quick wins
+- Stay organized without feeling restricted
+
+## Features
+
+### 🎤 THE BACKSTAGE
+Your command center. View all projects at a glance, track progress, filter by status, and manage priorities.
+
+### ⭐ THE SETLIST
+Project builder with drag-and-drop phases. Build your project like a setlist with templates, energy matching, and ADHD reality checks.
+
+### 👥 THE CREW
+Daily task manager with energy matching, focus timer, date filtering, and confetti celebrations for completed tasks.
+
+### 📅 THE TOUR
+Strategic timeline view with week navigation, workload analysis, ADHD time blindness compensation (1.8x multiplier), and burnout prevention.
+
+### 🧠 THE ENTOURAGE
+8 specialized ADHD support tools:
+- **Time Blindness Tracker** - Log estimates vs reality, find your multiplier
+- **Hyperfocus Logger** - Track flow states and triggers
+- **Energy Tracker** - Map your energy patterns throughout the day
+- **Executive Function Helper** - Break through decision paralysis
+- **Brain Dump Space** - Capture everything, organize later
+- **Dopamine Menu** - Gamified reward system
+- **Body Doubling Simulator** - Virtual work companion
+- **Pattern Insights** - Personalized recommendations from your data
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Icons**: Lucide React
+- **Drag & Drop**: @dnd-kit
+- **Storage**: localStorage (client-side only)
+- **PWA**: Full Progressive Web App support
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone [your-repo-url]
+cd venued
+
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## PWA Installation
 
-To learn more about Next.js, take a look at the following resources:
+VENUED is a Progressive Web App. You can install it:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Desktop**: Click the install icon in your browser's address bar
+2. **Mobile**: Tap "Add to Home Screen" from the browser menu
+3. **Offline**: Works completely offline after installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Demo Data
 
-## Deploy on Vercel
+On first visit, click "Try Demo" to load sample projects and explore all features. You can clear demo data anytime from Settings.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data Privacy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Your data never leaves your device.** Everything is stored locally in your browser using localStorage. No servers, no tracking, no accounts required.
+
+## Features in Detail
+
+### ADHD-Specific Design
+- Energy level matching (High/Medium/Low)
+- Time blindness tracking with reality multipliers
+- Hyperfocus session logging
+- Executive function helpers
+- Quick wins for momentum
+- Pattern recognition and insights
+
+### Visual Design
+- Dark mode with neon colors (Pink #FF1B8D, Purple #9D4EDD, Green #39FF14)
+- Rockstar/tour aesthetic throughout
+- Gradient effects and animations
+- Mobile-first responsive design
+
+### Data Management
+- Export backups as JSON
+- Import from previous backups
+- Clear all data option
+- Demo data loader
+
+## Browser Support
+
+Works on all modern browsers:
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Contributing
+
+This is a personal project, but suggestions and feedback are welcome!
+
+## License
+
+MIT License - feel free to use and modify for your own needs.
+
+## About
+
+Built for ADHD brains, by ADHD brains.
+
+Because sometimes you need a project planner that understands that:
+- You'll hyperfocus for 6 hours straight
+- Then have zero energy the next day
+- Time estimates are always wrong
+- You need to see the big picture AND the details
+- Motivation comes from momentum, not discipline
+- Your brain works differently, and that's not a bug—it's a feature
+
+---
+
+**Get VENUED. Get it Done.** 🚀
