@@ -592,3 +592,114 @@ model VideoTranscript {
   @@index([videoId])
   @@map("video_transcripts")
 }
+
+// ========================================
+// ANALYTICS DASHBOARD MODELS
+// ========================================
+
+// AnalyticsEvent model (raw events)
+model AnalyticsEvent {
+  id              String   @id @default(cuid())
+  userId          String?
+
+  // Event details
+  eventType       String   // page_view, feature_use, conversion, etc.
+  eventCategory   String   // PAGE_VIEW, FEATURE_USE, CONVERSION, ENGAGEMENT, REVENUE
+  eventData       Json?    // Flexible data storage
+
+  // Session info
+  sessionId       String
+  deviceType      String?  // desktop, mobile, tablet
+  browser         String?
+  os              String?
+
+  // Location
+  ipAddress       String?
+  country         String?
+  city            String?
+
+  // Traffic source
+  referrer        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([eventCategory])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+// AnalyticsSession model
+model AnalyticsSession {
+  id              String   @id @default(cuid())
+  userId          String?
+  sessionId       String   @unique
+
+  // Session timing
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+  duration        Int?     // in seconds
+
+  // Activity
+  pageViews       Int      @default(0)
+  eventsCount     Int      @default(0)
+
+  // Device info
+  deviceType      String?
+  browser         String?
+  os              String?
+
+  // Pages
+  entryPage       String?
+  exitPage        String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([startedAt])
+  @@map("analytics_sessions")
+}
+
+// AnalyticsMetric model (aggregated daily metrics)
+model AnalyticsMetric {
+  id              String   @id @default(cuid())
+  date            DateTime @db.Date
+  metricType      String   // dau, wau, mau, revenue, etc.
+  metricValue     Float
+  metadata        Json?    // Additional context
+
+  createdAt       DateTime @default(now())
+
+  @@unique([date, metricType])
+  @@index([date])
+  @@index([metricType])
+  @@map("analytics_metrics")
+}
+
+// UserActivity model (daily user activity summary)
+model UserActivity {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime @db.Date
+
+  // Activity summary
+  loginCount      Int      @default(0)
+  featuresUsed    String[] @default([])
+  timeSpent       Int      @default(0) // in minutes
+  actionsCount    Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@map("user_activities")
+}
