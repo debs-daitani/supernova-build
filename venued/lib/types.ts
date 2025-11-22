@@ -99,3 +99,24 @@ export interface CrewStats {
   focusMinutes: number;
   currentEnergy: EnergyLevel;
 }
+
+// Tour (Timeline) Types
+export type TourView = 'week' | 'month' | 'gantt';
+
+export interface DayWorkload {
+  date: string; // YYYY-MM-DD
+  tasks: CrewTask[];
+  totalHours: number;
+  energyDistribution: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+  isOverloaded: boolean; // > 8 hours
+  isUnrealistic: boolean; // > 12 hours
+}
+
+export interface TimelineProject extends Project {
+  color: string;
+  tasksCount: number;
+}
