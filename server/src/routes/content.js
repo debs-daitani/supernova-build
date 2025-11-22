@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { searchContent, curateProgram, getRecommendations, trackProgress } from '../services/contentCurationService.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/content - Browse content
 router.get('/', async (req, res) => {

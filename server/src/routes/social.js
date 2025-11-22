@@ -1,12 +1,12 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 // ============================================================================
 // PROFILE ENDPOINTS
@@ -1952,4 +1952,4 @@ router.get('/search/posts', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

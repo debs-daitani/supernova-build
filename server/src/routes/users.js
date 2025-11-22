@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/users/me
 router.get('/me', async (req, res) => {

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(findstr:*)",
+      "Bash(npm install:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i \"s/authenticateToken/authenticate/g\" \"$file\")",
+      "Bash(done)",
+      "Bash(do sed -i \"s/authMiddleware/authenticate/g\" \"$file\")",
+      "Bash(do sed -i \"s/^import authenticate from/import { authenticate } from/g\" \"$file\")",
+      "Bash(do sed -i \"s/module\\.exports = router;/export default router;/g\" \"$file\")",
+      "Bash(npx prisma generate:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

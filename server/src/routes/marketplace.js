@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken, requireMember } from '../middleware/auth.js';
+import { authenticate, requireMember } from '../middleware/auth.js';
 import { validateListing } from '../utils/validators.js';
 import stripe from '../config/stripe.js';
 import { sendMarketplaceSaleBuyer, sendMarketplaceSaleSeller } from '../services/emailService.js';
@@ -8,7 +8,7 @@ import { sendMarketplaceSaleBuyer, sendMarketplaceSaleSeller } from '../services
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/marketplace - Browse listings
 router.get('/', async (req, res) => {

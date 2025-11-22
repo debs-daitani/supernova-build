@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const brandKitService = require('../services/brandKitService');
 
 const prisma = new PrismaClient();
@@ -19,7 +19,7 @@ const prisma = new PrismaClient();
  * Get all brand kits for user
  * GET /api/brand-kits
  */
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const result = await brandKitService.getBrandKits(prisma, req.user.id);
     res.json(result);
@@ -33,7 +33,7 @@ router.get('/', authenticateToken, async (req, res) => {
  * Get single brand kit
  * GET /api/brand-kits/:id
  */
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.getBrandKit(prisma, id, req.user.id);
@@ -53,7 +53,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  * Create new brand kit
  * POST /api/brand-kits
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const result = await brandKitService.createBrandKit(prisma, req.user.id, req.body);
     res.json(result);
@@ -67,7 +67,7 @@ router.post('/', authenticateToken, async (req, res) => {
  * Update brand kit
  * PATCH /api/brand-kits/:id
  */
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.updateBrandKit(prisma, id, req.user.id, req.body);
@@ -87,7 +87,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
  * Delete brand kit
  * DELETE /api/brand-kits/:id
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.deleteBrandKit(prisma, id, req.user.id);
@@ -111,7 +111,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
  * Get assets for brand kit
  * GET /api/brand-kits/:id/assets
  */
-router.get('/:id/assets', authenticateToken, async (req, res) => {
+router.get('/:id/assets', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { type, category, search } = req.query;
@@ -138,7 +138,7 @@ router.get('/:id/assets', authenticateToken, async (req, res) => {
  * Upload brand asset
  * POST /api/brand-kits/:id/assets
  */
-router.post('/:id/assets', authenticateToken, async (req, res) => {
+router.post('/:id/assets', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.createBrandAsset(prisma, id, req.user.id, req.body);
@@ -158,7 +158,7 @@ router.post('/:id/assets', authenticateToken, async (req, res) => {
  * Delete brand asset
  * DELETE /api/brand-assets/:id
  */
-router.delete('/assets/:id', authenticateToken, async (req, res) => {
+router.delete('/assets/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.deleteBrandAsset(prisma, id, req.user.id);
@@ -182,7 +182,7 @@ router.delete('/assets/:id', authenticateToken, async (req, res) => {
  * Save brand guideline section
  * POST /api/brand-kits/:id/guidelines
  */
-router.post('/:id/guidelines', authenticateToken, async (req, res) => {
+router.post('/:id/guidelines', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.saveBrandGuideline(prisma, id, req.user.id, req.body);
@@ -202,7 +202,7 @@ router.post('/:id/guidelines', authenticateToken, async (req, res) => {
  * Delete brand guideline section
  * DELETE /api/brand-guidelines/:id
  */
-router.delete('/guidelines/:id', authenticateToken, async (req, res) => {
+router.delete('/guidelines/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.deleteBrandGuideline(prisma, id, req.user.id);
@@ -226,7 +226,7 @@ router.delete('/guidelines/:id', authenticateToken, async (req, res) => {
  * Generate color palette from primary color
  * POST /api/brand-kits/tools/generate-palette
  */
-router.post('/tools/generate-palette', authenticateToken, async (req, res) => {
+router.post('/tools/generate-palette', authenticate, async (req, res) => {
   try {
     const { primaryColor } = req.body;
 
@@ -246,7 +246,7 @@ router.post('/tools/generate-palette', authenticateToken, async (req, res) => {
  * Check contrast ratio between two colors
  * POST /api/brand-kits/tools/check-contrast
  */
-router.post('/tools/check-contrast', authenticateToken, async (req, res) => {
+router.post('/tools/check-contrast', authenticate, async (req, res) => {
   try {
     const { color1, color2 } = req.body;
 
@@ -270,7 +270,7 @@ router.post('/tools/check-contrast', authenticateToken, async (req, res) => {
  * Create share link
  * POST /api/brand-kits/:id/share
  */
-router.post('/:id/share', authenticateToken, async (req, res) => {
+router.post('/:id/share', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.createShareLink(prisma, id, req.user.id, req.body);
@@ -316,7 +316,7 @@ router.get('/shared/:token', async (req, res) => {
  * Export brand kit as CSS
  * GET /api/brand-kits/:id/export/css
  */
-router.get('/:id/export/css', authenticateToken, async (req, res) => {
+router.get('/:id/export/css', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.getBrandKit(prisma, id, req.user.id);
@@ -340,7 +340,7 @@ router.get('/:id/export/css', authenticateToken, async (req, res) => {
  * Export brand kit data as JSON
  * GET /api/brand-kits/:id/export/json
  */
-router.get('/:id/export/json', authenticateToken, async (req, res) => {
+router.get('/:id/export/json', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await brandKitService.getBrandKit(prisma, id, req.user.id);
@@ -362,7 +362,7 @@ router.get('/:id/export/json', authenticateToken, async (req, res) => {
  * Apply brand kit to all content
  * POST /api/brand-kits/:id/apply
  */
-router.post('/:id/apply', authenticateToken, async (req, res) => {
+router.post('/:id/apply', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { targets } = req.body; // Which content to apply to
@@ -387,4 +387,4 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

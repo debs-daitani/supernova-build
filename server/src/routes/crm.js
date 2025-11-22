@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Get all contacts
-router.get('/contacts', authMiddleware, async (req, res) => {
+router.get('/contacts', authenticate, async (req, res) => {
   try {
     const { status, search, tag } = req.query;
 
@@ -56,7 +56,7 @@ router.get('/contacts', authMiddleware, async (req, res) => {
 });
 
 // Get single contact
-router.get('/contacts/:id', authMiddleware, async (req, res) => {
+router.get('/contacts/:id', authenticate, async (req, res) => {
   try {
     const contact = await prisma.contact.findFirst({
       where: {
@@ -83,7 +83,7 @@ router.get('/contacts/:id', authMiddleware, async (req, res) => {
 });
 
 // Create contact
-router.post('/contacts', authMiddleware, async (req, res) => {
+router.post('/contacts', authenticate, async (req, res) => {
   try {
     const contact = await prisma.contact.create({
       data: {
@@ -111,7 +111,7 @@ router.post('/contacts', authMiddleware, async (req, res) => {
 });
 
 // Update contact
-router.patch('/contacts/:id', authMiddleware, async (req, res) => {
+router.patch('/contacts/:id', authenticate, async (req, res) => {
   try {
     const contact = await prisma.contact.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -134,7 +134,7 @@ router.patch('/contacts/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete contact
-router.delete('/contacts/:id', authMiddleware, async (req, res) => {
+router.delete('/contacts/:id', authenticate, async (req, res) => {
   try {
     const contact = await prisma.contact.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -160,7 +160,7 @@ router.delete('/contacts/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all deals
-router.get('/deals', authMiddleware, async (req, res) => {
+router.get('/deals', authenticate, async (req, res) => {
   try {
     const { stage } = req.query;
 
@@ -193,7 +193,7 @@ router.get('/deals', authMiddleware, async (req, res) => {
 });
 
 // Create deal
-router.post('/deals', authMiddleware, async (req, res) => {
+router.post('/deals', authenticate, async (req, res) => {
   try {
     const deal = await prisma.deal.create({
       data: {
@@ -224,7 +224,7 @@ router.post('/deals', authMiddleware, async (req, res) => {
 });
 
 // Update deal (move stage, etc.)
-router.patch('/deals/:id', authMiddleware, async (req, res) => {
+router.patch('/deals/:id', authenticate, async (req, res) => {
   try {
     const deal = await prisma.deal.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -261,7 +261,7 @@ router.patch('/deals/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete deal
-router.delete('/deals/:id', authMiddleware, async (req, res) => {
+router.delete('/deals/:id', authenticate, async (req, res) => {
   try {
     const deal = await prisma.deal.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -287,7 +287,7 @@ router.delete('/deals/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all tasks
-router.get('/tasks', authMiddleware, async (req, res) => {
+router.get('/tasks', authenticate, async (req, res) => {
   try {
     const { completed, contactId, view } = req.query;
 
@@ -355,7 +355,7 @@ router.get('/tasks', authMiddleware, async (req, res) => {
 });
 
 // Create task
-router.post('/tasks', authMiddleware, async (req, res) => {
+router.post('/tasks', authenticate, async (req, res) => {
   try {
     const task = await prisma.task.create({
       data: {
@@ -375,7 +375,7 @@ router.post('/tasks', authMiddleware, async (req, res) => {
 });
 
 // Update task
-router.patch('/tasks/:id', authMiddleware, async (req, res) => {
+router.patch('/tasks/:id', authenticate, async (req, res) => {
   try {
     const task = await prisma.task.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -399,7 +399,7 @@ router.patch('/tasks/:id', authMiddleware, async (req, res) => {
 });
 
 // Toggle task completion
-router.patch('/tasks/:id/complete', authMiddleware, async (req, res) => {
+router.patch('/tasks/:id/complete', authenticate, async (req, res) => {
   try {
     const task = await prisma.task.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -439,7 +439,7 @@ router.patch('/tasks/:id/complete', authMiddleware, async (req, res) => {
 });
 
 // Delete task
-router.delete('/tasks/:id', authMiddleware, async (req, res) => {
+router.delete('/tasks/:id', authenticate, async (req, res) => {
   try {
     const task = await prisma.task.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -465,7 +465,7 @@ router.delete('/tasks/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get contact activities
-router.get('/contacts/:contactId/activities', authMiddleware, async (req, res) => {
+router.get('/contacts/:contactId/activities', authenticate, async (req, res) => {
   try {
     const activities = await prisma.activity.findMany({
       where: {
@@ -484,7 +484,7 @@ router.get('/contacts/:contactId/activities', authMiddleware, async (req, res) =
 });
 
 // Create activity
-router.post('/contacts/:contactId/activities', authMiddleware, async (req, res) => {
+router.post('/contacts/:contactId/activities', authenticate, async (req, res) => {
   try {
     const activity = await prisma.activity.create({
       data: {
@@ -506,7 +506,7 @@ router.post('/contacts/:contactId/activities', authMiddleware, async (req, res) 
 // ============================================
 
 // Get CRM dashboard stats
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
 

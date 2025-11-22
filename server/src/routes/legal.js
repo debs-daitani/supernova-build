@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
 // ============================================================================
 
 // Generate legal document
-router.post('/generate', authMiddleware, async (req, res) => {
+router.post('/generate', authenticate, async (req, res) => {
   try {
     const {
       documentType,
@@ -265,7 +265,7 @@ Use protective legal language while being clear and understandable.`;
 });
 
 // Get all documents for user
-router.get('/documents', authMiddleware, async (req, res) => {
+router.get('/documents', authenticate, async (req, res) => {
   try {
     const { documentType } = req.query;
 
@@ -297,7 +297,7 @@ router.get('/documents', authMiddleware, async (req, res) => {
 });
 
 // Get single document
-router.get('/documents/:id', authMiddleware, async (req, res) => {
+router.get('/documents/:id', authenticate, async (req, res) => {
   try {
     const document = await prisma.legalDocument.findUnique({
       where: { id: req.params.id },
@@ -319,7 +319,7 @@ router.get('/documents/:id', authMiddleware, async (req, res) => {
 });
 
 // Update document
-router.patch('/documents/:id', authMiddleware, async (req, res) => {
+router.patch('/documents/:id', authenticate, async (req, res) => {
   try {
     const { title, content, isActive } = req.body;
 
@@ -355,7 +355,7 @@ router.patch('/documents/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete document
-router.delete('/documents/:id', authMiddleware, async (req, res) => {
+router.delete('/documents/:id', authenticate, async (req, res) => {
   try {
     const document = await prisma.legalDocument.findUnique({
       where: { id: req.params.id },
@@ -381,7 +381,7 @@ router.delete('/documents/:id', authMiddleware, async (req, res) => {
 });
 
 // GDPR Compliance Checker
-router.post('/gdpr-check', authMiddleware, async (req, res) => {
+router.post('/gdpr-check', authenticate, async (req, res) => {
   try {
     const { websiteUrl } = req.body;
 

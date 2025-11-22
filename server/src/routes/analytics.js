@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const analyticsService = require('../services/analyticsService');
 const aggregationService = require('../services/analyticsAggregationService');
 
@@ -118,7 +118,7 @@ router.post('/session/:sessionId/end', async (req, res) => {
  * Get dashboard overview
  * GET /api/analytics/dashboard?dateRange=last_7_days
  */
-router.get('/dashboard', authenticateToken, async (req, res) => {
+router.get('/dashboard', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days' } = req.query;
 
@@ -142,7 +142,7 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
  * Get traffic sources
  * GET /api/analytics/traffic-sources?dateRange=last_7_days
  */
-router.get('/traffic-sources', authenticateToken, async (req, res) => {
+router.get('/traffic-sources', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days' } = req.query;
     const sources = await analyticsService.getTrafficSources(prisma, dateRange);
@@ -157,7 +157,7 @@ router.get('/traffic-sources', authenticateToken, async (req, res) => {
  * Get top pages
  * GET /api/analytics/pages?dateRange=last_7_days&limit=10
  */
-router.get('/pages', authenticateToken, async (req, res) => {
+router.get('/pages', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days', limit = 10 } = req.query;
     const pages = await analyticsService.getTopPages(prisma, dateRange, parseInt(limit));
@@ -172,7 +172,7 @@ router.get('/pages', authenticateToken, async (req, res) => {
  * Get device breakdown
  * GET /api/analytics/devices?dateRange=last_7_days
  */
-router.get('/devices', authenticateToken, async (req, res) => {
+router.get('/devices', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days' } = req.query;
     const devices = await analyticsService.getDeviceBreakdown(prisma, dateRange);
@@ -187,7 +187,7 @@ router.get('/devices', authenticateToken, async (req, res) => {
  * Get geographic distribution
  * GET /api/analytics/geo?dateRange=last_7_days
  */
-router.get('/geo', authenticateToken, async (req, res) => {
+router.get('/geo', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days' } = req.query;
     const geo = await analyticsService.getGeographicData(prisma, dateRange);
@@ -202,7 +202,7 @@ router.get('/geo', authenticateToken, async (req, res) => {
  * Get visitors over time (for charts)
  * GET /api/analytics/visitors-over-time?dateRange=last_7_days
  */
-router.get('/visitors-over-time', authenticateToken, async (req, res) => {
+router.get('/visitors-over-time', authenticate, async (req, res) => {
   try {
     const { dateRange = 'last_7_days' } = req.query;
     const data = await analyticsService.getVisitorsOverTime(prisma, dateRange);
@@ -217,7 +217,7 @@ router.get('/visitors-over-time', authenticateToken, async (req, res) => {
  * Get real-time active users
  * GET /api/analytics/active-users
  */
-router.get('/active-users', authenticateToken, async (req, res) => {
+router.get('/active-users', authenticate, async (req, res) => {
   try {
     const activeUsers = await prisma.activeUser.findMany({
       orderBy: {
@@ -240,7 +240,7 @@ router.get('/active-users', authenticateToken, async (req, res) => {
  * Get all funnels
  * GET /api/analytics/funnels
  */
-router.get('/funnels', authenticateToken, async (req, res) => {
+router.get('/funnels', authenticate, async (req, res) => {
   try {
     const funnels = await prisma.conversionFunnel.findMany({
       where: {
@@ -265,7 +265,7 @@ router.get('/funnels', authenticateToken, async (req, res) => {
  * Create funnel
  * POST /api/analytics/funnels
  */
-router.post('/funnels', authenticateToken, async (req, res) => {
+router.post('/funnels', authenticate, async (req, res) => {
   try {
     const { name, description, steps } = req.body;
 
@@ -307,7 +307,7 @@ router.post('/funnels/:id/track', async (req, res) => {
  * Get funnel statistics
  * GET /api/analytics/funnels/:id/stats
  */
-router.get('/funnels/:id/stats', authenticateToken, async (req, res) => {
+router.get('/funnels/:id/stats', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -359,7 +359,7 @@ router.get('/funnels/:id/stats', authenticateToken, async (req, res) => {
  * Delete funnel
  * DELETE /api/analytics/funnels/:id
  */
-router.delete('/funnels/:id', authenticateToken, async (req, res) => {
+router.delete('/funnels/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -382,7 +382,7 @@ router.delete('/funnels/:id', authenticateToken, async (req, res) => {
  * Get all goals
  * GET /api/analytics/goals
  */
-router.get('/goals', authenticateToken, async (req, res) => {
+router.get('/goals', authenticate, async (req, res) => {
   try {
     const goals = await prisma.customGoal.findMany({
       where: {
@@ -404,7 +404,7 @@ router.get('/goals', authenticateToken, async (req, res) => {
  * Create goal
  * POST /api/analytics/goals
  */
-router.post('/goals', authenticateToken, async (req, res) => {
+router.post('/goals', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -440,7 +440,7 @@ router.post('/goals', authenticateToken, async (req, res) => {
  * Update goal progress
  * PATCH /api/analytics/goals/:id/progress
  */
-router.patch('/goals/:id/progress', authenticateToken, async (req, res) => {
+router.patch('/goals/:id/progress', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { currentValue } = req.body;
@@ -478,7 +478,7 @@ router.patch('/goals/:id/progress', authenticateToken, async (req, res) => {
  * Delete goal
  * DELETE /api/analytics/goals/:id
  */
-router.delete('/goals/:id', authenticateToken, async (req, res) => {
+router.delete('/goals/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -501,7 +501,7 @@ router.delete('/goals/:id', authenticateToken, async (req, res) => {
  * Get all custom reports
  * GET /api/analytics/reports
  */
-router.get('/reports', authenticateToken, async (req, res) => {
+router.get('/reports', authenticate, async (req, res) => {
   try {
     const reports = await prisma.customReport.findMany({
       where: {
@@ -523,7 +523,7 @@ router.get('/reports', authenticateToken, async (req, res) => {
  * Create custom report
  * POST /api/analytics/reports
  */
-router.post('/reports', authenticateToken, async (req, res) => {
+router.post('/reports', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -563,7 +563,7 @@ router.post('/reports', authenticateToken, async (req, res) => {
  * Run custom report
  * GET /api/analytics/reports/:id/run
  */
-router.get('/reports/:id/run', authenticateToken, async (req, res) => {
+router.get('/reports/:id/run', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -594,7 +594,7 @@ router.get('/reports/:id/run', authenticateToken, async (req, res) => {
  * Delete custom report
  * DELETE /api/analytics/reports/:id
  */
-router.delete('/reports/:id', authenticateToken, async (req, res) => {
+router.delete('/reports/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -617,7 +617,7 @@ router.delete('/reports/:id', authenticateToken, async (req, res) => {
  * Export analytics data
  * GET /api/analytics/export?format=csv&dateRange=last_30_days
  */
-router.get('/export', authenticateToken, async (req, res) => {
+router.get('/export', authenticate, async (req, res) => {
   try {
     const { format = 'csv', dateRange = 'last_30_days' } = req.query;
 
@@ -693,4 +693,4 @@ router.post('/opt-out', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

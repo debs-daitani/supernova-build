@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Get all products for shop owner
-router.get('/products', authMiddleware, async (req, res) => {
+router.get('/products', authenticate, async (req, res) => {
   try {
     const { status, type, search } = req.query;
     const where = { userId: req.user.id };
@@ -42,7 +42,7 @@ router.get('/products', authMiddleware, async (req, res) => {
 });
 
 // Get single product
-router.get('/products/:id', authMiddleware, async (req, res) => {
+router.get('/products/:id', authenticate, async (req, res) => {
   try {
     const product = await prisma.product.findFirst({
       where: {
@@ -67,7 +67,7 @@ router.get('/products/:id', authMiddleware, async (req, res) => {
 });
 
 // Create product
-router.post('/products', authMiddleware, async (req, res) => {
+router.post('/products', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -148,7 +148,7 @@ router.post('/products', authMiddleware, async (req, res) => {
 });
 
 // Update product
-router.patch('/products/:id', authMiddleware, async (req, res) => {
+router.patch('/products/:id', authenticate, async (req, res) => {
   try {
     const product = await prisma.product.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -176,7 +176,7 @@ router.patch('/products/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete product
-router.delete('/products/:id', authMiddleware, async (req, res) => {
+router.delete('/products/:id', authenticate, async (req, res) => {
   try {
     const product = await prisma.product.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -198,7 +198,7 @@ router.delete('/products/:id', authMiddleware, async (req, res) => {
 });
 
 // Publish/unpublish product
-router.patch('/products/:id/publish', authMiddleware, async (req, res) => {
+router.patch('/products/:id/publish', authenticate, async (req, res) => {
   try {
     const { published } = req.body;
 
@@ -227,7 +227,7 @@ router.patch('/products/:id/publish', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all orders
-router.get('/orders', authMiddleware, async (req, res) => {
+router.get('/orders', authenticate, async (req, res) => {
   try {
     const { paymentStatus, fulfillmentStatus, search } = req.query;
     const where = { userId: req.user.id };
@@ -260,7 +260,7 @@ router.get('/orders', authMiddleware, async (req, res) => {
 });
 
 // Get single order
-router.get('/orders/:id', authMiddleware, async (req, res) => {
+router.get('/orders/:id', authenticate, async (req, res) => {
   try {
     const order = await prisma.order.findFirst({
       where: {
@@ -286,7 +286,7 @@ router.get('/orders/:id', authMiddleware, async (req, res) => {
 });
 
 // Mark order as fulfilled
-router.patch('/orders/:id/fulfill', authMiddleware, async (req, res) => {
+router.patch('/orders/:id/fulfill', authenticate, async (req, res) => {
   try {
     const order = await prisma.order.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -311,7 +311,7 @@ router.patch('/orders/:id/fulfill', authMiddleware, async (req, res) => {
 });
 
 // Add tracking and mark as shipped
-router.patch('/orders/:id/ship', authMiddleware, async (req, res) => {
+router.patch('/orders/:id/ship', authenticate, async (req, res) => {
   try {
     const { trackingNumber } = req.body;
 
@@ -340,7 +340,7 @@ router.patch('/orders/:id/ship', authMiddleware, async (req, res) => {
 });
 
 // Update internal notes
-router.patch('/orders/:id/notes', authMiddleware, async (req, res) => {
+router.patch('/orders/:id/notes', authenticate, async (req, res) => {
   try {
     const { internalNotes } = req.body;
 
@@ -369,7 +369,7 @@ router.patch('/orders/:id/notes', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all discount codes
-router.get('/discounts', authMiddleware, async (req, res) => {
+router.get('/discounts', authenticate, async (req, res) => {
   try {
     const { active } = req.query;
     const where = { userId: req.user.id };
@@ -391,7 +391,7 @@ router.get('/discounts', authMiddleware, async (req, res) => {
 });
 
 // Create discount code
-router.post('/discounts', authMiddleware, async (req, res) => {
+router.post('/discounts', authenticate, async (req, res) => {
   try {
     const {
       code,
@@ -426,7 +426,7 @@ router.post('/discounts', authMiddleware, async (req, res) => {
 });
 
 // Update discount code
-router.patch('/discounts/:id', authMiddleware, async (req, res) => {
+router.patch('/discounts/:id', authenticate, async (req, res) => {
   try {
     const discount = await prisma.discountCode.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -449,7 +449,7 @@ router.patch('/discounts/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete discount code
-router.delete('/discounts/:id', authMiddleware, async (req, res) => {
+router.delete('/discounts/:id', authenticate, async (req, res) => {
   try {
     const discount = await prisma.discountCode.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -475,7 +475,7 @@ router.delete('/discounts/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all reviews for shop owner's products
-router.get('/reviews', authMiddleware, async (req, res) => {
+router.get('/reviews', authenticate, async (req, res) => {
   try {
     const { approved, productId } = req.query;
     const where = {
@@ -507,7 +507,7 @@ router.get('/reviews', authMiddleware, async (req, res) => {
 });
 
 // Approve review
-router.patch('/reviews/:id/approve', authMiddleware, async (req, res) => {
+router.patch('/reviews/:id/approve', authenticate, async (req, res) => {
   try {
     const review = await prisma.productReview.findFirst({
       where: {
@@ -533,7 +533,7 @@ router.patch('/reviews/:id/approve', authMiddleware, async (req, res) => {
 });
 
 // Delete review
-router.delete('/reviews/:id', authMiddleware, async (req, res) => {
+router.delete('/reviews/:id', authenticate, async (req, res) => {
   try {
     const review = await prisma.productReview.findFirst({
       where: {
@@ -562,7 +562,7 @@ router.delete('/reviews/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get shop statistics
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     // Total products
     const totalProducts = await prisma.product.count({

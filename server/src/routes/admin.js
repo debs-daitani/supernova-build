@@ -1,12 +1,12 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { authenticate, requireAdmin } from '../middleware/auth.js';
 import { validateContent } from '../utils/validators.js';
 
 const router = express.Router();
 
 // All routes require admin access
-router.use(authenticateToken);
+router.use(authenticate);
 router.use(requireAdmin);
 
 // GET /api/admin/stats - Dashboard statistics

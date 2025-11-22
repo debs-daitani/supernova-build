@@ -6,14 +6,14 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const workflowEngine = require('../services/workflowEngine');
 const workflowTriggers = require('../services/workflowTriggers');
 
 const prisma = new PrismaClient();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticate);
 
 // ============================================================================
 // WORKFLOW CRUD
@@ -622,4 +622,4 @@ function generateId() {
   return 'wh_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-module.exports = router;
+export default router;

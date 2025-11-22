@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================================================
 
 // Upload PDF
-router.post('/upload', authMiddleware, async (req, res) => {
+router.post('/upload', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -41,7 +41,7 @@ router.post('/upload', authMiddleware, async (req, res) => {
 });
 
 // Get all user PDFs
-router.get('/documents', authMiddleware, async (req, res) => {
+router.get('/documents', authenticate, async (req, res) => {
   try {
     const documents = await prisma.pDFDocument.findMany({
       where: { userId: req.user.id },
@@ -69,7 +69,7 @@ router.get('/documents', authMiddleware, async (req, res) => {
 });
 
 // Get single PDF
-router.get('/documents/:id', authMiddleware, async (req, res) => {
+router.get('/documents/:id', authenticate, async (req, res) => {
   try {
     const document = await prisma.pDFDocument.findUnique({
       where: { id: req.params.id },
@@ -99,7 +99,7 @@ router.get('/documents/:id', authMiddleware, async (req, res) => {
 });
 
 // Update PDF metadata
-router.patch('/documents/:id', authMiddleware, async (req, res) => {
+router.patch('/documents/:id', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -140,7 +140,7 @@ router.patch('/documents/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete PDF
-router.delete('/documents/:id', authMiddleware, async (req, res) => {
+router.delete('/documents/:id', authenticate, async (req, res) => {
   try {
     const document = await prisma.pDFDocument.findUnique({
       where: { id: req.params.id },
@@ -170,7 +170,7 @@ router.delete('/documents/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add annotation
-router.post('/annotations', authMiddleware, async (req, res) => {
+router.post('/annotations', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -210,7 +210,7 @@ router.post('/annotations', authMiddleware, async (req, res) => {
 });
 
 // Get PDF annotations
-router.get('/annotations/:pdfId', authMiddleware, async (req, res) => {
+router.get('/annotations/:pdfId', authenticate, async (req, res) => {
   try {
     const annotations = await prisma.pDFAnnotation.findMany({
       where: { pdfId: req.params.pdfId },
@@ -225,7 +225,7 @@ router.get('/annotations/:pdfId', authMiddleware, async (req, res) => {
 });
 
 // Delete annotation
-router.delete('/annotations/:id', authMiddleware, async (req, res) => {
+router.delete('/annotations/:id', authenticate, async (req, res) => {
   try {
     const annotation = await prisma.pDFAnnotation.findUnique({
       where: { id: req.params.id },
@@ -255,7 +255,7 @@ router.delete('/annotations/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add signature
-router.post('/signatures', authMiddleware, async (req, res) => {
+router.post('/signatures', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -295,7 +295,7 @@ router.post('/signatures', authMiddleware, async (req, res) => {
 });
 
 // Get PDF signatures
-router.get('/signatures/:pdfId', authMiddleware, async (req, res) => {
+router.get('/signatures/:pdfId', authenticate, async (req, res) => {
   try {
     const signatures = await prisma.pDFSignature.findMany({
       where: { pdfId: req.params.pdfId },
@@ -314,7 +314,7 @@ router.get('/signatures/:pdfId', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Edit PDF (add text, images)
-router.post('/edit', authMiddleware, async (req, res) => {
+router.post('/edit', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -354,7 +354,7 @@ router.post('/edit', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Merge PDFs
-router.post('/merge', authMiddleware, async (req, res) => {
+router.post('/merge', authenticate, async (req, res) => {
   try {
     const { pdfIds, outputName } = req.body;
 
@@ -389,7 +389,7 @@ router.post('/merge', authMiddleware, async (req, res) => {
 });
 
 // Split PDF
-router.post('/split', authMiddleware, async (req, res) => {
+router.post('/split', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -425,7 +425,7 @@ router.post('/split', authMiddleware, async (req, res) => {
 });
 
 // Compress PDF
-router.post('/compress', authMiddleware, async (req, res) => {
+router.post('/compress', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -470,7 +470,7 @@ router.post('/compress', authMiddleware, async (req, res) => {
 });
 
 // Rotate pages
-router.post('/rotate', authMiddleware, async (req, res) => {
+router.post('/rotate', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -503,7 +503,7 @@ router.post('/rotate', authMiddleware, async (req, res) => {
 });
 
 // Delete pages
-router.post('/delete-pages', authMiddleware, async (req, res) => {
+router.post('/delete-pages', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -541,7 +541,7 @@ router.post('/delete-pages', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Convert to PDF
-router.post('/convert-to-pdf', authMiddleware, async (req, res) => {
+router.post('/convert-to-pdf', authenticate, async (req, res) => {
   try {
     const {
       fileUrl,
@@ -571,7 +571,7 @@ router.post('/convert-to-pdf', authMiddleware, async (req, res) => {
 });
 
 // Convert from PDF
-router.post('/convert-from-pdf', authMiddleware, async (req, res) => {
+router.post('/convert-from-pdf', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -612,7 +612,7 @@ router.post('/convert-from-pdf', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Protect PDF (password, permissions)
-router.post('/protect', authMiddleware, async (req, res) => {
+router.post('/protect', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -655,7 +655,7 @@ router.post('/protect', authMiddleware, async (req, res) => {
 });
 
 // Add watermark
-router.post('/watermark', authMiddleware, async (req, res) => {
+router.post('/watermark', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -696,7 +696,7 @@ router.post('/watermark', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Extract text from scanned PDF
-router.post('/ocr', authMiddleware, async (req, res) => {
+router.post('/ocr', authenticate, async (req, res) => {
   try {
     const {
       pdfId,
@@ -738,7 +738,7 @@ router.post('/ocr', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Get PDF templates
-router.get('/templates', authMiddleware, async (req, res) => {
+router.get('/templates', authenticate, async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -760,7 +760,7 @@ router.get('/templates', authMiddleware, async (req, res) => {
 });
 
 // Create PDF from template
-router.post('/create-from-template', authMiddleware, async (req, res) => {
+router.post('/create-from-template', authenticate, async (req, res) => {
   try {
     const {
       templateId,

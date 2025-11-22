@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -118,7 +118,7 @@ function calculateConversionRate(completedOrders, checkouts) {
  * GET /api/checkout/pages
  * Get all checkout pages for user
  */
-router.get('/pages', authenticateToken, async (req, res) => {
+router.get('/pages', authenticate, async (req, res) => {
   try {
     const pages = await prisma.checkoutPage.findMany({
       where: {
@@ -140,7 +140,7 @@ router.get('/pages', authenticateToken, async (req, res) => {
  * GET /api/checkout/pages/:id
  * Get single checkout page
  */
-router.get('/pages/:id', authenticateToken, async (req, res) => {
+router.get('/pages/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -164,7 +164,7 @@ router.get('/pages/:id', authenticateToken, async (req, res) => {
  * POST /api/checkout/pages
  * Create checkout page
  */
-router.post('/pages', authenticateToken, async (req, res) => {
+router.post('/pages', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -237,7 +237,7 @@ router.post('/pages', authenticateToken, async (req, res) => {
  * PATCH /api/checkout/pages/:id
  * Update checkout page
  */
-router.patch('/pages/:id', authenticateToken, async (req, res) => {
+router.patch('/pages/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -283,7 +283,7 @@ router.patch('/pages/:id', authenticateToken, async (req, res) => {
  * DELETE /api/checkout/pages/:id
  * Delete checkout page
  */
-router.delete('/pages/:id', authenticateToken, async (req, res) => {
+router.delete('/pages/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -311,7 +311,7 @@ router.delete('/pages/:id', authenticateToken, async (req, res) => {
  * POST /api/checkout/pages/:id/publish
  * Publish checkout page
  */
-router.post('/pages/:id/publish', authenticateToken, async (req, res) => {
+router.post('/pages/:id/publish', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -343,7 +343,7 @@ router.post('/pages/:id/publish', authenticateToken, async (req, res) => {
  * POST /api/checkout/pages/:id/unpublish
  * Unpublish checkout page
  */
-router.post('/pages/:id/unpublish', authenticateToken, async (req, res) => {
+router.post('/pages/:id/unpublish', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -374,7 +374,7 @@ router.post('/pages/:id/unpublish', authenticateToken, async (req, res) => {
  * POST /api/checkout/pages/:id/duplicate
  * Duplicate checkout page
  */
-router.post('/pages/:id/duplicate', authenticateToken, async (req, res) => {
+router.post('/pages/:id/duplicate', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {
@@ -650,7 +650,7 @@ router.post('/:id/complete', async (req, res) => {
  * GET /api/orders
  * Get orders (as seller)
  */
-router.get('/orders', authenticateToken, async (req, res) => {
+router.get('/orders', authenticate, async (req, res) => {
   try {
     const { status, page = 1, limit = 50 } = req.query;
 
@@ -695,7 +695,7 @@ router.get('/orders', authenticateToken, async (req, res) => {
  * GET /api/orders/:id
  * Get order details
  */
-router.get('/orders/:id', authenticateToken, async (req, res) => {
+router.get('/orders/:id', authenticate, async (req, res) => {
   try {
     const order = await prisma.order.findFirst({
       where: {
@@ -736,7 +736,7 @@ router.get('/orders/:id', authenticateToken, async (req, res) => {
  * POST /api/orders/:id/refund
  * Issue refund
  */
-router.post('/orders/:id/refund', authenticateToken, async (req, res) => {
+router.post('/orders/:id/refund', authenticate, async (req, res) => {
   try {
     const { amount, reason } = req.body;
 
@@ -804,7 +804,7 @@ router.post('/orders/:id/refund', authenticateToken, async (req, res) => {
  * POST /api/orders/:id/fulfill
  * Mark order as fulfilled
  */
-router.post('/orders/:id/fulfill', authenticateToken, async (req, res) => {
+router.post('/orders/:id/fulfill', authenticate, async (req, res) => {
   try {
     const { trackingNumber } = req.body;
 
@@ -845,7 +845,7 @@ router.post('/orders/:id/fulfill', authenticateToken, async (req, res) => {
  * GET /api/coupons
  * Get all coupons for user
  */
-router.get('/coupons', authenticateToken, async (req, res) => {
+router.get('/coupons', authenticate, async (req, res) => {
   try {
     const coupons = await prisma.coupon.findMany({
       where: {
@@ -867,7 +867,7 @@ router.get('/coupons', authenticateToken, async (req, res) => {
  * POST /api/coupons
  * Create coupon
  */
-router.post('/coupons', authenticateToken, async (req, res) => {
+router.post('/coupons', authenticate, async (req, res) => {
   try {
     const {
       code,
@@ -922,7 +922,7 @@ router.post('/coupons', authenticateToken, async (req, res) => {
  * PATCH /api/coupons/:id
  * Update coupon
  */
-router.patch('/coupons/:id', authenticateToken, async (req, res) => {
+router.patch('/coupons/:id', authenticate, async (req, res) => {
   try {
     const coupon = await prisma.coupon.findFirst({
       where: {
@@ -971,7 +971,7 @@ router.patch('/coupons/:id', authenticateToken, async (req, res) => {
  * DELETE /api/coupons/:id
  * Delete coupon
  */
-router.delete('/coupons/:id', authenticateToken, async (req, res) => {
+router.delete('/coupons/:id', authenticate, async (req, res) => {
   try {
     const coupon = await prisma.coupon.findFirst({
       where: {
@@ -1031,7 +1031,7 @@ router.post('/coupons/validate', async (req, res) => {
  * GET /api/checkout/:id/analytics
  * Get checkout page analytics
  */
-router.get('/:id/analytics', authenticateToken, async (req, res) => {
+router.get('/:id/analytics', authenticate, async (req, res) => {
   try {
     const page = await prisma.checkoutPage.findFirst({
       where: {

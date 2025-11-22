@@ -1,87 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
-import { z } from 'zod'
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/lib/auth";
 
-const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
-})
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json()
-
-    // Validate input
-    const validatedData = registerSchema.parse(body)
-    const { email, password, name } = validatedData
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    })
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 400 }
-      )
+    const body = await request.json();
+    const { email, password, confirmPassword, fullName, preferredName } = body;
+    if (!email || !password || !confirmPassword || !fullName) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-
+    if (password !== confirmPassword) {
+      return NextResponse.json({ error: "Passwords do not match" }, { status: 400 });
+    }
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    }
     // Hash password
-    const passwordHash = await hashPassword(password)
-
-    // Create user
+    const hashedPassword = await hashPassword(password);
+    // Create user and profile
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase(),
-        passwordHash,
-        name,
-        role: 'FREE',
-        emailVerified: false,
-        subscriptionStatus: 'PENDING',
-        subscriptionTier: 'NONE',
+        email,
+        password: hashedPassword,
+        name: fullName,
+        // role omitted, uses @default(FREE)
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    })
-
+    });
     // Generate JWT token
-    const token = generateToken({
+    // import { generateToken } from '@/lib/auth' at the top if not already
+    const token = require("@/lib/auth").generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
-    })
-
-    // Set auth cookie
-    await setAuthCookie(token)
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.errors[0].message },
-        { status: 400 }
-      )
-    }
-
-    console.error('Registration error:', error)
+    });
+    return NextResponse.json({ success: true, token });
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { error: 'Failed to create account' },
+      { error: error.message || 'Failed to create account' },
       { status: 500 }
-    )
+    );
   }
 }

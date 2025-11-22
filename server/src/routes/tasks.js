@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================================================
 
 // Create project
-router.post('/projects', authMiddleware, async (req, res) => {
+router.post('/projects', authenticate, async (req, res) => {
   try {
     const { name, description, color, icon, view, startDate, dueDate, teamMembers } = req.body;
 
@@ -45,7 +45,7 @@ router.post('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get all projects
-router.get('/projects', authMiddleware, async (req, res) => {
+router.get('/projects', authenticate, async (req, res) => {
   try {
     const { archived } = req.query;
 
@@ -76,7 +76,7 @@ router.get('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get single project
-router.get('/projects/:id', authMiddleware, async (req, res) => {
+router.get('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.project.findFirst({
       where: {
@@ -117,7 +117,7 @@ router.get('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Update project
-router.patch('/projects/:id', authMiddleware, async (req, res) => {
+router.patch('/projects/:id', authenticate, async (req, res) => {
   try {
     const { name, description, color, icon, view, startDate, dueDate, teamMembers, archived } = req.body;
 
@@ -165,7 +165,7 @@ router.patch('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete project
-router.delete('/projects/:id', authMiddleware, async (req, res) => {
+router.delete('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.project.findFirst({
       where: {
@@ -194,7 +194,7 @@ router.delete('/projects/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create section
-router.post('/sections', authMiddleware, async (req, res) => {
+router.post('/sections', authenticate, async (req, res) => {
   try {
     const { projectId, name, order } = req.body;
 
@@ -228,7 +228,7 @@ router.post('/sections', authMiddleware, async (req, res) => {
 });
 
 // Update section
-router.patch('/sections/:id', authMiddleware, async (req, res) => {
+router.patch('/sections/:id', authenticate, async (req, res) => {
   try {
     const { name, order } = req.body;
 
@@ -248,7 +248,7 @@ router.patch('/sections/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete section
-router.delete('/sections/:id', authMiddleware, async (req, res) => {
+router.delete('/sections/:id', authenticate, async (req, res) => {
   try {
     await prisma.projectSection.delete({
       where: { id: req.params.id },
@@ -266,7 +266,7 @@ router.delete('/sections/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create task
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const {
       title,
@@ -330,7 +330,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Get all tasks with filters
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const { projectId, status, priority, assignedTo, dueDate, tags, view } = req.query;
 
@@ -414,7 +414,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get single task
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const task = await prisma.projectTask.findFirst({
       where: {
@@ -460,7 +460,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Update task
-router.patch('/:id', authMiddleware, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const task = await prisma.projectTask.findFirst({
       where: {
@@ -530,7 +530,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 });
 
 // Toggle task completion
-router.patch('/:id/complete', authMiddleware, async (req, res) => {
+router.patch('/:id/complete', authenticate, async (req, res) => {
   try {
     const task = await prisma.projectTask.findFirst({
       where: {
@@ -564,7 +564,7 @@ router.patch('/:id/complete', authMiddleware, async (req, res) => {
 });
 
 // Delete task
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const task = await prisma.projectTask.findFirst({
       where: {
@@ -593,7 +593,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add subtask
-router.post('/:id/subtasks', authMiddleware, async (req, res) => {
+router.post('/:id/subtasks', authenticate, async (req, res) => {
   try {
     const { title } = req.body;
 
@@ -625,7 +625,7 @@ router.post('/:id/subtasks', authMiddleware, async (req, res) => {
 });
 
 // Toggle subtask completion
-router.patch('/subtasks/:id/complete', authMiddleware, async (req, res) => {
+router.patch('/subtasks/:id/complete', authenticate, async (req, res) => {
   try {
     const subtask = await prisma.subtask.findUnique({
       where: { id: req.params.id },
@@ -655,7 +655,7 @@ router.patch('/subtasks/:id/complete', authMiddleware, async (req, res) => {
 });
 
 // Delete subtask
-router.delete('/subtasks/:id', authMiddleware, async (req, res) => {
+router.delete('/subtasks/:id', authenticate, async (req, res) => {
   try {
     const subtask = await prisma.subtask.findUnique({
       where: { id: req.params.id },
@@ -686,7 +686,7 @@ router.delete('/subtasks/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add comment to task
-router.post('/:id/comments', authMiddleware, async (req, res) => {
+router.post('/:id/comments', authenticate, async (req, res) => {
   try {
     const { content, mentions } = req.body;
 
@@ -718,7 +718,7 @@ router.post('/:id/comments', authMiddleware, async (req, res) => {
 });
 
 // Delete comment
-router.delete('/comments/:id', authMiddleware, async (req, res) => {
+router.delete('/comments/:id', authenticate, async (req, res) => {
   try {
     const comment = await prisma.taskComment.findFirst({
       where: {
@@ -747,7 +747,7 @@ router.delete('/comments/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Start time entry (timer)
-router.post('/:id/time/start', authMiddleware, async (req, res) => {
+router.post('/:id/time/start', authenticate, async (req, res) => {
   try {
     const { description } = req.body;
 
@@ -799,7 +799,7 @@ router.post('/:id/time/start', authMiddleware, async (req, res) => {
 });
 
 // Stop time entry (timer)
-router.patch('/time/:id/stop', authMiddleware, async (req, res) => {
+router.patch('/time/:id/stop', authenticate, async (req, res) => {
   try {
     const timeEntry = await prisma.timeEntry.findFirst({
       where: {
@@ -853,7 +853,7 @@ router.patch('/time/:id/stop', authMiddleware, async (req, res) => {
 });
 
 // Log time entry manually
-router.post('/:id/time', authMiddleware, async (req, res) => {
+router.post('/:id/time', authenticate, async (req, res) => {
   try {
     const { duration, description, date } = req.body;
 
@@ -906,7 +906,7 @@ router.post('/:id/time', authMiddleware, async (req, res) => {
 });
 
 // Get time entries for a task
-router.get('/:id/time', authMiddleware, async (req, res) => {
+router.get('/:id/time', authenticate, async (req, res) => {
   try {
     const task = await prisma.projectTask.findFirst({
       where: {
@@ -943,7 +943,7 @@ router.get('/:id/time', authMiddleware, async (req, res) => {
 });
 
 // Get active timer
-router.get('/time/active', authMiddleware, async (req, res) => {
+router.get('/time/active', authenticate, async (req, res) => {
   try {
     const activeTimer = await prisma.timeEntry.findFirst({
       where: {
@@ -975,7 +975,7 @@ router.get('/time/active', authMiddleware, async (req, res) => {
 });
 
 // Delete time entry
-router.delete('/time/:id', authMiddleware, async (req, res) => {
+router.delete('/time/:id', authenticate, async (req, res) => {
   try {
     const timeEntry = await prisma.timeEntry.findFirst({
       where: {
@@ -1019,7 +1019,7 @@ router.delete('/time/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create habit
-router.post('/habits', authMiddleware, async (req, res) => {
+router.post('/habits', authenticate, async (req, res) => {
   try {
     const { name, description, icon, color, frequency, targetDays } = req.body;
 
@@ -1049,7 +1049,7 @@ router.post('/habits', authMiddleware, async (req, res) => {
 });
 
 // Get all habits
-router.get('/habits', authMiddleware, async (req, res) => {
+router.get('/habits', authenticate, async (req, res) => {
   try {
     const { archived } = req.query;
 
@@ -1075,7 +1075,7 @@ router.get('/habits', authMiddleware, async (req, res) => {
 });
 
 // Update habit
-router.patch('/habits/:id', authMiddleware, async (req, res) => {
+router.patch('/habits/:id', authenticate, async (req, res) => {
   try {
     const habit = await prisma.habit.findFirst({
       where: {
@@ -1118,7 +1118,7 @@ router.patch('/habits/:id', authMiddleware, async (req, res) => {
 });
 
 // Mark habit complete for today
-router.post('/habits/:id/complete', authMiddleware, async (req, res) => {
+router.post('/habits/:id/complete', authenticate, async (req, res) => {
   try {
     const { date } = req.body;
     const completionDate = date ? new Date(date) : new Date();
@@ -1257,7 +1257,7 @@ router.post('/habits/:id/complete', authMiddleware, async (req, res) => {
 });
 
 // Delete habit
-router.delete('/habits/:id', authMiddleware, async (req, res) => {
+router.delete('/habits/:id', authenticate, async (req, res) => {
   try {
     const habit = await prisma.habit.findFirst({
       where: {
@@ -1286,7 +1286,7 @@ router.delete('/habits/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create goal
-router.post('/goals', authMiddleware, async (req, res) => {
+router.post('/goals', authenticate, async (req, res) => {
   try {
     const { title, description, goalType, targetValue, currentValue, unit, startDate, targetDate } = req.body;
 
@@ -1312,7 +1312,7 @@ router.post('/goals', authMiddleware, async (req, res) => {
 });
 
 // Get all goals
-router.get('/goals', authMiddleware, async (req, res) => {
+router.get('/goals', authenticate, async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -1340,7 +1340,7 @@ router.get('/goals', authMiddleware, async (req, res) => {
 });
 
 // Update goal (including progress)
-router.patch('/goals/:id', authMiddleware, async (req, res) => {
+router.patch('/goals/:id', authenticate, async (req, res) => {
   try {
     const goal = await prisma.goal.findFirst({
       where: {
@@ -1401,7 +1401,7 @@ router.patch('/goals/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete goal
-router.delete('/goals/:id', authMiddleware, async (req, res) => {
+router.delete('/goals/:id', authenticate, async (req, res) => {
   try {
     const goal = await prisma.goal.findFirst({
       where: {
@@ -1430,7 +1430,7 @@ router.delete('/goals/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Get dashboard stats
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1563,4 +1563,4 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

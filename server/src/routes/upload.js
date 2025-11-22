@@ -1,10 +1,10 @@
 import express from 'express';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { upload, uploadImage, uploadAvatar, uploadListingImage } from '../services/uploadService.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // POST /api/upload/image - Generic image upload
 router.post('/image', upload.single('image'), async (req, res) => {

@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // POST /api/brand-hub - Create or update brand hub
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const {
       username,
@@ -72,7 +72,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/brand-hub - Get user's brand hub
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const brandHub = await prisma.brandHub.findUnique({
       where: { userId: req.user.id },

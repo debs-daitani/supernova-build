@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Get all chatbots for the authenticated user
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const chatbots = await prisma.chatbot.findMany({
       where: { userId: req.user.id },
@@ -35,7 +35,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get a specific chatbot
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const chatbot = await prisma.chatbot.findFirst({
       where: {
@@ -63,7 +63,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Create a new chatbot
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { name, description, deploymentType, websiteUrl, primaryColor, avatar, welcomeMessage, aiHandoffEnabled } = req.body;
 
@@ -94,7 +94,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Update a chatbot
-router.patch('/:id', authMiddleware, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const { name, description, deploymentType, websiteUrl, primaryColor, avatar, welcomeMessage, enabled, aiHandoffEnabled } = req.body;
 
@@ -133,7 +133,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete a chatbot
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const existing = await prisma.chatbot.findFirst({
@@ -163,7 +163,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all flows for a chatbot
-router.get('/:id/flows', authMiddleware, async (req, res) => {
+router.get('/:id/flows', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -190,7 +190,7 @@ router.get('/:id/flows', authMiddleware, async (req, res) => {
 });
 
 // Get a specific flow
-router.get('/:id/flows/:flowId', authMiddleware, async (req, res) => {
+router.get('/:id/flows/:flowId', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -223,7 +223,7 @@ router.get('/:id/flows/:flowId', authMiddleware, async (req, res) => {
 });
 
 // Create a new flow
-router.post('/:id/flows', authMiddleware, async (req, res) => {
+router.post('/:id/flows', authenticate, async (req, res) => {
   try {
     const { name, description, flowData } = req.body;
 
@@ -261,7 +261,7 @@ router.post('/:id/flows', authMiddleware, async (req, res) => {
 });
 
 // Update a flow (save flowData)
-router.patch('/:id/flows/:flowId', authMiddleware, async (req, res) => {
+router.patch('/:id/flows/:flowId', authenticate, async (req, res) => {
   try {
     const { name, description, flowData, active } = req.body;
 
@@ -295,7 +295,7 @@ router.patch('/:id/flows/:flowId', authMiddleware, async (req, res) => {
 });
 
 // Delete a flow
-router.delete('/:id/flows/:flowId', authMiddleware, async (req, res) => {
+router.delete('/:id/flows/:flowId', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -325,7 +325,7 @@ router.delete('/:id/flows/:flowId', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all triggers for a chatbot
-router.get('/:id/triggers', authMiddleware, async (req, res) => {
+router.get('/:id/triggers', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -352,7 +352,7 @@ router.get('/:id/triggers', authMiddleware, async (req, res) => {
 });
 
 // Create a new trigger
-router.post('/:id/triggers', authMiddleware, async (req, res) => {
+router.post('/:id/triggers', authenticate, async (req, res) => {
   try {
     const { flowId, triggerType, keyword, pageUrl, delayMinutes } = req.body;
 
@@ -392,7 +392,7 @@ router.post('/:id/triggers', authMiddleware, async (req, res) => {
 });
 
 // Update a trigger
-router.patch('/:id/triggers/:triggerId', authMiddleware, async (req, res) => {
+router.patch('/:id/triggers/:triggerId', authenticate, async (req, res) => {
   try {
     const { flowId, triggerType, keyword, pageUrl, delayMinutes, active } = req.body;
 
@@ -428,7 +428,7 @@ router.patch('/:id/triggers/:triggerId', authMiddleware, async (req, res) => {
 });
 
 // Delete a trigger
-router.delete('/:id/triggers/:triggerId', authMiddleware, async (req, res) => {
+router.delete('/:id/triggers/:triggerId', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -458,7 +458,7 @@ router.delete('/:id/triggers/:triggerId', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get chatbot analytics
-router.get('/:id/analytics', authMiddleware, async (req, res) => {
+router.get('/:id/analytics', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -547,7 +547,7 @@ router.get('/:id/analytics', authMiddleware, async (req, res) => {
 });
 
 // Get all conversations for a chatbot
-router.get('/:id/conversations', authMiddleware, async (req, res) => {
+router.get('/:id/conversations', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({
@@ -580,7 +580,7 @@ router.get('/:id/conversations', authMiddleware, async (req, res) => {
 });
 
 // Get a specific conversation transcript
-router.get('/:id/conversations/:convId', authMiddleware, async (req, res) => {
+router.get('/:id/conversations/:convId', authenticate, async (req, res) => {
   try {
     // Verify ownership
     const chatbot = await prisma.chatbot.findFirst({

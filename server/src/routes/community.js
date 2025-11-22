@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken, requireMember } from '../middleware/auth.js';
+import { authenticate, requireMember } from '../middleware/auth.js';
 import { validateForumPost } from '../utils/validators.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/community/categories
 router.get('/categories', async (req, res) => {

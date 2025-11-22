@@ -1,12 +1,12 @@
 import express from 'express';
 import prisma from '../config/database.js';
 import stripe from '../config/stripe.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { sendUpgradeConfirmation, sendSubscriptionConfirmation, sendPaymentReceipt } from '../services/emailService.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // POST /api/payments/create-upgrade-intent
 router.post('/create-upgrade-intent', async (req, res) => {

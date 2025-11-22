@@ -1,249 +1,285 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import toast from 'react-hot-toast'
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface User {
-  id: string
-  email: string
-  name: string | null
-  role: string
-  subscriptionTier: string
-  subscriptionStatus: string
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  createdAt: string;
 }
 
-export default function DashboardPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+export default function Dashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [daysSinceJoined, setDaysSinceJoined] = useState(0);
 
   useEffect(() => {
-    fetchUser()
-  }, [])
+    async function fetchUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        setUser(data.user);
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch('/api/auth/me')
-      if (!res.ok) throw new Error('Failed to fetch user')
-
-      const data = await res.json()
-      setUser(data.user)
-    } catch (error) {
-      console.error('Error fetching user:', error)
-      router.push('/auth/login')
-    } finally {
-      setLoading(false)
+        // Calculate days since joined
+        const joinDate = new Date(data.user.createdAt);
+        const today = new Date();
+        const diffTime = Math.abs(today.getTime() - joinDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        setDaysSinceJoined(diffDays);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    fetchUser();
+  }, [router]);
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      toast.success('Logged out successfully')
-      router.push('/')
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
     } catch (error) {
-      toast.error('Failed to log out')
+      console.error("Logout failed:", error);
     }
-  }
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-daitani-pink text-xl">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading...</div>
       </div>
-    )
+    );
   }
 
-  if (!user) return null
+  if (!user) {
+    return null;
+  }
 
-  const canAccessSupernova = ['UPGRADE', 'MEMBER', 'ADMIN'].includes(user.role)
+  const accountTypes: Record<string, { label: string; color: string }> = {
+    FREE: { label: "Free Account", color: "bg-gray-100 text-gray-700" },
+    UPGRADE: { label: "Upgrade Member", color: "bg-yellow-100 text-yellow-700" },
+    MEMBER: { label: "Premium Member", color: "bg-green-100 text-green-700" },
+  };
+
+  const accountType = accountTypes[user.role] || accountTypes.FREE;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-display font-bold text-daitani-pink">
-            The dAItaniverse
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            Log out
-          </button>
+      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">The dAItaniverse</h1>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all"
+            >
+              Logout
+            </button>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-daitani-pink to-daitani-cyan text-white rounded-lg p-8 mb-8">
-          <h2 className="text-3xl font-display font-bold mb-2">
-            Welcome back, {user.name || 'Entrepreneur'}! 🚀
+        <div className="text-center mb-12">
+          <h2 className="text-5xl font-bold text-white mb-4">
+            Welcome back, {user.name || user.email.split("@")[0]}!
           </h2>
-          <p className="text-lg">
-            Ready to build your empire? Let's fucking go!
+          <p className="text-xl text-pink-100">
+            Your rockstar journey continues here
           </p>
         </div>
 
-        {/* Subscription Status */}
-        {user.role === 'FREE' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-            <h3 className="text-xl font-bold text-yellow-900 mb-2">
-              Unlock Your Full Potential
-            </h3>
-            <p className="text-yellow-800 mb-4">
-              You're on the free tier. Upgrade for just £26 to access SUPERNova AI coaching, content library, and more!
-            </p>
-            <Link
-              href="/upgrade"
-              className="inline-block bg-daitani-pink text-white px-6 py-3 rounded-lg font-bold hover:bg-daitani-pink/90"
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {/* Account Type Card */}
+          <div className="bg-white/95 rounded-2xl shadow-2xl p-6">
+            <div className="text-sm text-gray-500 mb-2">Account Type</div>
+            <div
+              className={`inline-block px-4 py-2 rounded-full font-bold ${accountType.color}`}
             >
-              Upgrade Now - £26
-            </Link>
+              {accountType.label}
+            </div>
+            {user.role === "FREE" && (
+              <button className="mt-4 w-full px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg font-bold hover:shadow-lg transition-all">
+                Upgrade Now
+              </button>
+            )}
           </div>
-        )}
 
-        {/* Quick Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* SUPERNova AI */}
-          <Link
-            href={canAccessSupernova ? '/supernova' : '/upgrade'}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-daitani-pink rounded-lg flex items-center justify-center text-white text-2xl">
-                🤖
-              </div>
-              <h3 className="ml-4 text-xl font-bold text-gray-900">SUPERNova AI</h3>
+          {/* Days Since Joined Card */}
+          <div className="bg-white/95 rounded-2xl shadow-2xl p-6">
+            <div className="text-sm text-gray-500 mb-2">Member Since</div>
+            <div className="text-4xl font-bold text-purple-600 mb-2">
+              {daysSinceJoined}
             </div>
-            <p className="text-gray-600">
-              Your personal AI coach. Chat, plan, strategise, and learn.
-            </p>
-            {!canAccessSupernova && (
-              <p className="mt-2 text-sm text-daitani-pink font-bold">
-                Upgrade to unlock →
-              </p>
-            )}
-          </Link>
-
-          {/* i•DEA Marketplace */}
-          <Link
-            href="/marketplace"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-daitani-cyan rounded-lg flex items-center justify-center text-white text-2xl">
-                💡
-              </div>
-              <h3 className="ml-4 text-xl font-bold text-gray-900">i•DEA Marketplace</h3>
+            <div className="text-gray-600">
+              {daysSinceJoined === 1 ? "day" : "days"} ago
             </div>
-            <p className="text-gray-600">
-              Buy, sell, and collaborate on business ideas. Turn "failures" into assets.
-            </p>
-          </Link>
+          </div>
 
-          {/* The Venue (Community) */}
-          <Link
-            href="/community"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center text-white text-2xl">
-                👥
-              </div>
-              <h3 className="ml-4 text-xl font-bold text-gray-900">The Venue</h3>
+          {/* Quick Actions Card */}
+          <div className="bg-white/95 rounded-2xl shadow-2xl p-6">
+            <div className="text-sm text-gray-500 mb-4">Quick Actions</div>
+            <div className="space-y-2">
+              <button
+                onClick={() => router.push("/supernova")}
+                className="w-full px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-lg font-semibold transition-all text-left"
+              >
+                Launch SUPERNova AI
+              </button>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-full px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-semibold transition-all text-left"
+              >
+                View Profile
+              </button>
             </div>
-            <p className="text-gray-600">
-              Connect with fellow midlife entrepreneurs. Share, support, celebrate.
-            </p>
-          </Link>
-
-          {/* Content Library */}
-          <Link
-            href={canAccessSupernova ? '/library' : '/upgrade'}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white text-2xl">
-                📚
-              </div>
-              <h3 className="ml-4 text-xl font-bold text-gray-900">Content Library</h3>
-            </div>
-            <p className="text-gray-600">
-              Courses, frameworks, templates. Curated learning paths just for you.
-            </p>
-            {!canAccessSupernova && (
-              <p className="mt-2 text-sm text-daitani-pink font-bold">
-                Upgrade to unlock →
-              </p>
-            )}
-          </Link>
-
-          {/* Profile */}
-          <Link
-            href="/profile"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gray-500 rounded-lg flex items-center justify-center text-white text-2xl">
-                ⚙️
-              </div>
-              <h3 className="ml-4 text-xl font-bold text-gray-900">Profile & Settings</h3>
-            </div>
-            <p className="text-gray-600">
-              Manage your account, preferences, and subscription.
-            </p>
-          </Link>
-
-          {/* Admin (if admin) */}
-          {user.role === 'ADMIN' && (
-            <Link
-              href="/admin"
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-daitani-pink"
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-daitani-pink rounded-lg flex items-center justify-center text-white text-2xl">
-                  🔧
-                </div>
-                <h3 className="ml-4 text-xl font-bold text-gray-900">Admin Dashboard</h3>
-              </div>
-              <p className="text-gray-600">
-                Manage users, content, marketplace, and analytics.
-              </p>
-            </Link>
-          )}
+          </div>
         </div>
 
-        {/* Three Pillars Section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Your Three Pillars</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-6 border-l-4 border-red-500">
-              <h3 className="text-xl font-bold mb-2 text-red-600">Confident Body</h3>
-              <p className="text-gray-600">
-                Physical confidence, health, and navigating midlife body changes.
-              </p>
+        {/* Navigation Tiles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* SUPERNova AI Tile */}
+          <button
+            onClick={() => router.push("/supernova")}
+            className="bg-white/95 rounded-2xl shadow-2xl p-8 hover:scale-105 transition-all duration-300 text-left group"
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-lg transition-all">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
             </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              SUPERNova AI
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Chat with your AI companion for Body, Brain, and Business guidance
+            </p>
+          </button>
 
-            <div className="bg-white rounded-lg p-6 border-l-4 border-purple-500">
-              <h3 className="text-xl font-bold mb-2 text-purple-600">Confident Brain</h3>
-              <p className="text-gray-600">
-                Mindset, ADHD support, mental health, and breaking limiting beliefs.
-              </p>
+          {/* Content Library Tile */}
+          <div className="bg-white/95 rounded-2xl shadow-2xl p-8 opacity-60 cursor-not-allowed text-left relative">
+            <div className="absolute top-4 right-4 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+              Coming Soon
             </div>
-
-            <div className="bg-white rounded-lg p-6 border-l-4 border-blue-500">
-              <h3 className="text-xl font-bold mb-2 text-blue-600">Confident Business</h3>
-              <p className="text-gray-600">
-                Entrepreneurship, strategy, marketing, sales, and operations.
-              </p>
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
             </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Content Library
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Access exclusive courses, guides, and resources
+            </p>
           </div>
+
+          {/* Programs Tile */}
+          <div className="bg-white/95 rounded-2xl shadow-2xl p-8 opacity-60 cursor-not-allowed text-left relative">
+            <div className="absolute top-4 right-4 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+              Coming Soon
+            </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Programs</h3>
+            <p className="text-gray-600 text-sm">
+              Join structured programs to level up your skills
+            </p>
+          </div>
+
+          {/* Profile Settings Tile */}
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="bg-white/95 rounded-2xl shadow-2xl p-8 hover:scale-105 transition-all duration-300 text-left group"
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 group-hover:shadow-lg transition-all">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Profile Settings
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Manage your account and preferences
+            </p>
+          </button>
+        </div>
+
+        {/* Footer CTA */}
+        <div className="mt-12 bg-white/95 rounded-2xl shadow-2xl p-8 text-center">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">
+            Ready to level up your rockstar journey?
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Start chatting with SUPERNova AI to get personalized guidance for your Body, Brain, and Business goals.
+          </p>
+          <button
+            onClick={() => router.push("/supernova")}
+            className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all"
+          >
+            Launch SUPERNova AI
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }

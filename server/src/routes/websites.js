@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Get all user's websites
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const websites = await prisma.website.findMany({
       where: { userId: req.user.id },
@@ -30,7 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get specific website
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const website = await prisma.website.findFirst({
       where: {
@@ -56,7 +56,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Create new website
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { name, templateId } = req.body;
 
@@ -177,7 +177,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Update website
-router.patch('/:id', authMiddleware, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const { name, title, description, favicon, logo, theme, seoTitle, seoDescription, seoKeywords, googleAnalyticsId, settings } = req.body;
 
@@ -218,7 +218,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 });
 
 // Publish/unpublish website
-router.post('/:id/publish', authMiddleware, async (req, res) => {
+router.post('/:id/publish', authenticate, async (req, res) => {
   try {
     const { publish } = req.body; // true or false
 
@@ -249,7 +249,7 @@ router.post('/:id/publish', authMiddleware, async (req, res) => {
 });
 
 // Delete website
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const existing = await prisma.website.findFirst({
       where: {
@@ -278,7 +278,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all pages for a website
-router.get('/:id/pages', authMiddleware, async (req, res) => {
+router.get('/:id/pages', authenticate, async (req, res) => {
   try {
     const website = await prisma.website.findFirst({
       where: {
@@ -304,7 +304,7 @@ router.get('/:id/pages', authMiddleware, async (req, res) => {
 });
 
 // Create new page
-router.post('/:id/pages', authMiddleware, async (req, res) => {
+router.post('/:id/pages', authenticate, async (req, res) => {
   try {
     const { title, slug, pageType, content } = req.body;
 
@@ -348,7 +348,7 @@ router.post('/:id/pages', authMiddleware, async (req, res) => {
 });
 
 // Update page
-router.patch('/:id/pages/:pageId', authMiddleware, async (req, res) => {
+router.patch('/:id/pages/:pageId', authenticate, async (req, res) => {
   try {
     const { title, slug, pageType, content, seoTitle, seoDescription, published } = req.body;
 
@@ -384,7 +384,7 @@ router.patch('/:id/pages/:pageId', authMiddleware, async (req, res) => {
 });
 
 // Delete page
-router.delete('/:id/pages/:pageId', authMiddleware, async (req, res) => {
+router.delete('/:id/pages/:pageId', authenticate, async (req, res) => {
   try {
     const website = await prisma.website.findFirst({
       where: {

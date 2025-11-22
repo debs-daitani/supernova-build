@@ -308,4 +308,4 @@ router.delete('/logs/:batchId', /* requireAdmin, */ async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

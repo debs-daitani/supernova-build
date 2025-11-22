@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import {
   generateVideo,
   getVideoStatus,
@@ -14,7 +14,7 @@ const router = express.Router();
  * Generate a video using AI
  * POST /api/ai/generate-video
  */
-router.post('/generate-video', authMiddleware, async (req, res) => {
+router.post('/generate-video', authenticate, async (req, res) => {
   try {
     const {
       prompt,
@@ -68,7 +68,7 @@ router.post('/generate-video', authMiddleware, async (req, res) => {
  * Get video status
  * GET /api/ai/videos/:id/status
  */
-router.get('/videos/:id/status', authMiddleware, async (req, res) => {
+router.get('/videos/:id/status', authenticate, async (req, res) => {
   try {
     const status = await getVideoStatus(req.params.id, req.user.id);
     res.json(status);
@@ -82,7 +82,7 @@ router.get('/videos/:id/status', authMiddleware, async (req, res) => {
  * Get user's generated videos
  * GET /api/ai/videos
  */
-router.get('/videos', authMiddleware, async (req, res) => {
+router.get('/videos', authenticate, async (req, res) => {
   try {
     const { status, conversationId, limit } = req.query;
 
@@ -103,7 +103,7 @@ router.get('/videos', authMiddleware, async (req, res) => {
  * Get specific generated video
  * GET /api/ai/videos/:id
  */
-router.get('/videos/:id', authMiddleware, async (req, res) => {
+router.get('/videos/:id', authenticate, async (req, res) => {
   try {
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
@@ -130,7 +130,7 @@ router.get('/videos/:id', authMiddleware, async (req, res) => {
  * Save video to library
  * POST /api/ai/videos/:id/save
  */
-router.post('/videos/:id/save', authMiddleware, async (req, res) => {
+router.post('/videos/:id/save', authenticate, async (req, res) => {
   try {
     const updated = await saveVideoToLibrary(req.params.id, req.user.id);
     res.json(updated);
@@ -144,7 +144,7 @@ router.post('/videos/:id/save', authMiddleware, async (req, res) => {
  * Delete generated video
  * DELETE /api/ai/videos/:id
  */
-router.delete('/videos/:id', authMiddleware, async (req, res) => {
+router.delete('/videos/:id', authenticate, async (req, res) => {
   try {
     await deleteGeneratedVideo(req.params.id, req.user.id);
     res.json({ message: 'Video deleted successfully' });

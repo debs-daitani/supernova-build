@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const generateShortCode = () => {
 };
 
 // POST /api/short-links - Create short link
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { originalUrl, title, customCode, expiresAt } = req.body;
 
@@ -45,7 +45,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/short-links - Get user's short links
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const shortLinks = await prisma.shortLink.findMany({
       where: { userId: req.user.id },
@@ -59,7 +59,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/short-links/:id - Get specific link
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const shortLink = await prisma.shortLink.findFirst({
       where: {
@@ -79,7 +79,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // PATCH /api/short-links/:id - Update link
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const updated = await prisma.shortLink.updateMany({
       where: {
@@ -104,7 +104,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/short-links/:id - Delete link
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     await prisma.shortLink.deleteMany({
       where: {
@@ -120,7 +120,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // GET /api/short-links/:shortCode/analytics - Get link analytics
-router.get('/:shortCode/analytics', authenticateToken, async (req, res) => {
+router.get('/:shortCode/analytics', authenticate, async (req, res) => {
   try {
     const shortLink = await prisma.shortLink.findFirst({
       where: {

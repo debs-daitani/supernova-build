@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Create post
-router.post('/posts', authenticateToken, async (req, res) => {
+router.post('/posts', authenticate, async (req, res) => {
   try {
     const {
       content,
@@ -122,7 +122,7 @@ router.post('/posts', authenticateToken, async (req, res) => {
 });
 
 // Get timeline (For You - algorithm based)
-router.get('/timeline/for-you', authenticateToken, async (req, res) => {
+router.get('/timeline/for-you', authenticate, async (req, res) => {
   try {
     const { limit = 20, cursor } = req.query;
 
@@ -188,7 +188,7 @@ router.get('/timeline/for-you', authenticateToken, async (req, res) => {
 });
 
 // Get timeline (Following - chronological)
-router.get('/timeline/following', authenticateToken, async (req, res) => {
+router.get('/timeline/following', authenticate, async (req, res) => {
   try {
     const { limit = 20, cursor } = req.query;
 
@@ -258,7 +258,7 @@ router.get('/timeline/following', authenticateToken, async (req, res) => {
 });
 
 // Get single post
-router.get('/posts/:id', authenticateToken, async (req, res) => {
+router.get('/posts/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -329,7 +329,7 @@ router.get('/posts/:id', authenticateToken, async (req, res) => {
 });
 
 // Get post replies
-router.get('/posts/:id/replies', authenticateToken, async (req, res) => {
+router.get('/posts/:id/replies', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { limit = 20 } = req.query;
@@ -373,7 +373,7 @@ router.get('/posts/:id/replies', authenticateToken, async (req, res) => {
 });
 
 // Get thread posts
-router.get('/threads/:threadId', authenticateToken, async (req, res) => {
+router.get('/threads/:threadId', authenticate, async (req, res) => {
   try {
     const { threadId } = req.params;
 
@@ -415,7 +415,7 @@ router.get('/threads/:threadId', authenticateToken, async (req, res) => {
 });
 
 // Delete post
-router.delete('/posts/:id', authenticateToken, async (req, res) => {
+router.delete('/posts/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -443,7 +443,7 @@ router.delete('/posts/:id', authenticateToken, async (req, res) => {
 });
 
 // Get user posts
-router.get('/users/:userId/posts', authenticateToken, async (req, res) => {
+router.get('/users/:userId/posts', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const { limit = 20, cursor, filter = 'posts' } = req.query;
@@ -543,7 +543,7 @@ router.get('/users/:userId/posts', authenticateToken, async (req, res) => {
 // ============================================
 
 // Like post
-router.post('/posts/:id/like', authenticateToken, async (req, res) => {
+router.post('/posts/:id/like', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -582,7 +582,7 @@ router.post('/posts/:id/like', authenticateToken, async (req, res) => {
 });
 
 // Unlike post
-router.delete('/posts/:id/like', authenticateToken, async (req, res) => {
+router.delete('/posts/:id/like', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -613,7 +613,7 @@ router.delete('/posts/:id/like', authenticateToken, async (req, res) => {
 // ============================================
 
 // Bookmark post
-router.post('/posts/:id/bookmark', authenticateToken, async (req, res) => {
+router.post('/posts/:id/bookmark', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { collectionId } = req.body;
@@ -654,7 +654,7 @@ router.post('/posts/:id/bookmark', authenticateToken, async (req, res) => {
 });
 
 // Remove bookmark
-router.delete('/posts/:id/bookmark', authenticateToken, async (req, res) => {
+router.delete('/posts/:id/bookmark', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -681,7 +681,7 @@ router.delete('/posts/:id/bookmark', authenticateToken, async (req, res) => {
 });
 
 // Get bookmarks
-router.get('/bookmarks', authenticateToken, async (req, res) => {
+router.get('/bookmarks', authenticate, async (req, res) => {
   try {
     const { limit = 20, cursor, collectionId } = req.query;
 
@@ -721,7 +721,7 @@ router.get('/bookmarks', authenticateToken, async (req, res) => {
 });
 
 // Create bookmark collection
-router.post('/bookmark-collections', authenticateToken, async (req, res) => {
+router.post('/bookmark-collections', authenticate, async (req, res) => {
   try {
     const { name, description } = req.body;
 
@@ -745,7 +745,7 @@ router.post('/bookmark-collections', authenticateToken, async (req, res) => {
 });
 
 // Get bookmark collections
-router.get('/bookmark-collections', authenticateToken, async (req, res) => {
+router.get('/bookmark-collections', authenticate, async (req, res) => {
   try {
     const collections = await prisma.bookmarkCollection.findMany({
       where: { userId: req.user.userId },
@@ -765,7 +765,7 @@ router.get('/bookmark-collections', authenticateToken, async (req, res) => {
 });
 
 // Update bookmark collection
-router.put('/bookmark-collections/:id', authenticateToken, async (req, res) => {
+router.put('/bookmark-collections/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
@@ -795,7 +795,7 @@ router.put('/bookmark-collections/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete bookmark collection
-router.delete('/bookmark-collections/:id', authenticateToken, async (req, res) => {
+router.delete('/bookmark-collections/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -827,7 +827,7 @@ router.delete('/bookmark-collections/:id', authenticateToken, async (req, res) =
 // ============================================
 
 // Follow user
-router.post('/users/:userId/follow', authenticateToken, async (req, res) => {
+router.post('/users/:userId/follow', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const { notificationsOn = true } = req.body;
@@ -866,7 +866,7 @@ router.post('/users/:userId/follow', authenticateToken, async (req, res) => {
 });
 
 // Unfollow user
-router.delete('/users/:userId/follow', authenticateToken, async (req, res) => {
+router.delete('/users/:userId/follow', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -887,7 +887,7 @@ router.delete('/users/:userId/follow', authenticateToken, async (req, res) => {
 });
 
 // Get followers
-router.get('/users/:userId/followers', authenticateToken, async (req, res) => {
+router.get('/users/:userId/followers', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const { limit = 20, cursor } = req.query;
@@ -940,7 +940,7 @@ router.get('/users/:userId/followers', authenticateToken, async (req, res) => {
 });
 
 // Get following
-router.get('/users/:userId/following', authenticateToken, async (req, res) => {
+router.get('/users/:userId/following', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const { limit = 20, cursor } = req.query;
@@ -993,7 +993,7 @@ router.get('/users/:userId/following', authenticateToken, async (req, res) => {
 });
 
 // Get user profile stats
-router.get('/users/:userId/stats', authenticateToken, async (req, res) => {
+router.get('/users/:userId/stats', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -1029,7 +1029,7 @@ router.get('/users/:userId/stats', authenticateToken, async (req, res) => {
 // ============================================
 
 // Create list
-router.post('/lists', authenticateToken, async (req, res) => {
+router.post('/lists', authenticate, async (req, res) => {
   try {
     const { name, description, isPrivate = false } = req.body;
 
@@ -1054,7 +1054,7 @@ router.post('/lists', authenticateToken, async (req, res) => {
 });
 
 // Get lists
-router.get('/lists', authenticateToken, async (req, res) => {
+router.get('/lists', authenticate, async (req, res) => {
   try {
     const { userId } = req.query;
 
@@ -1080,7 +1080,7 @@ router.get('/lists', authenticateToken, async (req, res) => {
 });
 
 // Get single list
-router.get('/lists/:id', authenticateToken, async (req, res) => {
+router.get('/lists/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1116,7 +1116,7 @@ router.get('/lists/:id', authenticateToken, async (req, res) => {
 });
 
 // Update list
-router.put('/lists/:id', authenticateToken, async (req, res) => {
+router.put('/lists/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, isPrivate } = req.body;
@@ -1146,7 +1146,7 @@ router.put('/lists/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete list
-router.delete('/lists/:id', authenticateToken, async (req, res) => {
+router.delete('/lists/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1174,7 +1174,7 @@ router.delete('/lists/:id', authenticateToken, async (req, res) => {
 });
 
 // Add member to list
-router.post('/lists/:id/members', authenticateToken, async (req, res) => {
+router.post('/lists/:id/members', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
@@ -1220,7 +1220,7 @@ router.post('/lists/:id/members', authenticateToken, async (req, res) => {
 });
 
 // Remove member from list
-router.delete('/lists/:id/members/:userId', authenticateToken, async (req, res) => {
+router.delete('/lists/:id/members/:userId', authenticate, async (req, res) => {
   try {
     const { id, userId } = req.params;
 
@@ -1253,7 +1253,7 @@ router.delete('/lists/:id/members/:userId', authenticateToken, async (req, res) 
 });
 
 // Get list members
-router.get('/lists/:id/members', authenticateToken, async (req, res) => {
+router.get('/lists/:id/members', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { limit = 20, cursor } = req.query;
@@ -1300,7 +1300,7 @@ router.get('/lists/:id/members', authenticateToken, async (req, res) => {
 });
 
 // Get list timeline
-router.get('/lists/:id/timeline', authenticateToken, async (req, res) => {
+router.get('/lists/:id/timeline', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { limit = 20, cursor } = req.query;
@@ -1386,7 +1386,7 @@ router.get('/lists/:id/timeline', authenticateToken, async (req, res) => {
 // ============================================
 
 // Get trending topics
-router.get('/trending', authenticateToken, async (req, res) => {
+router.get('/trending', authenticate, async (req, res) => {
   try {
     const { limit = 10, category } = req.query;
 
@@ -1412,7 +1412,7 @@ router.get('/trending', authenticateToken, async (req, res) => {
 });
 
 // Search posts by hashtag
-router.get('/search/hashtag/:tag', authenticateToken, async (req, res) => {
+router.get('/search/hashtag/:tag', authenticate, async (req, res) => {
   try {
     const { tag } = req.params;
     const { limit = 20, cursor } = req.query;
@@ -1466,7 +1466,7 @@ router.get('/search/hashtag/:tag', authenticateToken, async (req, res) => {
 // ============================================
 
 // Search posts
-router.get('/search/posts', authenticateToken, async (req, res) => {
+router.get('/search/posts', authenticate, async (req, res) => {
   try {
     const { q, limit = 20, cursor } = req.query;
 
@@ -1519,7 +1519,7 @@ router.get('/search/posts', authenticateToken, async (req, res) => {
 });
 
 // Search users
-router.get('/search/users', authenticateToken, async (req, res) => {
+router.get('/search/users', authenticate, async (req, res) => {
   try {
     const { q, limit = 20 } = req.query;
 
@@ -1572,7 +1572,7 @@ router.get('/search/users', authenticateToken, async (req, res) => {
 // ============================================
 
 // Create space
-router.post('/spaces', authenticateToken, async (req, res) => {
+router.post('/spaces', authenticate, async (req, res) => {
   try {
     const { title, description, scheduledFor } = req.body;
 
@@ -1608,7 +1608,7 @@ router.post('/spaces', authenticateToken, async (req, res) => {
 });
 
 // Get spaces
-router.get('/spaces', authenticateToken, async (req, res) => {
+router.get('/spaces', authenticate, async (req, res) => {
   try {
     const { status = 'live', limit = 20 } = req.query;
 
@@ -1641,7 +1641,7 @@ router.get('/spaces', authenticateToken, async (req, res) => {
 });
 
 // Get single space
-router.get('/spaces/:id', authenticateToken, async (req, res) => {
+router.get('/spaces/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1692,7 +1692,7 @@ router.get('/spaces/:id', authenticateToken, async (req, res) => {
 });
 
 // Join space as listener
-router.post('/spaces/:id/join', authenticateToken, async (req, res) => {
+router.post('/spaces/:id/join', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1753,7 +1753,7 @@ router.post('/spaces/:id/join', authenticateToken, async (req, res) => {
 });
 
 // Request to speak
-router.post('/spaces/:id/request-speak', authenticateToken, async (req, res) => {
+router.post('/spaces/:id/request-speak', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1795,7 +1795,7 @@ router.post('/spaces/:id/request-speak', authenticateToken, async (req, res) => 
 });
 
 // Update speaker permissions (host only)
-router.put('/spaces/:id/speakers/:userId', authenticateToken, async (req, res) => {
+router.put('/spaces/:id/speakers/:userId', authenticate, async (req, res) => {
   try {
     const { id, userId } = req.params;
     const { canSpeak, isModerator } = req.body;
@@ -1830,7 +1830,7 @@ router.put('/spaces/:id/speakers/:userId', authenticateToken, async (req, res) =
 });
 
 // Leave space
-router.post('/spaces/:id/leave', authenticateToken, async (req, res) => {
+router.post('/spaces/:id/leave', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1858,7 +1858,7 @@ router.post('/spaces/:id/leave', authenticateToken, async (req, res) => {
 });
 
 // End space (host only)
-router.post('/spaces/:id/end', authenticateToken, async (req, res) => {
+router.post('/spaces/:id/end', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { recordingUrl } = req.body;

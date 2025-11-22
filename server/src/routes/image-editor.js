@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================================================
 
 // Create new project
-router.post('/projects', authMiddleware, async (req, res) => {
+router.post('/projects', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -37,7 +37,7 @@ router.post('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get all user projects
-router.get('/projects', authMiddleware, async (req, res) => {
+router.get('/projects', authenticate, async (req, res) => {
   try {
     const projects = await prisma.imageProject.findMany({
       where: { userId: req.user.id },
@@ -61,7 +61,7 @@ router.get('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get single project
-router.get('/projects/:id', authMiddleware, async (req, res) => {
+router.get('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.imageProject.findUnique({
       where: { id: req.params.id },
@@ -83,7 +83,7 @@ router.get('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Update project
-router.patch('/projects/:id', authMiddleware, async (req, res) => {
+router.patch('/projects/:id', authenticate, async (req, res) => {
   try {
     const { name, projectData, thumbnail } = req.body;
 
@@ -116,7 +116,7 @@ router.patch('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete project
-router.delete('/projects/:id', authMiddleware, async (req, res) => {
+router.delete('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.imageProject.findUnique({
       where: { id: req.params.id },
@@ -142,7 +142,7 @@ router.delete('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Duplicate project
-router.post('/projects/:id/duplicate', authMiddleware, async (req, res) => {
+router.post('/projects/:id/duplicate', authenticate, async (req, res) => {
   try {
     const original = await prisma.imageProject.findUnique({
       where: { id: req.params.id },
@@ -179,7 +179,7 @@ router.post('/projects/:id/duplicate', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Export image
-router.post('/export', authMiddleware, async (req, res) => {
+router.post('/export', authenticate, async (req, res) => {
   try {
     const {
       projectId,
@@ -223,7 +223,7 @@ router.post('/export', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Remove background
-router.post('/remove-bg', authMiddleware, async (req, res) => {
+router.post('/remove-bg', authenticate, async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
@@ -245,7 +245,7 @@ router.post('/remove-bg', authMiddleware, async (req, res) => {
 });
 
 // Remove object
-router.post('/remove-object', authMiddleware, async (req, res) => {
+router.post('/remove-object', authenticate, async (req, res) => {
   try {
     const { imageUrl, maskData } = req.body;
 
@@ -266,7 +266,7 @@ router.post('/remove-object', authMiddleware, async (req, res) => {
 });
 
 // Upscale image
-router.post('/upscale', authMiddleware, async (req, res) => {
+router.post('/upscale', authenticate, async (req, res) => {
   try {
     const { imageUrl, scale = 2 } = req.body;
 
@@ -288,7 +288,7 @@ router.post('/upscale', authMiddleware, async (req, res) => {
 });
 
 // Auto enhance
-router.post('/enhance', authMiddleware, async (req, res) => {
+router.post('/enhance', authenticate, async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
@@ -314,7 +314,7 @@ router.post('/enhance', authMiddleware, async (req, res) => {
 });
 
 // Colorize black & white
-router.post('/colorize', authMiddleware, async (req, res) => {
+router.post('/colorize', authenticate, async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
@@ -338,7 +338,7 @@ router.post('/colorize', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Upload asset
-router.post('/assets', authMiddleware, async (req, res) => {
+router.post('/assets', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -371,7 +371,7 @@ router.post('/assets', authMiddleware, async (req, res) => {
 });
 
 // Get user assets
-router.get('/assets', authMiddleware, async (req, res) => {
+router.get('/assets', authenticate, async (req, res) => {
   try {
     const { assetType } = req.query;
 
@@ -393,7 +393,7 @@ router.get('/assets', authMiddleware, async (req, res) => {
 });
 
 // Delete asset
-router.delete('/assets/:id', authMiddleware, async (req, res) => {
+router.delete('/assets/:id', authenticate, async (req, res) => {
   try {
     const asset = await prisma.imageAsset.findUnique({
       where: { id: req.params.id },
@@ -419,7 +419,7 @@ router.delete('/assets/:id', authMiddleware, async (req, res) => {
 });
 
 // Increment asset usage
-router.post('/assets/:id/use', authMiddleware, async (req, res) => {
+router.post('/assets/:id/use', authenticate, async (req, res) => {
   try {
     const asset = await prisma.imageAsset.findUnique({
       where: { id: req.params.id },

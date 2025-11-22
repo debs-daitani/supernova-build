@@ -1,10 +1,10 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/notifications
 router.get('/', async (req, res) => {

@@ -89,7 +89,7 @@ enum MemoryType {
 model User {
   id                    String              @id @default(cuid())
   email                 String              @unique
-  passwordHash          String
+  password          String
   name                  String?
   role                  UserRole            @default(FREE)
   createdAt             DateTime            @default(now())

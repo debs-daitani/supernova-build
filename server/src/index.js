@@ -116,7 +116,7 @@ import referralsRoutes from './routes/referrals.js';
 import onboardingRoutes from './routes/onboarding.js';
 
 // Phase 2AY - SUPERNova AI Brain
-import supernovaRoutes from './routes/supernova.js';
+// supernovaRoutes already imported above
 
 // Phase 2AZ - Email Automation Sequences
 import emailSequencesRoutes from './routes/email-sequences.js';
@@ -140,26 +140,23 @@ import signupRoutes from './routes/signup.js';
 import billingRoutes from './routes/billing.js';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-
-// Import routes
-import authRoutes from './routes/auth.js';
-import conversationRoutes from './routes/conversations.js';
-import memoryRoutes from './routes/memories.js';
-import paymentRoutes from './routes/payments.js';
-import marketplaceRoutes from './routes/marketplace.js';
-import communityRoutes from './routes/community.js';
-import adminRoutes from './routes/admin.js';
-
-dotenv.config();
+// rateLimit already imported above
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// Allow the frontend dev origins (Vite on 5173 and Next on 3000) plus any configured FRONTEND_URL
+const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:5173', process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:3000'];
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // allow requests with no origin like mobile apps or curl
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy: Origin not allowed'));
+  },
   credentials: true,
 }));
 
@@ -168,11 +165,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Security middleware
 app.use(helmet());
 
-// CORS
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+// Additional CORS middleware removed — initial middleware above handles allowed origins
 
 // Rate limiting
 const limiter = rateLimit({
@@ -356,16 +349,6 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
   });
 });
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-app.use('/api/conversations', conversationRoutes);
-app.use('/api/memories', memoryRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/api/community', communityRoutes);
-app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

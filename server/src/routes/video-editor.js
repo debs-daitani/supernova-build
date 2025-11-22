@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================================================
 
 // Create new project
-router.post('/projects', authMiddleware, async (req, res) => {
+router.post('/projects', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -39,7 +39,7 @@ router.post('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get all user projects
-router.get('/projects', authMiddleware, async (req, res) => {
+router.get('/projects', authenticate, async (req, res) => {
   try {
     const projects = await prisma.videoProject.findMany({
       where: { userId: req.user.id },
@@ -65,7 +65,7 @@ router.get('/projects', authMiddleware, async (req, res) => {
 });
 
 // Get single project
-router.get('/projects/:id', authMiddleware, async (req, res) => {
+router.get('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.videoProject.findUnique({
       where: { id: req.params.id },
@@ -87,7 +87,7 @@ router.get('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Update project
-router.patch('/projects/:id', authMiddleware, async (req, res) => {
+router.patch('/projects/:id', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -132,7 +132,7 @@ router.patch('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete project
-router.delete('/projects/:id', authMiddleware, async (req, res) => {
+router.delete('/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.videoProject.findUnique({
       where: { id: req.params.id },
@@ -158,7 +158,7 @@ router.delete('/projects/:id', authMiddleware, async (req, res) => {
 });
 
 // Duplicate project
-router.post('/projects/:id/duplicate', authMiddleware, async (req, res) => {
+router.post('/projects/:id/duplicate', authenticate, async (req, res) => {
   try {
     const original = await prisma.videoProject.findUnique({
       where: { id: req.params.id },
@@ -196,7 +196,7 @@ router.post('/projects/:id/duplicate', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Upload clip
-router.post('/clips', authMiddleware, async (req, res) => {
+router.post('/clips', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -229,7 +229,7 @@ router.post('/clips', authMiddleware, async (req, res) => {
 });
 
 // Get user clips
-router.get('/clips', authMiddleware, async (req, res) => {
+router.get('/clips', authenticate, async (req, res) => {
   try {
     const clips = await prisma.videoClip.findMany({
       where: { userId: req.user.id },
@@ -244,7 +244,7 @@ router.get('/clips', authMiddleware, async (req, res) => {
 });
 
 // Delete clip
-router.delete('/clips/:id', authMiddleware, async (req, res) => {
+router.delete('/clips/:id', authenticate, async (req, res) => {
   try {
     const clip = await prisma.videoClip.findUnique({
       where: { id: req.params.id },
@@ -274,7 +274,7 @@ router.delete('/clips/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Start render job
-router.post('/render', authMiddleware, async (req, res) => {
+router.post('/render', authenticate, async (req, res) => {
   try {
     const {
       projectId,
@@ -320,7 +320,7 @@ router.post('/render', authMiddleware, async (req, res) => {
 });
 
 // Check render progress
-router.get('/render/:jobId', authMiddleware, async (req, res) => {
+router.get('/render/:jobId', authenticate, async (req, res) => {
   try {
     const { jobId } = req.params;
 
@@ -339,7 +339,7 @@ router.get('/render/:jobId', authMiddleware, async (req, res) => {
 });
 
 // Download rendered video
-router.get('/render/:jobId/download', authMiddleware, async (req, res) => {
+router.get('/render/:jobId/download', authenticate, async (req, res) => {
   try {
     const { jobId } = req.params;
 
@@ -363,7 +363,7 @@ router.get('/render/:jobId/download', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Search stock videos
-router.get('/stock/videos', authMiddleware, async (req, res) => {
+router.get('/stock/videos', authenticate, async (req, res) => {
   try {
     const { query, page = 1, perPage = 20 } = req.query;
 
@@ -397,7 +397,7 @@ router.get('/stock/videos', authMiddleware, async (req, res) => {
 });
 
 // Search stock audio
-router.get('/stock/audio', authMiddleware, async (req, res) => {
+router.get('/stock/audio', authenticate, async (req, res) => {
   try {
     const { query, mood, genre, duration, page = 1, perPage = 20 } = req.query;
 

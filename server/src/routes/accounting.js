@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 // Get all invoices
-router.get('/invoices', authMiddleware, async (req, res) => {
+router.get('/invoices', authenticate, async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -44,7 +44,7 @@ router.get('/invoices', authMiddleware, async (req, res) => {
 });
 
 // Get single invoice
-router.get('/invoices/:id', authMiddleware, async (req, res) => {
+router.get('/invoices/:id', authenticate, async (req, res) => {
   try {
     const invoice = await prisma.invoice.findFirst({
       where: {
@@ -68,7 +68,7 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
 });
 
 // Create invoice
-router.post('/invoices', authMiddleware, async (req, res) => {
+router.post('/invoices', authenticate, async (req, res) => {
   try {
     // Generate invoice number if not provided
     let invoiceNumber = req.body.invoiceNumber;
@@ -116,7 +116,7 @@ router.post('/invoices', authMiddleware, async (req, res) => {
 });
 
 // Update invoice
-router.patch('/invoices/:id', authMiddleware, async (req, res) => {
+router.patch('/invoices/:id', authenticate, async (req, res) => {
   try {
     const invoice = await prisma.invoice.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -140,7 +140,7 @@ router.patch('/invoices/:id', authMiddleware, async (req, res) => {
 });
 
 // Mark invoice as paid
-router.post('/invoices/:id/paid', authMiddleware, async (req, res) => {
+router.post('/invoices/:id/paid', authenticate, async (req, res) => {
   try {
     const invoice = await prisma.invoice.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -195,7 +195,7 @@ router.post('/invoices/:id/paid', authMiddleware, async (req, res) => {
 });
 
 // Delete invoice
-router.delete('/invoices/:id', authMiddleware, async (req, res) => {
+router.delete('/invoices/:id', authenticate, async (req, res) => {
   try {
     const invoice = await prisma.invoice.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -221,7 +221,7 @@ router.delete('/invoices/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all expenses
-router.get('/expenses', authMiddleware, async (req, res) => {
+router.get('/expenses', authenticate, async (req, res) => {
   try {
     const { category, from, to } = req.query;
 
@@ -250,7 +250,7 @@ router.get('/expenses', authMiddleware, async (req, res) => {
 });
 
 // Create expense
-router.post('/expenses', authMiddleware, async (req, res) => {
+router.post('/expenses', authenticate, async (req, res) => {
   try {
     const expense = await prisma.expense.create({
       data: {
@@ -267,7 +267,7 @@ router.post('/expenses', authMiddleware, async (req, res) => {
 });
 
 // Update expense
-router.patch('/expenses/:id', authMiddleware, async (req, res) => {
+router.patch('/expenses/:id', authenticate, async (req, res) => {
   try {
     const expense = await prisma.expense.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -290,7 +290,7 @@ router.patch('/expenses/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete expense
-router.delete('/expenses/:id', authMiddleware, async (req, res) => {
+router.delete('/expenses/:id', authenticate, async (req, res) => {
   try {
     const expense = await prisma.expense.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -316,7 +316,7 @@ router.delete('/expenses/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get all income entries
-router.get('/income', authMiddleware, async (req, res) => {
+router.get('/income', authenticate, async (req, res) => {
   try {
     const { category, from, to } = req.query;
 
@@ -345,7 +345,7 @@ router.get('/income', authMiddleware, async (req, res) => {
 });
 
 // Create income entry
-router.post('/income', authMiddleware, async (req, res) => {
+router.post('/income', authenticate, async (req, res) => {
   try {
     const income = await prisma.incomeEntry.create({
       data: {
@@ -362,7 +362,7 @@ router.post('/income', authMiddleware, async (req, res) => {
 });
 
 // Delete income entry
-router.delete('/income/:id', authMiddleware, async (req, res) => {
+router.delete('/income/:id', authenticate, async (req, res) => {
   try {
     const income = await prisma.incomeEntry.findFirst({
       where: { id: req.params.id, userId: req.user.id }
@@ -388,7 +388,7 @@ router.delete('/income/:id', authMiddleware, async (req, res) => {
 // ============================================
 
 // Profit & Loss Report
-router.get('/reports/profit-loss', authMiddleware, async (req, res) => {
+router.get('/reports/profit-loss', authenticate, async (req, res) => {
   try {
     const { from, to } = req.query;
 
@@ -443,7 +443,7 @@ router.get('/reports/profit-loss', authMiddleware, async (req, res) => {
 });
 
 // Tax Report (UK-specific)
-router.get('/reports/tax', authMiddleware, async (req, res) => {
+router.get('/reports/tax', authenticate, async (req, res) => {
   try {
     const { year } = req.query;
     const taxYear = year ? parseInt(year) : new Date().getFullYear();
@@ -548,7 +548,7 @@ router.get('/reports/tax', authMiddleware, async (req, res) => {
 });
 
 // Dashboard stats
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
 

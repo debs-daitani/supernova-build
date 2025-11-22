@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { sendNewDM } from '../services/emailService.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticate);
 
 // GET /api/messages - Get conversations list
 router.get('/', async (req, res) => {

@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
 // ============================================================================
 
 // Create launch plan
-router.post('/launch', authMiddleware, async (req, res) => {
+router.post('/launch', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -142,7 +142,7 @@ Include 30-40 comprehensive tasks covering all phases of the launch.`;
 });
 
 // Get all launches for user
-router.get('/launch', authMiddleware, async (req, res) => {
+router.get('/launch', authenticate, async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -186,7 +186,7 @@ router.get('/launch', authMiddleware, async (req, res) => {
 });
 
 // Get single launch
-router.get('/launch/:id', authMiddleware, async (req, res) => {
+router.get('/launch/:id', authenticate, async (req, res) => {
   try {
     const launch = await prisma.launch.findUnique({
       where: { id: req.params.id },
@@ -227,7 +227,7 @@ router.get('/launch/:id', authMiddleware, async (req, res) => {
 });
 
 // Update launch
-router.patch('/launch/:id', authMiddleware, async (req, res) => {
+router.patch('/launch/:id', authenticate, async (req, res) => {
   try {
     const { name, description, launchDate, goals, status } = req.body;
 
@@ -266,7 +266,7 @@ router.patch('/launch/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete launch
-router.delete('/launch/:id', authMiddleware, async (req, res) => {
+router.delete('/launch/:id', authenticate, async (req, res) => {
   try {
     const launch = await prisma.launch.findUnique({
       where: { id: req.params.id },
@@ -296,7 +296,7 @@ router.delete('/launch/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add checklist item
-router.post('/launch/:id/checklist', authMiddleware, async (req, res) => {
+router.post('/launch/:id/checklist', authenticate, async (req, res) => {
   try {
     const { task, description, category, dueDate } = req.body;
 
@@ -332,7 +332,7 @@ router.post('/launch/:id/checklist', authMiddleware, async (req, res) => {
 });
 
 // Update checklist item
-router.patch('/launch/:launchId/checklist/:itemId', authMiddleware, async (req, res) => {
+router.patch('/launch/:launchId/checklist/:itemId', authenticate, async (req, res) => {
   try {
     const { task, description, category, dueDate, completed } = req.body;
 
@@ -371,7 +371,7 @@ router.patch('/launch/:launchId/checklist/:itemId', authMiddleware, async (req, 
 });
 
 // Toggle checklist item completion
-router.post('/launch/:launchId/checklist/:itemId/toggle', authMiddleware, async (req, res) => {
+router.post('/launch/:launchId/checklist/:itemId/toggle', authenticate, async (req, res) => {
   try {
     const item = await prisma.launchChecklistItem.findUnique({
       where: { id: req.params.itemId },
@@ -402,7 +402,7 @@ router.post('/launch/:launchId/checklist/:itemId/toggle', authMiddleware, async 
 });
 
 // Delete checklist item
-router.delete('/launch/:launchId/checklist/:itemId', authMiddleware, async (req, res) => {
+router.delete('/launch/:launchId/checklist/:itemId', authenticate, async (req, res) => {
   try {
     const item = await prisma.launchChecklistItem.findUnique({
       where: { id: req.params.itemId },
@@ -500,7 +500,7 @@ router.post('/launch/:id/waitlist', async (req, res) => {
 });
 
 // Get waitlist entries (owner only)
-router.get('/launch/:id/waitlist', authMiddleware, async (req, res) => {
+router.get('/launch/:id/waitlist', authenticate, async (req, res) => {
   try {
     const launch = await prisma.launch.findUnique({
       where: { id: req.params.id },
@@ -527,7 +527,7 @@ router.get('/launch/:id/waitlist', authMiddleware, async (req, res) => {
 });
 
 // Send notification to waitlist (owner only)
-router.post('/launch/:id/waitlist/notify', authMiddleware, async (req, res) => {
+router.post('/launch/:id/waitlist/notify', authenticate, async (req, res) => {
   try {
     const { subject, message } = req.body;
 

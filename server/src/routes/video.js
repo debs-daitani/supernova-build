@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
 // ============================================================================
 
 // Generate video script with AI
-router.post('/scripts/generate', authMiddleware, async (req, res) => {
+router.post('/scripts/generate', authenticate, async (req, res) => {
   try {
     const {
       title,
@@ -163,7 +163,7 @@ Generate the complete script now.`;
 });
 
 // Get all user's scripts
-router.get('/scripts', authMiddleware, async (req, res) => {
+router.get('/scripts', authenticate, async (req, res) => {
   try {
     const scripts = await prisma.videoScript.findMany({
       where: { userId: req.user.id },
@@ -178,7 +178,7 @@ router.get('/scripts', authMiddleware, async (req, res) => {
 });
 
 // Get single script
-router.get('/scripts/:id', authMiddleware, async (req, res) => {
+router.get('/scripts/:id', authenticate, async (req, res) => {
   try {
     const script = await prisma.videoScript.findFirst({
       where: {
@@ -199,7 +199,7 @@ router.get('/scripts/:id', authMiddleware, async (req, res) => {
 });
 
 // Update script
-router.patch('/scripts/:id', authMiddleware, async (req, res) => {
+router.patch('/scripts/:id', authenticate, async (req, res) => {
   try {
     const script = await prisma.videoScript.findFirst({
       where: {
@@ -233,7 +233,7 @@ router.patch('/scripts/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete script
-router.delete('/scripts/:id', authMiddleware, async (req, res) => {
+router.delete('/scripts/:id', authenticate, async (req, res) => {
   try {
     const script = await prisma.videoScript.findFirst({
       where: {
@@ -262,7 +262,7 @@ router.delete('/scripts/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create video record
-router.post('/videos', authMiddleware, async (req, res) => {
+router.post('/videos', authenticate, async (req, res) => {
   try {
     const {
       title,
@@ -295,7 +295,7 @@ router.post('/videos', authMiddleware, async (req, res) => {
 });
 
 // Get all user's videos
-router.get('/videos', authMiddleware, async (req, res) => {
+router.get('/videos', authenticate, async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -318,7 +318,7 @@ router.get('/videos', authMiddleware, async (req, res) => {
 });
 
 // Get single video
-router.get('/videos/:id', authMiddleware, async (req, res) => {
+router.get('/videos/:id', authenticate, async (req, res) => {
   try {
     const video = await prisma.video.findFirst({
       where: {
@@ -339,7 +339,7 @@ router.get('/videos/:id', authMiddleware, async (req, res) => {
 });
 
 // Update video
-router.patch('/videos/:id', authMiddleware, async (req, res) => {
+router.patch('/videos/:id', authenticate, async (req, res) => {
   try {
     const video = await prisma.video.findFirst({
       where: {
@@ -392,7 +392,7 @@ router.patch('/videos/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete video
-router.delete('/videos/:id', authMiddleware, async (req, res) => {
+router.delete('/videos/:id', authenticate, async (req, res) => {
   try {
     const video = await prisma.video.findFirst({
       where: {
@@ -421,7 +421,7 @@ router.delete('/videos/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Generate video title suggestions
-router.post('/seo/title', authMiddleware, async (req, res) => {
+router.post('/seo/title', authenticate, async (req, res) => {
   try {
     const { topic, platform, includeKeywords } = req.body;
 
@@ -484,7 +484,7 @@ Generate 5 titles now.`;
 });
 
 // Generate video description
-router.post('/seo/description', authMiddleware, async (req, res) => {
+router.post('/seo/description', authenticate, async (req, res) => {
   try {
     const { topic, keyPoints, links, callToAction, platform } = req.body;
 
@@ -525,7 +525,7 @@ Generate the complete description now.`;
 });
 
 // Generate video tags
-router.post('/seo/tags', authMiddleware, async (req, res) => {
+router.post('/seo/tags', authenticate, async (req, res) => {
   try {
     const { topic, platform, mix } = req.body;
 
@@ -578,7 +578,7 @@ Return ONLY the tags separated by commas, no additional text.`;
 // ============================================================================
 
 // Get all templates
-router.get('/templates', authMiddleware, async (req, res) => {
+router.get('/templates', authenticate, async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -601,7 +601,7 @@ router.get('/templates', authMiddleware, async (req, res) => {
 });
 
 // Get single template
-router.get('/templates/:id', authMiddleware, async (req, res) => {
+router.get('/templates/:id', authenticate, async (req, res) => {
   try {
     const template = await prisma.videoTemplate.findUnique({
       where: { id: req.params.id },
@@ -629,7 +629,7 @@ router.get('/templates/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Get video stats
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const [totalVideos, totalScripts, readyVideos] = await Promise.all([
       prisma.video.count({
@@ -690,4 +690,4 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -14,10 +14,17 @@
     "db:seed": "node prisma/seed.js",
     "db:seed:main-page": "node prisma/seeds/main-sales-page.js"
   },
-  "keywords": ["supernova", "ai", "coaching", "marketplace", "community"],
+  "keywords": [
+    "supernova",
+    "ai",
+    "coaching",
+    "marketplace",
+    "community"
+  ],
   "author": "Debs Daitani",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.1",
     "@prisma/client": "^5.7.0",
     "@sendgrid/mail": "^8.1.0",
     "bcryptjs": "^2.4.3",
@@ -27,7 +34,9 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2",
     "openai": "^4.20.1",

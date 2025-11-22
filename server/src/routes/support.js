@@ -472,4 +472,4 @@ router.post('/admin/canned-responses/:id/use', /* requireSupport, */ async (req,
   }
 });
 
-module.exports = router;
+export default router;

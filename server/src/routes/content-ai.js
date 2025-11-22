@@ -1,12 +1,12 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import prisma from '../config/database.js';
-import { authenticateToken as authMiddleware } from '../middleware/auth.js';
+import { authenticate as authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-router.use(authMiddleware);
+router.use(authenticate);
 
 // ============================================
 // BLOG POST GENERATOR

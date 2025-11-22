@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ const calculateResult = (quiz, answers) => {
 };
 
 // GET /api/quizzes - Get user's quizzes
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const quizzes = await prisma.quiz.findMany({
       where: { userId: req.user.id },
@@ -56,7 +56,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // POST /api/quizzes - Create quiz
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { title, description, coverImage, primaryColor, resultTypes } = req.body;
 
@@ -82,7 +82,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/quizzes/:id - Get specific quiz
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const quiz = await prisma.quiz.findFirst({
       where: {
@@ -107,7 +107,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // PATCH /api/quizzes/:id - Update quiz
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const quiz = await prisma.quiz.updateMany({
       where: {
@@ -132,7 +132,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/quizzes/:id - Delete quiz
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     await prisma.quiz.deleteMany({
       where: {
@@ -148,7 +148,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/quizzes/:id/questions - Add question
-router.post('/:id/questions', authenticateToken, async (req, res) => {
+router.post('/:id/questions', authenticate, async (req, res) => {
   try {
     const { questionText, questionType, options, scaleMin, scaleMax, scaleMinLabel, scaleMaxLabel, required } = req.body;
 
@@ -193,7 +193,7 @@ router.post('/:id/questions', authenticateToken, async (req, res) => {
 });
 
 // PATCH /api/quizzes/:quizId/questions/:id - Update question
-router.patch('/:quizId/questions/:id', authenticateToken, async (req, res) => {
+router.patch('/:quizId/questions/:id', authenticate, async (req, res) => {
   try {
     const question = await prisma.quizQuestion.findFirst({
       where: { id: req.params.id },
@@ -216,7 +216,7 @@ router.patch('/:quizId/questions/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/quizzes/:quizId/questions/:id - Delete question
-router.delete('/:quizId/questions/:id', authenticateToken, async (req, res) => {
+router.delete('/:quizId/questions/:id', authenticate, async (req, res) => {
   try {
     const question = await prisma.quizQuestion.findFirst({
       where: { id: req.params.id },
@@ -300,7 +300,7 @@ router.post('/:id/responses', async (req, res) => {
 });
 
 // GET /api/quizzes/:id/responses - Get quiz responses
-router.get('/:id/responses', authenticateToken, async (req, res) => {
+router.get('/:id/responses', authenticate, async (req, res) => {
   try {
     const quiz = await prisma.quiz.findFirst({
       where: {
@@ -325,7 +325,7 @@ router.get('/:id/responses', authenticateToken, async (req, res) => {
 });
 
 // GET /api/quizzes/:id/analytics - Get quiz analytics
-router.get('/:id/analytics', authenticateToken, async (req, res) => {
+router.get('/:id/analytics', authenticate, async (req, res) => {
   try {
     const quiz = await prisma.quiz.findFirst({
       where: {

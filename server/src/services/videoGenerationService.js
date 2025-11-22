@@ -50,7 +50,7 @@ export async function generateVideo(userPrompt, options = {}) {
     console.log('💾 Video generation job created:', generatedVideo.id);
 
     // 3. Submit to video generation service (async)
-    submitVideoGeneration Job(generatedVideo.id, enhancedPrompt, options);
+    submitVideoGenerationJob(generatedVideo.id, enhancedPrompt, options);
 
     return {
       videoId: generatedVideo.id,

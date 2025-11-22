@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // POST /api/links-page - Create or update links page
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { username, displayName, bio, avatar, theme, backgroundColor, textColor, accentColor, published } = req.body;
 
@@ -47,7 +47,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/links-page - Get user's links page
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const linksPage = await prisma.userLinksPage.findUnique({
       where: { userId: req.user.id },
@@ -94,7 +94,7 @@ router.get('/@:username', async (req, res) => {
 });
 
 // POST /api/links-page/links - Add link
-router.post('/links', authenticateToken, async (req, res) => {
+router.post('/links', authenticate, async (req, res) => {
   try {
     const linksPage = await prisma.userLinksPage.findUnique({
       where: { userId: req.user.id },
@@ -130,7 +130,7 @@ router.post('/links', authenticateToken, async (req, res) => {
 });
 
 // PATCH /api/links-page/links/:id - Update link
-router.patch('/links/:id', authenticateToken, async (req, res) => {
+router.patch('/links/:id', authenticate, async (req, res) => {
   try {
     const link = await prisma.userLink.findFirst({
       where: { id: req.params.id },
@@ -153,7 +153,7 @@ router.patch('/links/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/links-page/links/:id - Delete link
-router.delete('/links/:id', authenticateToken, async (req, res) => {
+router.delete('/links/:id', authenticate, async (req, res) => {
   try {
     const link = await prisma.userLink.findFirst({
       where: { id: req.params.id },

@@ -1,6 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import authMiddleware from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 // ============================================================================
 
 // Create spreadsheet
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const {
       title = 'Untitled Spreadsheet',
@@ -43,7 +43,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Get all user spreadsheets
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const { folderId, shared, recent } = req.query;
 
@@ -114,7 +114,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get single spreadsheet
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -191,7 +191,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Update spreadsheet
-router.patch('/:id', authMiddleware, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const {
       title,
@@ -240,7 +240,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete spreadsheet
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -266,7 +266,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // Copy spreadsheet
-router.post('/:id/copy', authMiddleware, async (req, res) => {
+router.post('/:id/copy', authenticate, async (req, res) => {
   try {
     const original = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -305,7 +305,7 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
 });
 
 // Move spreadsheet to folder
-router.post('/:id/move', authMiddleware, async (req, res) => {
+router.post('/:id/move', authenticate, async (req, res) => {
   try {
     const { folderId } = req.body;
 
@@ -338,7 +338,7 @@ router.post('/:id/move', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create folder
-router.post('/folders', authMiddleware, async (req, res) => {
+router.post('/folders', authenticate, async (req, res) => {
   try {
     const { name, color, parentId } = req.body;
 
@@ -359,7 +359,7 @@ router.post('/folders', authMiddleware, async (req, res) => {
 });
 
 // Get all folders
-router.get('/folders', authMiddleware, async (req, res) => {
+router.get('/folders', authenticate, async (req, res) => {
   try {
     const folders = await prisma.spreadsheetFolder.findMany({
       where: { userId: req.user.id },
@@ -389,7 +389,7 @@ router.get('/folders', authMiddleware, async (req, res) => {
 });
 
 // Update folder
-router.patch('/folders/:id', authMiddleware, async (req, res) => {
+router.patch('/folders/:id', authenticate, async (req, res) => {
   try {
     const { name, color, parentId } = req.body;
 
@@ -422,7 +422,7 @@ router.patch('/folders/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete folder
-router.delete('/folders/:id', authMiddleware, async (req, res) => {
+router.delete('/folders/:id', authenticate, async (req, res) => {
   try {
     const folder = await prisma.spreadsheetFolder.findUnique({
       where: { id: req.params.id },
@@ -452,7 +452,7 @@ router.delete('/folders/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Share spreadsheet
-router.post('/:id/share', authMiddleware, async (req, res) => {
+router.post('/:id/share', authenticate, async (req, res) => {
   try {
     const { emails, permission = 'view' } = req.body;
 
@@ -504,7 +504,7 @@ router.post('/:id/share', authMiddleware, async (req, res) => {
 });
 
 // Generate share link
-router.post('/:id/share-link', authMiddleware, async (req, res) => {
+router.post('/:id/share-link', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -538,7 +538,7 @@ router.post('/:id/share-link', authMiddleware, async (req, res) => {
 });
 
 // Update permissions
-router.patch('/:id/permissions', authMiddleware, async (req, res) => {
+router.patch('/:id/permissions', authenticate, async (req, res) => {
   try {
     const { userId, permission } = req.body;
 
@@ -572,7 +572,7 @@ router.patch('/:id/permissions', authMiddleware, async (req, res) => {
 });
 
 // Remove collaborator
-router.delete('/:id/collaborators/:userId', authMiddleware, async (req, res) => {
+router.delete('/:id/collaborators/:userId', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -607,7 +607,7 @@ router.delete('/:id/collaborators/:userId', authMiddleware, async (req, res) => 
 // ============================================================================
 
 // Add comment
-router.post('/:id/comments', authMiddleware, async (req, res) => {
+router.post('/:id/comments', authenticate, async (req, res) => {
   try {
     const { content, sheetName, cellReference, parentId } = req.body;
 
@@ -660,7 +660,7 @@ router.post('/:id/comments', authMiddleware, async (req, res) => {
 });
 
 // Get comments
-router.get('/:id/comments', authMiddleware, async (req, res) => {
+router.get('/:id/comments', authenticate, async (req, res) => {
   try {
     const { resolved } = req.query;
 
@@ -707,7 +707,7 @@ router.get('/:id/comments', authMiddleware, async (req, res) => {
 });
 
 // Update comment
-router.patch('/:id/comments/:commentId', authMiddleware, async (req, res) => {
+router.patch('/:id/comments/:commentId', authenticate, async (req, res) => {
   try {
     const { content } = req.body;
 
@@ -736,7 +736,7 @@ router.patch('/:id/comments/:commentId', authMiddleware, async (req, res) => {
 });
 
 // Delete comment
-router.delete('/:id/comments/:commentId', authMiddleware, async (req, res) => {
+router.delete('/:id/comments/:commentId', authenticate, async (req, res) => {
   try {
     const comment = await prisma.spreadsheetComment.findUnique({
       where: { id: req.params.commentId },
@@ -762,7 +762,7 @@ router.delete('/:id/comments/:commentId', authMiddleware, async (req, res) => {
 });
 
 // Resolve comment
-router.post('/:id/comments/:commentId/resolve', authMiddleware, async (req, res) => {
+router.post('/:id/comments/:commentId/resolve', authenticate, async (req, res) => {
   try {
     const comment = await prisma.spreadsheetComment.findUnique({
       where: { id: req.params.commentId },
@@ -793,7 +793,7 @@ router.post('/:id/comments/:commentId/resolve', authMiddleware, async (req, res)
 // ============================================================================
 
 // Get version history
-router.get('/:id/versions', authMiddleware, async (req, res) => {
+router.get('/:id/versions', authenticate, async (req, res) => {
   try {
     const versions = await prisma.spreadsheetVersion.findMany({
       where: { spreadsheetId: req.params.id },
@@ -817,7 +817,7 @@ router.get('/:id/versions', authMiddleware, async (req, res) => {
 });
 
 // Restore version
-router.post('/:id/restore/:versionId', authMiddleware, async (req, res) => {
+router.post('/:id/restore/:versionId', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -877,7 +877,7 @@ router.post('/:id/restore/:versionId', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Import CSV
-router.post('/import/csv', authMiddleware, async (req, res) => {
+router.post('/import/csv', authenticate, async (req, res) => {
   try {
     const { csvData, title } = req.body;
 
@@ -897,7 +897,7 @@ router.post('/import/csv', authMiddleware, async (req, res) => {
 });
 
 // Import XLSX
-router.post('/import/xlsx', authMiddleware, async (req, res) => {
+router.post('/import/xlsx', authenticate, async (req, res) => {
   try {
     const { fileUrl, title } = req.body;
 
@@ -918,7 +918,7 @@ router.post('/import/xlsx', authMiddleware, async (req, res) => {
 });
 
 // Export CSV
-router.get('/:id/export/csv', authMiddleware, async (req, res) => {
+router.get('/:id/export/csv', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -944,7 +944,7 @@ router.get('/:id/export/csv', authMiddleware, async (req, res) => {
 });
 
 // Export XLSX
-router.get('/:id/export/xlsx', authMiddleware, async (req, res) => {
+router.get('/:id/export/xlsx', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -970,7 +970,7 @@ router.get('/:id/export/xlsx', authMiddleware, async (req, res) => {
 });
 
 // Export PDF
-router.get('/:id/export/pdf', authMiddleware, async (req, res) => {
+router.get('/:id/export/pdf', authenticate, async (req, res) => {
   try {
     const spreadsheet = await prisma.spreadsheet.findUnique({
       where: { id: req.params.id },
@@ -1000,7 +1000,7 @@ router.get('/:id/export/pdf', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Get templates
-router.get('/templates', authMiddleware, async (req, res) => {
+router.get('/templates', authenticate, async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -1022,7 +1022,7 @@ router.get('/templates', authMiddleware, async (req, res) => {
 });
 
 // Create spreadsheet from template
-router.post('/from-template/:templateId', authMiddleware, async (req, res) => {
+router.post('/from-template/:templateId', authenticate, async (req, res) => {
   try {
     const { title } = req.body;
 

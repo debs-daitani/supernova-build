@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -33,7 +33,7 @@ function generateSlug(name) {
  * GET /api/thank-you-pages
  * Get all thank you pages for user
  */
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const pages = await prisma.thankYouPage.findMany({
       where: {
@@ -69,7 +69,7 @@ router.get('/', authenticateToken, async (req, res) => {
  * GET /api/thank-you-pages/:id
  * Get single thank you page
  */
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {
@@ -102,7 +102,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  * POST /api/thank-you-pages
  * Create thank you page
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const {
       name,
@@ -175,7 +175,7 @@ router.post('/', authenticateToken, async (req, res) => {
  * PATCH /api/thank-you-pages/:id
  * Update thank you page
  */
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {
@@ -212,7 +212,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
  * DELETE /api/thank-you-pages/:id
  * Delete thank you page
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {
@@ -240,7 +240,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
  * POST /api/thank-you-pages/:id/publish
  * Publish thank you page
  */
-router.post('/:id/publish', authenticateToken, async (req, res) => {
+router.post('/:id/publish', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {
@@ -271,7 +271,7 @@ router.post('/:id/publish', authenticateToken, async (req, res) => {
  * POST /api/thank-you-pages/:id/unpublish
  * Unpublish thank you page
  */
-router.post('/:id/unpublish', authenticateToken, async (req, res) => {
+router.post('/:id/unpublish', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {
@@ -604,7 +604,7 @@ router.post('/:id/calendar-booked', async (req, res) => {
  * GET /api/thank-you-pages/:id/analytics
  * Get thank you page analytics
  */
-router.get('/:id/analytics', authenticateToken, async (req, res) => {
+router.get('/:id/analytics', authenticate, async (req, res) => {
   try {
     const page = await prisma.thankYouPage.findFirst({
       where: {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import {
   generateImage,
   getUserGeneratedImages,
@@ -14,7 +14,7 @@ const router = express.Router();
  * Generate an image using DALL-E 3
  * POST /api/ai/generate-image
  */
-router.post('/generate-image', authMiddleware, async (req, res) => {
+router.post('/generate-image', authenticate, async (req, res) => {
   try {
     const { prompt, size, style, quality, conversationId, context } = req.body;
 
@@ -54,7 +54,7 @@ router.post('/generate-image', authMiddleware, async (req, res) => {
  * Get user's generated images
  * GET /api/ai/images
  */
-router.get('/images', authMiddleware, async (req, res) => {
+router.get('/images', authenticate, async (req, res) => {
   try {
     const { conversationId, savedToLibrary, limit } = req.query;
 
@@ -75,7 +75,7 @@ router.get('/images', authMiddleware, async (req, res) => {
  * Get specific generated image
  * GET /api/ai/images/:id
  */
-router.get('/images/:id', authMiddleware, async (req, res) => {
+router.get('/images/:id', authenticate, async (req, res) => {
   try {
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
@@ -102,7 +102,7 @@ router.get('/images/:id', authMiddleware, async (req, res) => {
  * Save image to library
  * POST /api/ai/images/:id/save
  */
-router.post('/images/:id/save', authMiddleware, async (req, res) => {
+router.post('/images/:id/save', authenticate, async (req, res) => {
   try {
     const updated = await saveToLibrary(req.params.id, req.user.id);
     res.json(updated);
@@ -116,7 +116,7 @@ router.post('/images/:id/save', authMiddleware, async (req, res) => {
  * Mark image as used
  * POST /api/ai/images/:id/mark-used
  */
-router.post('/images/:id/mark-used', authMiddleware, async (req, res) => {
+router.post('/images/:id/mark-used', authenticate, async (req, res) => {
   try {
     const { usedIn } = req.body;
 
@@ -136,7 +136,7 @@ router.post('/images/:id/mark-used', authMiddleware, async (req, res) => {
  * Delete generated image
  * DELETE /api/ai/images/:id
  */
-router.delete('/images/:id', authMiddleware, async (req, res) => {
+router.delete('/images/:id', authenticate, async (req, res) => {
   try {
     await deleteGeneratedImage(req.params.id, req.user.id);
     res.json({ message: 'Image deleted successfully' });

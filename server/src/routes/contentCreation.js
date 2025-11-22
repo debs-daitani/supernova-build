@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
 // ============================================================================
 
 // Get all templates
-router.get('/templates', authMiddleware, async (req, res) => {
+router.get('/templates', authenticate, async (req, res) => {
   try {
     const { category, platform, featured } = req.query;
 
@@ -40,7 +40,7 @@ router.get('/templates', authMiddleware, async (req, res) => {
 });
 
 // Get single template
-router.get('/templates/:id', authMiddleware, async (req, res) => {
+router.get('/templates/:id', authenticate, async (req, res) => {
   try {
     const template = await prisma.designTemplate.findUnique({
       where: { id: req.params.id },
@@ -68,7 +68,7 @@ router.get('/templates/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create/save design
-router.post('/designs', authMiddleware, async (req, res) => {
+router.post('/designs', authenticate, async (req, res) => {
   try {
     const { name, category, width, height, designData, thumbnail } = req.body;
 
@@ -92,7 +92,7 @@ router.post('/designs', authMiddleware, async (req, res) => {
 });
 
 // Get user's designs
-router.get('/designs', authMiddleware, async (req, res) => {
+router.get('/designs', authenticate, async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -115,7 +115,7 @@ router.get('/designs', authMiddleware, async (req, res) => {
 });
 
 // Get single design
-router.get('/designs/:id', authMiddleware, async (req, res) => {
+router.get('/designs/:id', authenticate, async (req, res) => {
   try {
     const design = await prisma.savedDesign.findFirst({
       where: {
@@ -136,7 +136,7 @@ router.get('/designs/:id', authMiddleware, async (req, res) => {
 });
 
 // Update design
-router.patch('/designs/:id', authMiddleware, async (req, res) => {
+router.patch('/designs/:id', authenticate, async (req, res) => {
   try {
     const design = await prisma.savedDesign.findFirst({
       where: {
@@ -169,7 +169,7 @@ router.patch('/designs/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete design
-router.delete('/designs/:id', authMiddleware, async (req, res) => {
+router.delete('/designs/:id', authenticate, async (req, res) => {
   try {
     const design = await prisma.savedDesign.findFirst({
       where: {
@@ -198,7 +198,7 @@ router.delete('/designs/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create post
-router.post('/posts', authMiddleware, async (req, res) => {
+router.post('/posts', authenticate, async (req, res) => {
   try {
     const {
       caption,
@@ -231,7 +231,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
 });
 
 // Get all posts
-router.get('/posts', authMiddleware, async (req, res) => {
+router.get('/posts', authenticate, async (req, res) => {
   try {
     const { status, platform, startDate, endDate } = req.query;
 
@@ -264,7 +264,7 @@ router.get('/posts', authMiddleware, async (req, res) => {
 });
 
 // Get single post
-router.get('/posts/:id', authMiddleware, async (req, res) => {
+router.get('/posts/:id', authenticate, async (req, res) => {
   try {
     const post = await prisma.contentPost.findFirst({
       where: {
@@ -285,7 +285,7 @@ router.get('/posts/:id', authMiddleware, async (req, res) => {
 });
 
 // Update post
-router.patch('/posts/:id', authMiddleware, async (req, res) => {
+router.patch('/posts/:id', authenticate, async (req, res) => {
   try {
     const post = await prisma.contentPost.findFirst({
       where: {
@@ -336,7 +336,7 @@ router.patch('/posts/:id', authMiddleware, async (req, res) => {
 });
 
 // Schedule post
-router.post('/posts/:id/schedule', authMiddleware, async (req, res) => {
+router.post('/posts/:id/schedule', authenticate, async (req, res) => {
   try {
     const { scheduledFor } = req.body;
 
@@ -367,7 +367,7 @@ router.post('/posts/:id/schedule', authMiddleware, async (req, res) => {
 });
 
 // Publish post immediately
-router.post('/posts/:id/publish', authMiddleware, async (req, res) => {
+router.post('/posts/:id/publish', authenticate, async (req, res) => {
   try {
     const post = await prisma.contentPost.findFirst({
       where: {
@@ -399,7 +399,7 @@ router.post('/posts/:id/publish', authMiddleware, async (req, res) => {
 });
 
 // Delete post
-router.delete('/posts/:id', authMiddleware, async (req, res) => {
+router.delete('/posts/:id', authenticate, async (req, res) => {
   try {
     const post = await prisma.contentPost.findFirst({
       where: {
@@ -424,7 +424,7 @@ router.delete('/posts/:id', authMiddleware, async (req, res) => {
 });
 
 // Duplicate post
-router.post('/posts/:id/duplicate', authMiddleware, async (req, res) => {
+router.post('/posts/:id/duplicate', authenticate, async (req, res) => {
   try {
     const post = await prisma.contentPost.findFirst({
       where: {
@@ -461,7 +461,7 @@ router.post('/posts/:id/duplicate', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Create idea
-router.post('/ideas', authMiddleware, async (req, res) => {
+router.post('/ideas', authenticate, async (req, res) => {
   try {
     const { title, description, category, status } = req.body;
 
@@ -483,7 +483,7 @@ router.post('/ideas', authMiddleware, async (req, res) => {
 });
 
 // Get all ideas
-router.get('/ideas', authMiddleware, async (req, res) => {
+router.get('/ideas', authenticate, async (req, res) => {
   try {
     const { status, category } = req.query;
 
@@ -507,7 +507,7 @@ router.get('/ideas', authMiddleware, async (req, res) => {
 });
 
 // Update idea
-router.patch('/ideas/:id', authMiddleware, async (req, res) => {
+router.patch('/ideas/:id', authenticate, async (req, res) => {
   try {
     const idea = await prisma.contentIdea.findFirst({
       where: {
@@ -541,7 +541,7 @@ router.patch('/ideas/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete idea
-router.delete('/ideas/:id', authMiddleware, async (req, res) => {
+router.delete('/ideas/:id', authenticate, async (req, res) => {
   try {
     const idea = await prisma.contentIdea.findFirst({
       where: {
@@ -570,7 +570,7 @@ router.delete('/ideas/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Add brand asset
-router.post('/brand-assets', authMiddleware, async (req, res) => {
+router.post('/brand-assets', authenticate, async (req, res) => {
   try {
     const { assetType, name, value, category, tags } = req.body;
 
@@ -593,7 +593,7 @@ router.post('/brand-assets', authMiddleware, async (req, res) => {
 });
 
 // Get all brand assets
-router.get('/brand-assets', authMiddleware, async (req, res) => {
+router.get('/brand-assets', authenticate, async (req, res) => {
   try {
     const { assetType, category } = req.query;
 
@@ -617,7 +617,7 @@ router.get('/brand-assets', authMiddleware, async (req, res) => {
 });
 
 // Update brand asset
-router.patch('/brand-assets/:id', authMiddleware, async (req, res) => {
+router.patch('/brand-assets/:id', authenticate, async (req, res) => {
   try {
     const asset = await prisma.brandAsset.findFirst({
       where: {
@@ -650,7 +650,7 @@ router.patch('/brand-assets/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete brand asset
-router.delete('/brand-assets/:id', authMiddleware, async (req, res) => {
+router.delete('/brand-assets/:id', authenticate, async (req, res) => {
   try {
     const asset = await prisma.brandAsset.findFirst({
       where: {
@@ -679,7 +679,7 @@ router.delete('/brand-assets/:id', authMiddleware, async (req, res) => {
 // ============================================================================
 
 // Generate caption
-router.post('/generate-caption', authMiddleware, async (req, res) => {
+router.post('/generate-caption', authenticate, async (req, res) => {
   try {
     const {
       topic,
@@ -744,7 +744,7 @@ Return ONLY the 3 captions, numbered 1-3, with no additional explanation.`;
 });
 
 // Generate hashtags
-router.post('/generate-hashtags', authMiddleware, async (req, res) => {
+router.post('/generate-hashtags', authenticate, async (req, res) => {
   try {
     const { topic, platform, mix } = req.body;
 
@@ -792,7 +792,7 @@ Return ONLY the hashtags separated by spaces, with # symbol, no additional text 
 });
 
 // Generate content ideas
-router.post('/generate-ideas', authMiddleware, async (req, res) => {
+router.post('/generate-ideas', authenticate, async (req, res) => {
   try {
     const { niche, contentGoal, audience } = req.body;
 
@@ -856,7 +856,7 @@ Return ONLY the 10 ideas in this format, no additional text.`;
 // ============================================================================
 
 // Get content stats
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const [
       totalPosts,
@@ -951,4 +951,4 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
