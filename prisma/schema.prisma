@@ -56,6 +56,46 @@ enum TicketCategory {
   OTHER
 }
 
+enum PayoutMethod {
+  STRIPE
+  PAYPAL
+  BANK_TRANSFER
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum CommissionType {
+  SIGNUP_BONUS
+  RECURRING_MONTHLY
+  ANNUAL
+}
+
+enum ReferralStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  CHURNED
+}
+
+enum ReferralSource {
+  LINK
+  SOCIAL
+  EMAIL
+  OTHER
+}
+
 model User {
   id               String    @id @default(cuid())
   email            String    @unique
@@ -79,6 +119,11 @@ model User {
   supportTickets     SupportTicket[]     @relation("TicketUser")
   assignedTickets    SupportTicket[]     @relation("AssignedAdmin")
   ticketMessages     TicketMessage[]
+  affiliateProfile   AffiliateProfile?
+  referralsMade      Referral[]          @relation("AffiliateUser")
+  referralsReceived  Referral[]          @relation("ReferredUser")
+  commissions        AffiliateCommission[]
+  payouts            AffiliatePayout[]
 
   @@map("users")
 }
@@ -442,4 +487,111 @@ model CannedResponse {
   @@index([category])
   @@index([isActive])
   @@map("canned_responses")
+}
+
+model AffiliateProfile {
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  affiliateCode   String       @unique
+  isActive        Boolean      @default(true)
+  commissionRate  Decimal      @db.Decimal(5, 2)
+  totalEarnings   Decimal      @default(0) @db.Decimal(10, 2)
+  pendingEarnings Decimal      @default(0) @db.Decimal(10, 2)
+  paidEarnings    Decimal      @default(0) @db.Decimal(10, 2)
+  payoutMethod    PayoutMethod @default(STRIPE)
+  payoutEmail     String?
+  payoutDetails   Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateCode])
+  @@index([isActive])
+  @@map("affiliate_profiles")
+}
+
+model Referral {
+  id              String         @id @default(cuid())
+  affiliateUserId String
+  referredUserId  String
+  affiliateCode   String
+  referralSource  ReferralSource @default(LINK)
+  clickedAt       DateTime?
+  signedUpAt      DateTime       @default(now())
+  convertedAt     DateTime?
+  status          ReferralStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  affiliate       User                 @relation("AffiliateUser", fields: [affiliateUserId], references: [id], onDelete: Cascade)
+  referredUser    User                 @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+  commissions     AffiliateCommission[]
+
+  @@index([affiliateUserId])
+  @@index([referredUserId])
+  @@index([affiliateCode])
+  @@index([status])
+  @@map("referrals")
+}
+
+model AffiliateCommission {
+  id               String           @id @default(cuid())
+  affiliateUserId  String
+  referralId       String
+  amount           Decimal          @db.Decimal(10, 2)
+  commissionType   CommissionType   @default(RECURRING_MONTHLY)
+  status           CommissionStatus @default(PENDING)
+  paidAt           DateTime?
+  payoutId         String?
+  subscriptionMonth String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  affiliate        User             @relation(fields: [affiliateUserId], references: [id], onDelete: Cascade)
+  referral         Referral         @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  payout           AffiliatePayout? @relation(fields: [payoutId], references: [id])
+
+  @@index([affiliateUserId])
+  @@index([referralId])
+  @@index([status])
+  @@index([payoutId])
+  @@index([subscriptionMonth])
+  @@map("affiliate_commissions")
+}
+
+model AffiliatePayout {
+  id             String        @id @default(cuid())
+  affiliateUserId String
+  amount         Decimal       @db.Decimal(10, 2)
+  commissionIds  Json
+  method         PayoutMethod  @default(STRIPE)
+  status         PayoutStatus  @default(PENDING)
+  processedAt    DateTime?
+  completedAt    DateTime?
+  transactionId  String?
+  notes          String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  affiliate      User                  @relation(fields: [affiliateUserId], references: [id], onDelete: Cascade)
+  commissions    AffiliateCommission[]
+
+  @@index([affiliateUserId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("affiliate_payouts")
+}
+
+model AffiliateClick {
+  id            String   @id @default(cuid())
+  affiliateCode String
+  ipAddress     String?
+  userAgent     String?
+  referer       String?
+  clickedAt     DateTime @default(now())
+
+  @@index([affiliateCode])
+  @@index([clickedAt])
+  @@map("affiliate_clicks")
 }
