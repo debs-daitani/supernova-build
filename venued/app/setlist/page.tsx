@@ -97,16 +97,16 @@ export default function Setlist() {
   const addPhase = () => {
     const newPhase: Phase = {
       id: `phase-${Date.now()}`,
-      name: `Phase ${(project.phases?.length || 0) + 1}`,
+      name: `Phase ${(project.phases?.length ?? 0) + 1}`,
       description: '',
-      order: project.phases?.length || 0,
+      order: (project.phases?.length ?? 0),
       tasks: [],
-      color: ['#FF1B8D', '#9D4EDD', '#39FF14', '#00D9FF'][(project.phases?.length || 0) % 4],
+      color: ['#FF1B8D', '#9D4EDD', '#39FF14', '#00D9FF'][(project.phases?.length ?? 0) % 4],
     };
 
     setProject(prev => ({
       ...prev,
-      phases: [...(prev.phases || []), newPhase],
+      phases: [...(prev.phases ?? []), newPhase],
     }));
   };
 
@@ -145,7 +145,7 @@ export default function Setlist() {
         phaseId: activePhaseId,
         dependencies: [],
         completed: false,
-        order: project.phases?.find(p => p.id === activePhaseId)?.tasks.length || 0,
+        order: (project.phases?.find(p => p.id === activePhaseId)?.tasks.length ?? 0),
         createdAt: new Date().toISOString(),
       };
 
@@ -250,7 +250,7 @@ export default function Setlist() {
   };
 
   const randomizeTaskPriority = () => {
-    const allTasks = project.phases?.flatMap(p => p.tasks.filter(t => !t.completed)) || [];
+    const allTasks = (project.phases?.flatMap(p => p.tasks.filter(t => !t.completed)) ?? []);
     if (allTasks.length === 0) return;
 
     const randomTask = allTasks[Math.floor(Math.random() * allTasks.length)];
@@ -275,14 +275,14 @@ export default function Setlist() {
       return;
     }
 
-    if (!project.phases || project.phases.length === 0) {
+    if (!project.phases || project.phases?.length === 0) {
       alert('Please add at least one phase');
       return;
     }
 
     setIsSaving(true);
 
-    const allTasks = project.phases.flatMap(p => p.tasks);
+    const allTasks = (project.phases?.flatMap(p => p.tasks) ?? []);
     const completedTasks = allTasks.filter(t => t.completed).length;
 
     const fullProject = {
@@ -452,8 +452,8 @@ export default function Setlist() {
             {/* Reality Check Sidebar */}
             <div className="w-80 flex-shrink-0">
               <RealityCheck
-                phases={project.phases || []}
-                targetDate={project.targetDate || ''}
+                phases={project.phases ?? []}
+                targetDate={project.targetDate ?? ''}
               />
             </div>
           </div>
