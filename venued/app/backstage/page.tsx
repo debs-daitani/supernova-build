@@ -1,16 +1,82 @@
-import { Music, TrendingUp, Clock, Star } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Music, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { Project, ProjectStatus } from '@/lib/types';
+import { getProjects, calculateStats, initializeSampleData } from '@/lib/storage';
+import BackstageStats from '@/components/backstage/BackstageStats';
+import ProjectCard from '@/components/backstage/ProjectCard';
+import FilterTabs from '@/components/backstage/FilterTabs';
+import EmptyState from '@/components/backstage/EmptyState';
 
 export default function Backstage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeFilter, setActiveFilter] = useState<ProjectStatus | 'all'>('all');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initialize sample data if no projects exist
+    initializeSampleData();
+
+    // Load projects
+    const loadedProjects = getProjects();
+    setProjects(loadedProjects);
+    setIsLoading(false);
+  }, []);
+
+  const stats = calculateStats();
+
+  // Filter projects
+  const filteredProjects = projects.filter((project) => {
+    if (activeFilter === 'all') return true;
+    return project.status === activeFilter;
+  });
+
+  // Calculate filter counts
+  const filterCounts = {
+    all: projects.length,
+    planning: projects.filter((p) => p.status === 'planning').length,
+    live: projects.filter((p) => p.status === 'live').length,
+    complete: projects.filter((p) => p.status === 'complete').length,
+  };
+
+  const handleProjectClick = (projectId: string) => {
+    // For now, just log - will implement modal/navigation later
+    console.log('Project clicked:', projectId);
+    // TODO: Navigate to /setlist/:id or open modal
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-neon-pink border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading your shows...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black pt-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto py-12">
         {/* Header */}
         <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <Music className="w-10 h-10 text-neon-pink" />
-            <h1 className="text-5xl font-black text-white tracking-tight">
-              Backstage
-            </h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Music className="w-10 h-10 text-neon-pink" />
+              <h1 className="text-5xl font-black text-white tracking-tight">
+                Backstage
+              </h1>
+            </div>
+            <Link
+              href="/setlist"
+              className="group flex items-center gap-2 px-6 py-3 bg-neon-pink rounded-full text-black font-bold hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(255,27,141,0.4)] hover:shadow-[0_0_30px_rgba(255,27,141,0.6)]"
+            >
+              <Plus className="w-5 h-5" />
+              New Show
+            </Link>
           </div>
           <p className="text-xl text-gray-400 max-w-2xl">
             Your command center. See what's happening, what's next, and what needs your attention.
@@ -18,65 +84,32 @@ export default function Backstage() {
           <div className="h-1 w-32 bg-gradient-to-r from-neon-pink to-electric-purple mt-4" />
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {/* Stat Card 1 */}
-          <div className="p-6 rounded-xl border border-neon-pink/30 bg-gradient-to-br from-neon-pink/10 to-transparent">
-            <div className="flex items-center justify-between mb-4">
-              <Star className="w-8 h-8 text-neon-pink" />
-              <span className="text-3xl font-black text-white">0</span>
-            </div>
-            <p className="text-gray-400 font-medium">Active Projects</p>
-          </div>
+        {/* Stats */}
+        <BackstageStats stats={stats} />
 
-          {/* Stat Card 2 */}
-          <div className="p-6 rounded-xl border border-electric-purple/30 bg-gradient-to-br from-electric-purple/10 to-transparent">
-            <div className="flex items-center justify-between mb-4">
-              <TrendingUp className="w-8 h-8 text-electric-purple" />
-              <span className="text-3xl font-black text-white">0</span>
-            </div>
-            <p className="text-gray-400 font-medium">Tasks Completed</p>
-          </div>
-
-          {/* Stat Card 3 */}
-          <div className="p-6 rounded-xl border border-neon-green/30 bg-gradient-to-br from-neon-green/10 to-transparent">
-            <div className="flex items-center justify-between mb-4">
-              <Clock className="w-8 h-8 text-neon-green" />
-              <span className="text-3xl font-black text-white">0</span>
-            </div>
-            <p className="text-gray-400 font-medium">Hours Logged</p>
-          </div>
-
-          {/* Stat Card 4 */}
-          <div className="p-6 rounded-xl border border-white/30 bg-gradient-to-br from-white/10 to-transparent">
-            <div className="flex items-center justify-between mb-4">
-              <Music className="w-8 h-8 text-white" />
-              <span className="text-3xl font-black text-white">0</span>
-            </div>
-            <p className="text-gray-400 font-medium">Milestones Hit</p>
-          </div>
+        {/* Filter Tabs */}
+        <div className="mb-8">
+          <FilterTabs
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+            counts={filterCounts}
+          />
         </div>
 
-        {/* Placeholder Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="p-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
-            <h2 className="text-2xl font-bold text-white mb-4">Recent Activity</h2>
-            <div className="flex items-center justify-center h-48 text-gray-500">
-              <p className="text-center">
-                No activity yet.<br />Start your first project to see the magic happen.
-              </p>
-            </div>
+        {/* Projects Grid or Empty State */}
+        {filteredProjects.length === 0 ? (
+          <EmptyState filter={activeFilter} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onClick={() => handleProjectClick(project.id)}
+              />
+            ))}
           </div>
-
-          <div className="p-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
-            <h2 className="text-2xl font-bold text-white mb-4">Upcoming Deadlines</h2>
-            <div className="flex items-center justify-center h-48 text-gray-500">
-              <p className="text-center">
-                No deadlines set.<br />You're in control of your timeline.
-              </p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
