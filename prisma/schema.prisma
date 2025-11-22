@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model (simplified - can be extended with NextAuth later)
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  username      String?   @unique
+  passwordHash  String?
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  websites      Website[]
+  blocks        WebsiteBlock[]
+  formSubmissions FormSubmission[]
+
+  @@map("users")
+}
+
+// Website model
+model Website {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  domain          String    @unique  // subdomain or custom domain
+  subdomain       String    @unique  // username.daitaniverse.site
+  isPublished     Boolean   @default(false)
+
+  // Theme settings (stored as JSON)
+  theme           Json?     @default("{\"primaryColor\":\"#ec4899\",\"secondaryColor\":\"#8b5cf6\",\"accentColor\":\"#f59e0b\",\"fontFamily\":\"Inter\",\"fontHeadingFamily\":\"Montserrat\"}")
+
+  // Branding
+  favicon         String?
+  logo            String?
+
+  // SEO
+  seoTitle        String?
+  seoDescription  String?
+  seoKeywords     String?
+
+  // Analytics & Custom Code
+  analyticsCode   String?   @db.Text
+  customCSS       String?   @db.Text
+  customJS        String?   @db.Text
+  robotsTxt       String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  publishedAt     DateTime?
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pages           WebsitePage[]
+
+  @@index([userId])
+  @@index([domain])
+  @@index([subdomain])
+  @@map("websites")
+}
+
+// WebsitePage model
+model WebsitePage {
+  id              String    @id @default(cuid())
+  websiteId       String
+  title           String
+  slug            String
+  isHomepage      Boolean   @default(false)
+
+  // Page content (stored as JSON - array of blocks/sections)
+  content         Json      @default("[]")
+
+  // SEO
+  seoTitle        String?
+  seoDescription  String?
+  seoImage        String?
+
+  isPublished     Boolean   @default(false)
+  order           Int       @default(0)  // for navigation menu ordering
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  website         Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@unique([websiteId, slug])
+  @@index([websiteId])
+  @@index([slug])
+  @@map("website_pages")
+}
+
+// WebsiteBlock model (reusable blocks)
+model WebsiteBlock {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  category        String    // hero, features, testimonials, pricing, etc.
+
+  thumbnail       String?
+  preview         String?   @db.Text
+
+  // Block structure (stored as JSON)
+  content         Json
+
+  isPublic        Boolean   @default(false)  // shared blocks
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@map("website_blocks")
+}
+
+// WebsiteTemplate model
+model WebsiteTemplate {
+  id              String    @id @default(cuid())
+  name            String
+  category        String    // landing-page, portfolio, business, blog, etc.
+  description     String?   @db.Text
+
+  thumbnail       String?
+  preview         String?   @db.Text
+
+  // Template pages structure (stored as JSON)
+  pages           Json      // array of page structures
+
+  // Theme settings for template
+  theme           Json?
+
+  isPublic        Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@index([isFeatured])
+  @@map("website_templates")
+}
+
+// FormSubmission model
+model FormSubmission {
+  id              String    @id @default(cuid())
+  userId          String    // website owner
+  websiteId       String
+  pageId          String?
+  formName        String    // contact-form, newsletter, etc.
+
+  // Form data (stored as JSON)
+  data            Json
+
+  // Common fields (extracted for easy filtering)
+  name            String?
+  email           String?
+  phone           String?
+  message         String?   @db.Text
+
+  isRead          Boolean   @default(false)
+  ipAddress       String?
+  userAgent       String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([websiteId])
+  @@index([formName])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("form_submissions")
+}
