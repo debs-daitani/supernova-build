@@ -57,11 +57,34 @@ export interface CrewTask extends Task {
   completedAt?: string;
 }
 
+export type CrewRole = 'roadie' | 'sound_engineer' | 'stage_manager' | 'lighting_tech' | 'tour_manager';
+
 export interface CrewStats {
   todayCompleted: number;
   todayTotal: number;
   focusMinutes: number;
   currentEnergy: EnergyLevel;
+  totalPoints: number;
+  level: number;
+  tasksCompleted: number;
+  currentStreak: number;
+  longestStreak: number;
+  tasksByRole: Record<CrewRole, number>;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+  points: number;
+  requirement: {
+    type: 'tasks' | 'streak' | 'points' | 'level' | 'role_tasks';
+    value: number;
+    role?: CrewRole;
+  };
 }
 
 export interface DayWorkload {

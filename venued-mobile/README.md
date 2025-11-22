@@ -24,7 +24,7 @@ Your command center. View all projects at a glance, track progress, filter by st
 Project builder with drag-and-drop phases. Build your project like a setlist with templates, energy matching, and ADHD reality checks.
 
 ### 👥 THE CREW
-Daily task manager with energy matching, focus timer, date filtering, and confetti celebrations for completed tasks.
+Daily task manager with gamification system, crew roles, achievements, points, levels, energy matching, and confetti celebrations for task completion. Complete tasks to earn points, unlock achievements, and level up!
 
 ### 📅 THE TOUR
 Strategic timeline view with week navigation, workload analysis, ADHD time blindness compensation (1.8x multiplier), and burnout prevention.
@@ -44,8 +44,47 @@ ADHD support tools including:
 - **Language**: TypeScript
 - **Navigation**: React Navigation (Stack + Bottom Tabs)
 - **Storage**: AsyncStorage (offline-first)
-- **Styling**: React Native StyleSheet with gradients
+- **Animations**: React Native Reanimated + Confetti celebrations
+- **Gestures**: React Native Gesture Handler + Drag-drop
+- **Haptics**: Expo Haptics for tactile feedback
+- **Styling**: React Native StyleSheet with Linear Gradients
 - **Icons**: Emoji (for universal compatibility)
+
+## Gamification System
+
+VENUED includes a complete gamification system to keep you motivated:
+
+### 🎯 Points & Levels
+- Earn **10 points** for each completed task
+- **+5 points** for Quick Wins
+- **+20 points** for Hyperfocus tasks
+- **Difficulty bonuses**: Easy (0), Medium (+5), Hard (+10)
+- Level up from 1 to 10 based on total points
+
+### 🏆 Achievements
+8 unlockable achievements including:
+- 🎸 **First Gig** - Complete your first task
+- 🎤 **Opening Act** - Complete 10 tasks
+- ⭐ **Headliner** - Complete 50 tasks
+- 🔥 **Week of Shows** - Maintain a 7-day streak
+- 🏆 **Tour Veteran** - Reach level 5
+- 💎 **Sold Out Show** - Earn 1000 total points
+
+### 👥 Crew Roles
+Tasks are automatically assigned to crew roles:
+- 🔧 **Roadie** - Setup and logistics
+- 🎚️ **Sound Engineer** - Technical and system tasks
+- 📋 **Stage Manager** - Coordination and organization
+- 💡 **Lighting Tech** - Creative and design tasks
+- 🎤 **Tour Manager** - Planning and strategy
+
+## Demo Data
+
+Load demo project: **"Launch The dAItaniverse"**
+- 4 phases: Planning, Development, Launch Prep, Launch & Scale
+- 12 tasks across all phases
+- 5 tasks already completed
+- Sample crew roles, points, and achievements
 
 ## Getting Started
 

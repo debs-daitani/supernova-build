@@ -49,6 +49,8 @@ const CrewScreen: React.FC = () => {
     return true; // week shows all
   });
 
+  const completedTasks = tasks.filter(t => t.completed);
+
   const stats: CrewStats = {
     todayCompleted: tasks.filter(t =>
       t.completed && t.scheduledDate === new Date().toISOString().split('T')[0]
@@ -58,6 +60,18 @@ const CrewScreen: React.FC = () => {
     ).length,
     focusMinutes: tasks.reduce((sum, t) => sum + t.timeSpent, 0),
     currentEnergy: 'medium',
+    totalPoints: completedTasks.length * 10,
+    level: Math.min(10, Math.floor(completedTasks.length / 5) + 1),
+    tasksCompleted: completedTasks.length,
+    currentStreak: 0,
+    longestStreak: 0,
+    tasksByRole: {
+      roadie: 0,
+      sound_engineer: 0,
+      stage_manager: 0,
+      lighting_tech: 0,
+      tour_manager: 0,
+    },
   };
 
   return (
