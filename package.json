@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "format": "prettier --write \"src/**/*.{js,ts,tsx,json,md}\""
+    "format": "prettier --write \"src/**/*.{js,ts,tsx,json,md}\"",
+    "diagnose": "node scripts/diagnose.js"
   },
   "keywords": [
     "ai",
