@@ -51,6 +51,7 @@ model User {
   designs         UserDesign[]
   designAssets    DesignAsset[]
   brandKit        BrandKit?
+  aiImages        AIImage[]
 
   @@map("users")
 }
@@ -350,21 +351,104 @@ model DesignAsset {
 model BrandKit {
   id          String   @id @default(cuid())
   userId      String   @unique
-  
+
   // Brand colors (array of hex colors)
   colors      String[] @default([])
-  
+
   // Brand fonts
   primaryFont   String?  @default("Inter")
   secondaryFont String?  @default("Montserrat")
-  
+
   // Logo
   logoUrl     String?
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("brand_kits")
+}
+
+// ========================================
+// AI IMAGE GENERATION MODELS
+// ========================================
+
+// AIImage model (AI-generated images)
+model AIImage {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Prompts
+  prompt          String   @db.Text
+  negativePrompt  String?  @db.Text
+
+  // Model and settings
+  model           String   // DALLE3, DALLE2, MIDJOURNEY, STABLE_DIFFUSION
+  style           String?  // REALISTIC, ARTISTIC, ANIME, DIGITAL_ART, PHOTOGRAPHIC, etc.
+  size            String   // 1024x1024, 1024x1792, 1792x1024, etc.
+
+  // Advanced settings
+  steps           Int?     // For Stable Diffusion (20-50)
+  cfgScale        Float?   // For Stable Diffusion (7-15)
+  seed            String?  // For reproducibility
+
+  // Results
+  imageUrl        String?
+  thumbnailUrl    String?
+
+  // Status
+  status          String   @default("GENERATING") // GENERATING, COMPLETED, FAILED
+  errorMessage    String?  @db.Text
+
+  // Metadata
+  isPublic        Boolean  @default(false)
+  usedInDesign    Boolean  @default(false)
+  downloadCount   Int      @default(0)
+
+  generatedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([model])
+  @@index([style])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("ai_images")
+}
+
+// AIImageStyle model (style presets)
+model AIImageStyle {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?  @db.Text
+
+  // Visual
+  thumbnailUrl    String?
+  category        String   // realistic, artistic, digital, 3d, etc.
+
+  // Prompt modifiers
+  promptModifier  String   @db.Text  // Text to append to user prompts
+  negativePrompt  String?  @db.Text  // Default negative prompt
+
+  // Model preferences
+  model           String   // DALLE3, DALLE2, STABLE_DIFFUSION, etc.
+  settings        Json?    // Additional settings as JSON
+
+  // Metadata
+  isPublic        Boolean  @default(true)
+  isPremium       Boolean  @default(false)  // Requires BADASS tier
+  usageCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@index([isPremium])
+  @@map("ai_image_styles")
 }
