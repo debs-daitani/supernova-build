@@ -14,18 +14,72 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
+  emailVerified Boolean   @default(false)
   name          String?
+  firstName     String?
+  lastName      String?
   username      String?   @unique
   passwordHash  String?
+
+  // Profile fields
+  profilePhotoUrl String?
+  bio             String?   @db.Text
+  pronouns        String?
+
+  // Social links
+  twitterHandle   String?
+  linkedinUrl     String?
+  instagramHandle String?
+  websiteUrl      String?
+
+  // Preferences
+  timezone        String?   @default("UTC")
+  theme           String?   @default("SYSTEM") // LIGHT, DARK, SYSTEM
+  language        String?   @default("en")
+
+  // Legacy field (for backwards compatibility)
   avatar        String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
 
-  websites      Website[]
-  blocks        WebsiteBlock[]
+  websites        Website[]
+  blocks          WebsiteBlock[]
   formSubmissions FormSubmission[]
+  preferences     UserPreferences?
 
   @@map("users")
+}
+
+// User Preferences model
+model UserPreferences {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+
+  // Email preferences
+  emailMarketing Boolean @default(true)
+  emailUpdates   Boolean @default(true)
+  emailDigest    Boolean @default(true)
+  emailSupport   Boolean @default(true)
+
+  // Notification preferences
+  notifBrowser   Boolean @default(false)
+  notifEmail     Boolean @default(true)
+  notifInApp     Boolean @default(true)
+
+  // Per-feature notifications
+  notifTickets   Boolean @default(true)
+  notifCampaigns Boolean @default(true)
+  notifSocial    Boolean @default(true)
+  notifWebsites  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }
 
 // Website model
