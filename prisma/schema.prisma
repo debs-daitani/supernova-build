@@ -54,6 +54,12 @@ model User {
   aiImages        AIImage[]
   videos          Video[]
   videoClips      VideoClip[]
+  forumThreads    ForumThread[]
+  forumPosts      ForumPost[]
+  forumReactions  ForumReaction[]
+  reputation      UserReputation?
+  forumSubscriptions ForumSubscription[]
+  forumReports    ForumReport[]
 
   @@map("users")
 }
@@ -702,4 +708,172 @@ model UserActivity {
   @@index([userId])
   @@index([date])
   @@map("user_activities")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// COMMUNITY & FORUM SYSTEM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ForumCategory model
+model ForumCategory {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  icon            String?  // Icon name from lucide-react
+  color           String?  // Hex color for category
+  order           Int      @default(0)
+  isLocked        Boolean  @default(false) // Prevent new threads
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  threads         ForumThread[]
+  subscriptions   ForumSubscription[]
+  
+  @@index([slug])
+  @@index([order])
+  @@map("forum_categories")
+}
+
+// ForumThread model
+model ForumThread {
+  id              String   @id @default(cuid())
+  categoryId      String
+  userId          String
+  title           String
+  slug            String   @unique
+  isPinned        Boolean  @default(false)
+  isLocked        Boolean  @default(false)
+  isFeatured      Boolean  @default(false)
+  viewCount       Int      @default(0)
+  replyCount      Int      @default(0)
+  lastActivityAt  DateTime @default(now())
+  lastReplyUserId String?
+  tags            String[] @default([])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  category        ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts           ForumPost[]
+  subscriptions   ForumSubscription[]
+  
+  @@index([categoryId])
+  @@index([userId])
+  @@index([slug])
+  @@index([isPinned])
+  @@index([isFeatured])
+  @@index([lastActivityAt])
+  @@map("forum_threads")
+}
+
+// ForumPost model
+model ForumPost {
+  id              String   @id @default(cuid())
+  threadId        String
+  userId          String
+  content         String   @db.Text // Rich text content
+  isFirstPost     Boolean  @default(false) // Thread starter post
+  editedAt        DateTime?
+  editedByUserId  String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  thread          ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions       ForumReaction[]
+  reports         ForumReport[]
+  
+  @@index([threadId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("forum_posts")
+}
+
+// ForumReaction model
+model ForumReaction {
+  id              String   @id @default(cuid())
+  postId          String
+  userId          String
+  reactionType    String   // HELPFUL, LOVE, CELEBRATE, SPARK, ROCKSTAR
+  
+  createdAt       DateTime @default(now())
+  
+  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId, reactionType])
+  @@index([postId])
+  @@index([userId])
+  @@map("forum_reactions")
+}
+
+// UserReputation model
+model UserReputation {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  points          Int      @default(0)
+  level           String   @default("NEWBIE") // NEWBIE, CONTRIBUTOR, EXPERT, ROCKSTAR
+  postsCount      Int      @default(0)
+  threadsCount    Int      @default(0)
+  helpfulCount    Int      @default(0) // Times received "helpful" reaction
+  badges          String[] @default([]) // Array of badge IDs
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([points])
+  @@index([level])
+  @@map("user_reputation")
+}
+
+// ForumSubscription model
+model ForumSubscription {
+  id              String   @id @default(cuid())
+  userId          String
+  threadId        String?
+  categoryId      String?
+  subscriptionType String  // THREAD or CATEGORY
+  
+  createdAt       DateTime @default(now())
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread          ForumThread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  category        ForumCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, threadId])
+  @@unique([userId, categoryId])
+  @@index([userId])
+  @@index([threadId])
+  @@index([categoryId])
+  @@map("forum_subscriptions")
+}
+
+// ForumReport model
+model ForumReport {
+  id              String   @id @default(cuid())
+  postId          String
+  reportedByUserId String
+  reason          String   // SPAM, INAPPROPRIATE, OFF_TOPIC, HARASSMENT
+  details         String?  @db.Text
+  status          String   @default("PENDING") // PENDING, REVIEWED, ACTIONED, DISMISSED
+  reviewedByAdminId String?
+  reviewedAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reportedBy      User @relation(fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  
+  @@index([postId])
+  @@index([reportedByUserId])
+  @@index([status])
+  @@map("forum_reports")
 }
