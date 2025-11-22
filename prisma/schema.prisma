@@ -124,6 +124,9 @@ model User {
   referralsReceived  Referral[]          @relation("ReferredUser")
   commissions        AffiliateCommission[]
   payouts            AffiliatePayout[]
+  emailSubscribers   EmailSubscriber[]
+  emailCampaigns     EmailCampaign[]
+  emailTemplates     EmailTemplate[]
 
   @@map("users")
 }
@@ -594,4 +597,138 @@ model AffiliateClick {
   @@index([affiliateCode])
   @@index([clickedAt])
   @@map("affiliate_clicks")
+}
+
+// Email Marketing System
+
+enum EmailSubscriberStatus {
+  SUBSCRIBED
+  UNSUBSCRIBED
+  BOUNCED
+  COMPLAINED
+}
+
+enum EmailSubscriberSource {
+  MANUAL
+  IMPORT
+  FORM
+  API
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum EmailRecipientStatus {
+  PENDING
+  SENT
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+}
+
+model EmailSubscriber {
+  id             String                 @id @default(cuid())
+  userId         String
+  email          String
+  firstName      String?
+  lastName       String?
+  status         EmailSubscriberStatus  @default(SUBSCRIBED)
+  source         EmailSubscriberSource  @default(MANUAL)
+  subscribedAt   DateTime               @default(now())
+  unsubscribedAt DateTime?
+  tags           String[]
+  customFields   Json?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns      EmailCampaignRecipient[]
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@map("email_subscribers")
+}
+
+model EmailCampaign {
+  id              String              @id @default(cuid())
+  userId          String
+  name            String
+  subject         String
+  previewText     String?
+  htmlContent     String              @db.Text
+  textContent     String?             @db.Text
+  fromName        String
+  fromEmail       String
+  replyTo         String?
+  status          EmailCampaignStatus @default(DRAFT)
+  scheduledFor    DateTime?
+  sentAt          DateTime?
+  completedAt     DateTime?
+  totalRecipients Int                 @default(0)
+  sentCount       Int                 @default(0)
+  openedCount     Int                 @default(0)
+  clickedCount    Int                 @default(0)
+  bouncedCount    Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipients      EmailCampaignRecipient[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("email_campaigns")
+}
+
+model EmailCampaignRecipient {
+  id           String               @id @default(cuid())
+  campaignId   String
+  subscriberId String
+  status       EmailRecipientStatus @default(PENDING)
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  openCount    Int                  @default(0)
+  clickCount   Int                  @default(0)
+  userAgent    String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  campaign     EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  subscriber   EmailSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, subscriberId])
+  @@index([campaignId])
+  @@index([subscriberId])
+  @@index([status])
+  @@map("email_campaign_recipients")
+}
+
+model EmailTemplate {
+  id           String   @id @default(cuid())
+  userId       String?
+  name         String
+  category     String
+  thumbnailUrl String?
+  htmlContent  String   @db.Text
+  textContent  String?  @db.Text
+  isPublic     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@map("email_templates")
 }
