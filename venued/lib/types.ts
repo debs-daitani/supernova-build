@@ -74,3 +74,28 @@ export interface ProjectTemplate {
   phases: Omit<Phase, 'tasks'>[];
   suggestedTasks: Omit<Task, 'id' | 'phaseId' | 'createdAt' | 'order'>[];
 }
+
+// Crew (Task Manager) Types
+export type CrewView = 'list' | 'energy' | 'timeline';
+export type DateFilter = 'today' | 'tomorrow' | 'week';
+
+export interface FocusSession {
+  taskId: string;
+  startTime: string;
+  duration: number; // minutes
+  completed: boolean;
+}
+
+export interface CrewTask extends Task {
+  scheduledDate?: string;
+  scheduledTime?: string; // HH:MM format
+  timeSpent: number; // minutes
+  completedAt?: string;
+}
+
+export interface CrewStats {
+  todayCompleted: number;
+  todayTotal: number;
+  focusMinutes: number;
+  currentEnergy: EnergyLevel;
+}
