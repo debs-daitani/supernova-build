@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music, Users, ListChecks, Calendar, Sparkles } from 'lucide-react';
+import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X } from 'lucide-react';
 
 const navItems = [
   { name: 'Backstage', href: '/backstage', icon: Music },
@@ -10,10 +11,12 @@ const navItems = [
   { name: 'Crew', href: '/crew', icon: Users },
   { name: 'Tour', href: '/tour', icon: Calendar },
   { name: 'Entourage', href: '/entourage', icon: Sparkles },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-neon-pink/20">
@@ -27,7 +30,7 @@ export default function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -62,41 +65,49 @@ export default function Navigation() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button className="text-white hover:text-neon-pink transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white hover:text-neon-pink transition-colors p-2"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation - could be expanded later */}
-      <div className="md:hidden hidden">
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
+      {/* Mobile Navigation */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-white/10 bg-black/95 backdrop-blur-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition-colors
-                  ${isActive
-                    ? 'text-neon-pink bg-neon-pink/10'
-                    : 'text-white hover:text-neon-pink hover:bg-neon-pink/5'
-                  }
-                `}
-              >
-                <Icon className="w-5 h-5" />
-                {item.name}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg text-base font-semibold transition-all
+                    ${isActive
+                      ? 'text-neon-pink bg-neon-pink/10 border-2 border-neon-pink/30'
+                      : 'text-white hover:text-neon-pink hover:bg-neon-pink/5 border-2 border-transparent'
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
