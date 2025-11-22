@@ -12,7 +12,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Planning & Strategy',
         description: 'Define goals, audience, and strategy',
         order: 0,
-        tasks: [],
         color: '#FF1B8D',
       },
       {
@@ -20,7 +19,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Build & Create',
         description: 'Develop product and marketing materials',
         order: 1,
-        tasks: [],
         color: '#9D4EDD',
       },
       {
@@ -28,7 +26,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Launch Day',
         description: 'Execute launch and monitor',
         order: 2,
-        tasks: [],
         color: '#39FF14',
       },
       {
@@ -36,7 +33,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Post-Launch',
         description: 'Analyze results and iterate',
         order: 3,
-        tasks: [],
         color: '#00D9FF',
       },
     ],
@@ -59,7 +55,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Research & Planning',
         description: 'Topic research and content calendar',
         order: 0,
-        tasks: [],
         color: '#FF1B8D',
       },
       {
@@ -67,7 +62,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Content Creation',
         description: 'Write, design, and produce content',
         order: 1,
-        tasks: [],
         color: '#9D4EDD',
       },
       {
@@ -75,7 +69,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Publishing',
         description: 'Schedule and distribute content',
         order: 2,
-        tasks: [],
         color: '#39FF14',
       },
       {
@@ -83,7 +76,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Promotion',
         description: 'Amplify and engage',
         order: 3,
-        tasks: [],
         color: '#00D9FF',
       },
     ],
@@ -106,7 +98,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Discovery',
         description: 'Research and requirements',
         order: 0,
-        tasks: [],
         color: '#FF1B8D',
       },
       {
@@ -114,7 +105,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Design',
         description: 'UI/UX and visual design',
         order: 1,
-        tasks: [],
         color: '#9D4EDD',
       },
       {
@@ -122,7 +112,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Development',
         description: 'Build and integrate',
         order: 2,
-        tasks: [],
         color: '#39FF14',
       },
       {
@@ -130,7 +119,6 @@ export const templates: ProjectTemplate[] = [
         name: 'Launch',
         description: 'Test, deploy, and monitor',
         order: 3,
-        tasks: [],
         color: '#00D9FF',
       },
     ],
