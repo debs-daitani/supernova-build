@@ -1,119 +1,229 @@
-import { Sparkles, Brain, Zap, Target, Clock, Heart } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Clock, Brain, Zap, Compass, PenLine, Gift, Users, BarChart3 } from 'lucide-react';
+import TimeBlindnessTracker from '@/components/entourage/TimeBlindnessTracker';
+import HyperfocusLogger from '@/components/entourage/HyperfocusLogger';
+import EnergyTracker from '@/components/entourage/EnergyTracker';
+import ExecutiveFunctionHelper from '@/components/entourage/ExecutiveFunctionHelper';
+import BrainDumpSpace from '@/components/entourage/BrainDumpSpace';
+import DopamineMenu from '@/components/entourage/DopamineMenu';
+import BodyDoublingSimulator from '@/components/entourage/BodyDoublingSimulator';
+import PatternInsightsDashboard from '@/components/entourage/PatternInsightsDashboard';
+import { generateSampleADHDData } from '@/lib/adhd';
+
+type Tool =
+  | 'time'
+  | 'hyperfocus'
+  | 'energy'
+  | 'executive'
+  | 'brain'
+  | 'dopamine'
+  | 'body'
+  | 'insights';
 
 export default function Entourage() {
+  const [activeTool, setActiveTool] = useState<Tool>('insights');
+
+  useEffect(() => {
+    // Initialize sample data on first visit
+    generateSampleADHDData();
+  }, []);
+
+  const tools = [
+    {
+      id: 'insights' as Tool,
+      name: 'Pattern Insights',
+      icon: BarChart3,
+      color: 'from-electric-purple/20 to-neon-pink/20',
+      borderColor: 'border-electric-purple/30',
+      iconColor: 'text-electric-purple',
+      description: 'See your patterns and get personalized insights',
+    },
+    {
+      id: 'time' as Tool,
+      name: 'Time Blindness',
+      icon: Clock,
+      color: 'from-neon-pink/20 to-electric-purple/20',
+      borderColor: 'border-neon-pink/30',
+      iconColor: 'text-neon-pink',
+      description: 'Track estimates vs reality',
+    },
+    {
+      id: 'hyperfocus' as Tool,
+      name: 'Hyperfocus',
+      icon: Brain,
+      color: 'from-blue-500/20 to-electric-purple/20',
+      borderColor: 'border-blue-500/30',
+      iconColor: 'text-blue-400',
+      description: 'Log your flow states',
+    },
+    {
+      id: 'energy' as Tool,
+      name: 'Energy',
+      icon: Zap,
+      color: 'from-yellow-400/20 to-electric-purple/20',
+      borderColor: 'border-yellow-400/30',
+      iconColor: 'text-yellow-400',
+      description: 'Track energy patterns',
+    },
+    {
+      id: 'executive' as Tool,
+      name: 'Executive Function',
+      icon: Compass,
+      color: 'from-neon-green/20 to-electric-purple/20',
+      borderColor: 'border-neon-green/30',
+      iconColor: 'text-neon-green',
+      description: 'Break through paralysis',
+    },
+    {
+      id: 'brain' as Tool,
+      name: 'Brain Dump',
+      icon: PenLine,
+      color: 'from-electric-purple/20 to-neon-pink/20',
+      borderColor: 'border-electric-purple/30',
+      iconColor: 'text-electric-purple',
+      description: 'Capture everything',
+    },
+    {
+      id: 'dopamine' as Tool,
+      name: 'Dopamine Menu',
+      icon: Gift,
+      color: 'from-yellow-500/20 to-neon-pink/20',
+      borderColor: 'border-yellow-500/30',
+      iconColor: 'text-yellow-400',
+      description: 'Reward yourself',
+    },
+    {
+      id: 'body' as Tool,
+      name: 'Body Doubling',
+      icon: Users,
+      color: 'from-blue-500/20 to-electric-purple/20',
+      borderColor: 'border-blue-500/30',
+      iconColor: 'text-blue-400',
+      description: 'Work alongside someone',
+    },
+  ];
+
+  const renderTool = () => {
+    switch (activeTool) {
+      case 'time':
+        return <TimeBlindnessTracker />;
+      case 'hyperfocus':
+        return <HyperfocusLogger />;
+      case 'energy':
+        return <EnergyTracker />;
+      case 'executive':
+        return <ExecutiveFunctionHelper />;
+      case 'brain':
+        return <BrainDumpSpace />;
+      case 'dopamine':
+        return <DopamineMenu />;
+      case 'body':
+        return <BodyDoublingSimulator />;
+      case 'insights':
+        return <PatternInsightsDashboard />;
+      default:
+        return <PatternInsightsDashboard />;
+    }
+  };
+
+  const activeToolConfig = tools.find(t => t.id === activeTool)!;
+
   return (
     <div className="min-h-screen bg-black pt-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto py-12">
+      <div className="max-w-7xl mx-auto py-8">
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <Sparkles className="w-10 h-10 text-electric-purple" />
-            <h1 className="text-5xl font-black text-white tracking-tight">
-              Entourage
-            </h1>
-          </div>
-          <p className="text-xl text-gray-400 max-w-2xl">
-            Your ADHD support crew. Tools and strategies designed for neurodivergent brains who build amazing things.
+        <div className="text-center mb-12">
+          <h1 className="text-6xl font-black text-white mb-4">
+            THE ENTOURAGE
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Your support crew. ADHD-specific tools for time blindness, hyperfocus tracking,
+            energy management, and brain dumps.
           </p>
-          <div className="h-1 w-32 bg-gradient-to-r from-electric-purple to-neon-pink mt-4" />
         </div>
 
-        {/* Support Tools Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Tool 1 - Focus Mode */}
-          <div className="group p-8 rounded-2xl border border-neon-pink/30 bg-gradient-to-br from-neon-pink/10 to-transparent hover:border-neon-pink hover:shadow-[0_0_30px_rgba(255,27,141,0.3)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-neon-pink/20 flex items-center justify-center mb-6 group-hover:bg-neon-pink/30 transition-colors">
-              <Target className="w-7 h-7 text-neon-pink" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Focus Mode</h3>
-            <p className="text-gray-400 mb-4">
-              Block distractions and zero in on one task. Because multitasking is a lie.
-            </p>
-            <button className="text-neon-pink font-semibold hover:text-white transition-colors">
-              Activate →
-            </button>
+        {/* Tool Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {tools.map(tool => {
+            const Icon = tool.icon;
+            const isActive = activeTool === tool.id;
+            return (
+              <button
+                key={tool.id}
+                onClick={() => setActiveTool(tool.id)}
+                className={`p-6 rounded-xl border-2 transition-all text-left ${
+                  isActive
+                    ? `bg-gradient-to-br ${tool.color} ${tool.borderColor} shadow-lg`
+                    : 'bg-white/5 border-white/10 hover:border-white/20'
+                }`}
+              >
+                <Icon className={`w-8 h-8 mb-3 ${isActive ? tool.iconColor : 'text-gray-400'}`} />
+                <h3 className={`text-sm font-bold mb-1 ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                  {tool.name}
+                </h3>
+                <p className={`text-xs ${isActive ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {tool.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Tool Panel */}
+        <div className={`rounded-2xl border-2 ${activeToolConfig.borderColor} bg-gradient-to-br ${activeToolConfig.color} p-8`}>
+          <div className="flex items-center gap-3 mb-6">
+            {(() => {
+              const Icon = activeToolConfig.icon;
+              return <Icon className={`w-8 h-8 ${activeToolConfig.iconColor}`} />;
+            })()}
+            <h2 className="text-3xl font-black text-white">{activeToolConfig.name}</h2>
           </div>
 
-          {/* Tool 2 - Break Timer */}
-          <div className="group p-8 rounded-2xl border border-electric-purple/30 bg-gradient-to-br from-electric-purple/10 to-transparent hover:border-electric-purple hover:shadow-[0_0_30px_rgba(157,78,221,0.3)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-electric-purple/20 flex items-center justify-center mb-6 group-hover:bg-electric-purple/30 transition-colors">
-              <Clock className="w-7 h-7 text-electric-purple" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Break Timer</h3>
-            <p className="text-gray-400 mb-4">
-              Pomodoro for rockstars. Work in sprints. Rest between sets. Avoid burnout.
-            </p>
-            <button className="text-electric-purple font-semibold hover:text-white transition-colors">
-              Start Timer →
-            </button>
-          </div>
-
-          {/* Tool 3 - Energy Tracker */}
-          <div className="group p-8 rounded-2xl border border-neon-green/30 bg-gradient-to-br from-neon-green/10 to-transparent hover:border-neon-green hover:shadow-[0_0_30px_rgba(57,255,20,0.3)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-neon-green/20 flex items-center justify-center mb-6 group-hover:bg-neon-green/30 transition-colors">
-              <Zap className="w-7 h-7 text-neon-green" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Energy Tracker</h3>
-            <p className="text-gray-400 mb-4">
-              Match tasks to your energy levels. Do heavy lifting when you're charged up.
-            </p>
-            <button className="text-neon-green font-semibold hover:text-white transition-colors">
-              Log Energy →
-            </button>
-          </div>
-
-          {/* Tool 4 - Brain Dump */}
-          <div className="group p-8 rounded-2xl border border-white/20 bg-gradient-to-br from-white/5 to-transparent hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-6 group-hover:bg-white/20 transition-colors">
-              <Brain className="w-7 h-7 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Brain Dump</h3>
-            <p className="text-gray-400 mb-4">
-              Get those racing thoughts out of your head. Clear mental space to focus.
-            </p>
-            <button className="text-white font-semibold hover:text-neon-pink transition-colors">
-              Start Dumping →
-            </button>
-          </div>
-
-          {/* Tool 5 - Win Log */}
-          <div className="group p-8 rounded-2xl border border-neon-pink/20 bg-gradient-to-br from-neon-pink/5 to-transparent hover:border-neon-pink/40 hover:shadow-[0_0_30px_rgba(255,27,141,0.2)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-neon-pink/10 flex items-center justify-center mb-6 group-hover:bg-neon-pink/20 transition-colors">
-              <Heart className="w-7 h-7 text-neon-pink" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Win Log</h3>
-            <p className="text-gray-400 mb-4">
-              Celebrate every victory, no matter how small. Progress is progress.
-            </p>
-            <button className="text-neon-pink font-semibold hover:text-white transition-colors">
-              Add Win →
-            </button>
-          </div>
-
-          {/* Tool 6 - Accountability */}
-          <div className="group p-8 rounded-2xl border border-electric-purple/20 bg-gradient-to-br from-electric-purple/5 to-transparent hover:border-electric-purple/40 hover:shadow-[0_0_30px_rgba(157,78,221,0.2)] transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-electric-purple/10 flex items-center justify-center mb-6 group-hover:bg-electric-purple/20 transition-colors">
-              <Sparkles className="w-7 h-7 text-electric-purple" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Accountability</h3>
-            <p className="text-gray-400 mb-4">
-              Share your goals. Get support. Stay on track with your crew.
-            </p>
-            <button className="text-electric-purple font-semibold hover:text-white transition-colors">
-              Set Up →
-            </button>
+          {/* Tool Content */}
+          <div className="bg-black/30 rounded-xl p-6 backdrop-blur-sm">
+            {renderTool()}
           </div>
         </div>
 
-        {/* Bottom Message */}
-        <div className="p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-neon-pink/10 via-electric-purple/10 to-neon-green/10 backdrop-blur-sm text-center">
-          <Sparkles className="w-10 h-10 text-electric-purple mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-white mb-2">
-            Built for Your Brain
-          </h3>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            These tools aren't just features—they're your backstage crew. They understand ADHD because they were built with it in mind. Use what works. Skip what doesn't. This is your show.
-          </p>
+        {/* Footer Info */}
+        <div className="mt-12 p-6 rounded-xl bg-white/5 border-2 border-white/10">
+          <h3 className="text-lg font-bold text-white mb-3">🎯 How to Use the Entourage</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+            <div>
+              <h4 className="font-semibold text-neon-pink mb-2">Track Your Patterns</h4>
+              <ul className="space-y-1 text-gray-400">
+                <li>• Log time estimates vs actual to find your multiplier</li>
+                <li>• Track energy throughout the day to find peak times</li>
+                <li>• Record hyperfocus sessions to identify triggers</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-electric-purple mb-2">Get Unstuck</h4>
+              <ul className="space-y-1 text-gray-400">
+                <li>• Use Executive Function tools when paralyzed</li>
+                <li>• Brain dump to clear your head</li>
+                <li>• Body double when you need company</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-neon-green mb-2">Stay Motivated</h4>
+              <ul className="space-y-1 text-gray-400">
+                <li>• Build your dopamine menu for rewards</li>
+                <li>• Celebrate wins (no matter how small)</li>
+                <li>• Use insights to work with your brain, not against it</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-yellow-400 mb-2">Learn & Optimize</h4>
+              <ul className="space-y-1 text-gray-400">
+                <li>• Check Pattern Insights for personalized recommendations</li>
+                <li>• Adjust your schedule based on energy patterns</li>
+                <li>• Use your reality multiplier for better planning</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -120,3 +120,81 @@ export interface TimelineProject extends Project {
   color: string;
   tasksCount: number;
 }
+
+// Entourage (ADHD Support Tools) Types
+export interface TimeTrackingEntry {
+  id: string;
+  taskId?: string;
+  taskName: string;
+  taskType: string;
+  estimatedMinutes: number;
+  actualMinutes: number;
+  date: string;
+  energyLevel: EnergyLevel;
+}
+
+export interface HyperfocusSession {
+  id: string;
+  startTime: string;
+  endTime: string;
+  duration: number; // minutes
+  trigger: string;
+  taskType: string;
+  taskName: string;
+  productivityRating: number; // 1-5
+  notes?: string;
+}
+
+export interface EnergyLog {
+  id: string;
+  timestamp: string;
+  level: EnergyLevel;
+  notes?: string;
+}
+
+export interface BrainDump {
+  id: string;
+  content: string;
+  timestamp: string;
+  converted: boolean;
+  convertedToTaskId?: string;
+  archived: boolean;
+  tags?: string[];
+}
+
+export interface DopamineReward {
+  id: string;
+  reward: string;
+  category: 'break' | 'treat' | 'social' | 'movement' | 'creative' | 'other';
+  usageCount: number;
+  motivationRating?: number; // 1-5
+}
+
+export interface ADHDData {
+  timeTracking: TimeTrackingEntry[];
+  hyperfocusSessions: HyperfocusSession[];
+  energyLogs: EnergyLog[];
+  brainDumps: BrainDump[];
+  dopamineMenu: DopamineReward[];
+}
+
+export interface TimeBlindnessStats {
+  averageMultiplier: number;
+  totalEntries: number;
+  byTaskType: { [key: string]: number };
+  byEnergyLevel: { [key in EnergyLevel]: number };
+}
+
+export interface HyperfocusStats {
+  averageDuration: number;
+  totalSessions: number;
+  commonTriggers: string[];
+  bestTimeOfDay: string;
+  productivityAverage: number;
+}
+
+export interface EnergyStats {
+  peakTimes: string[];
+  averageByHour: { [hour: number]: EnergyLevel };
+  patterns: string[];
+}
