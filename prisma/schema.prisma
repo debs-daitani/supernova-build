@@ -52,6 +52,8 @@ model User {
   designAssets    DesignAsset[]
   brandKit        BrandKit?
   aiImages        AIImage[]
+  videos          Video[]
+  videoClips      VideoClip[]
 
   @@map("users")
 }
@@ -451,4 +453,142 @@ model AIImageStyle {
   @@index([isPublic])
   @@index([isPremium])
   @@map("ai_image_styles")
+}
+
+// ========================================
+// VIDEO EDITOR & REPURPOSING MODELS
+// ========================================
+
+// Video model (uploaded videos)
+model Video {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Metadata
+  title           String
+  description     String?  @db.Text
+
+  // Files
+  originalUrl     String
+  processedUrl    String?
+  thumbnailUrl    String?
+
+  // Video properties
+  duration        Int      // in seconds
+  width           Int
+  height          Int
+  fileSize        Int      // in bytes
+  format          String?  // MP4, MOV, AVI
+
+  // Status
+  status          String   @default("UPLOADING") // UPLOADING, PROCESSING, READY, FAILED
+  errorMessage    String?  @db.Text
+
+  // Timestamps
+  uploadedAt      DateTime @default(now())
+  processedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clips           VideoClip[]
+  transcript      VideoTranscript?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("videos")
+}
+
+// VideoClip model (extracted clips)
+model VideoClip {
+  id              String   @id @default(cuid())
+  videoId         String
+  userId          String
+
+  // Metadata
+  title           String
+  description     String?  @db.Text
+
+  // Timing
+  startTime       Float    // in seconds
+  endTime         Float    // in seconds
+  duration        Float    // in seconds
+
+  // Files
+  clipUrl         String?
+  thumbnailUrl    String?
+
+  // Format
+  aspectRatio     String   // 16:9, 9:16, 1:1, 4:5
+  width           Int
+  height          Int
+
+  // Captions
+  captions        Json?    // Subtitle data with timing
+
+  // Status
+  status          String   @default("PROCESSING") // PROCESSING, READY, FAILED
+  errorMessage    String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([status])
+  @@map("video_clips")
+}
+
+// VideoTemplate model (platform-specific templates)
+model VideoTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  platform        String   // YOUTUBE_SHORT, INSTAGRAM_REEL, TIKTOK, LINKEDIN
+
+  // Format specs
+  aspectRatio     String   // 16:9, 9:16, 1:1, 4:5
+  maxDuration     Int      // in seconds
+  recommendedWidth  Int
+  recommendedHeight Int
+
+  // Styling
+  captionStyle    Json     // Font, color, position, animation
+  overlays        Json?    // Logo, CTA positions
+
+  // Metadata
+  thumbnailUrl    String?
+  description     String?  @db.Text
+  isPublic        Boolean  @default(true)
+  usageCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([platform])
+  @@index([isPublic])
+  @@map("video_templates")
+}
+
+// VideoTranscript model (speech-to-text)
+model VideoTranscript {
+  id              String   @id @default(cuid())
+  videoId         String   @unique
+
+  // Transcript data
+  fullText        String   @db.Text
+  segments        Json     // Timestamped words/phrases
+  language        String   @default("en")
+
+  // Metadata
+  generatedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@map("video_transcripts")
 }
