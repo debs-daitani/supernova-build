@@ -127,6 +127,9 @@ model User {
   emailSubscribers   EmailSubscriber[]
   emailCampaigns     EmailCampaign[]
   emailTemplates     EmailTemplate[]
+  socialPlatforms    SocialPlatform[]
+  socialPosts        SocialPost[]
+  socialQueue        SocialMediaQueue[]
 
   @@map("users")
 }
@@ -731,4 +734,122 @@ model EmailTemplate {
   @@index([category])
   @@index([isPublic])
   @@map("email_templates")
+}
+
+// Social Media Management System
+
+enum SocialPlatformType {
+  TWITTER
+  LINKEDIN
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+enum SocialQueueStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model SocialPlatform {
+  id               String             @id @default(cuid())
+  userId           String
+  platform         SocialPlatformType
+  isConnected      Boolean            @default(false)
+  accessToken      String?            @db.Text
+  refreshToken     String?            @db.Text
+  tokenExpiresAt   DateTime?
+  platformUserId   String?
+  platformUsername String?
+  connectedAt      DateTime?
+  lastSyncedAt     DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts            SocialPostPlatform[]
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
+  @@map("social_platforms")
+}
+
+model SocialPost {
+  id              String              @id @default(cuid())
+  userId          String
+  content         String              @db.Text
+  mediaUrls       Json?
+  platforms       String[]
+  status          SocialPostStatus    @default(DRAFT)
+  scheduledFor    DateTime?
+  publishedAt     DateTime?
+  failedAt        DateTime?
+  errorMessage    String?             @db.Text
+  engagementStats Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformPosts   SocialPostPlatform[]
+  queueItems      SocialMediaQueue[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("social_posts")
+}
+
+model SocialPostPlatform {
+  id              String             @id @default(cuid())
+  socialPostId    String
+  platformId      String
+  platform        SocialPlatformType
+  platformPostId  String?
+  status          SocialPostStatus   @default(DRAFT)
+  publishedAt     DateTime?
+  errorMessage    String?            @db.Text
+  engagementStats Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  socialPost      SocialPost         @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+  socialPlatform  SocialPlatform     @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@unique([socialPostId, platformId])
+  @@index([socialPostId])
+  @@index([platformId])
+  @@index([platform])
+  @@map("social_post_platforms")
+}
+
+model SocialMediaQueue {
+  id            String           @id @default(cuid())
+  userId        String
+  socialPostId  String
+  scheduledFor  DateTime
+  status        SocialQueueStatus @default(PENDING)
+  attempts      Int              @default(0)
+  lastAttemptAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialPost    SocialPost       @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([socialPostId])
+  @@index([scheduledFor])
+  @@index([status])
+  @@map("social_media_queue")
 }
