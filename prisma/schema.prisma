@@ -67,6 +67,8 @@ model User {
   productReviews  ProductReview[]
   coupons         Coupon[]
   payoutRequests  PayoutRequest[]
+  aiVideos        AIVideo[]
+  aiVideoTemplates AIVideoTemplate[]
 
   @@map("users")
 }
@@ -1073,4 +1075,73 @@ model PayoutRequest {
   @@index([userId])
   @@index([status])
   @@map("payout_requests")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AI VIDEO GENERATION SYSTEM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// AIVideo model
+model AIVideo {
+  id              String   @id @default(cuid())
+  userId          String
+  prompt          String   @db.Text
+  negativePrompt  String?  @db.Text
+  model           String   // RUNWAY_GEN2, RUNWAY_GEN3, PIKA, STABLE_VIDEO
+  style           String   // CINEMATIC, ANIMATION, REALISTIC, ARTISTIC, PRODUCT_DEMO
+  duration        Int      // Duration in seconds (3, 5, 10)
+  aspectRatio     String   @default("16:9") // 16:9, 9:16, 1:1
+  videoUrl        String?
+  thumbnailUrl    String?
+  seed            Int?     // For reproducibility
+  status          String   @default("QUEUED") // QUEUED, GENERATING, COMPLETED, FAILED
+  errorMessage    String?  @db.Text
+  generationTime  Int?     // Time taken in seconds
+  motionIntensity Int?     // 1-10
+  cameraMovement  String?  // STATIC, PAN, TILT, ZOOM, DOLLY, ORBIT, CRANE
+  isPublic        Boolean  @default(false)
+  generatedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([model])
+  @@index([style])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("ai_videos")
+}
+
+// AIVideoTemplate model
+model AIVideoTemplate {
+  id              String   @id @default(cuid())
+  userId          String?  // Null for public/system templates
+  name            String
+  description     String?  @db.Text
+  category        String   // PRODUCT_DEMO, EXPLAINER, SOCIAL_AD, BACKGROUND_LOOP, TEXT_ANIMATION, LOGO_REVEAL
+  thumbnailUrl    String?
+  previewUrl      String?
+  promptTemplate  String   @db.Text // Template with {{variables}}
+  model           String   @default("RUNWAY_GEN3")
+  style           String   @default("CINEMATIC")
+  duration        Int      @default(5)
+  aspectRatio     String   @default("16:9")
+  motionIntensity Int?
+  cameraMovement  String?
+  isPublic        Boolean  @default(true)
+  usageCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@map("ai_video_templates")
 }
