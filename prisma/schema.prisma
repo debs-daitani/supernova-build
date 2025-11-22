@@ -60,6 +60,13 @@ model User {
   reputation      UserReputation?
   forumSubscriptions ForumSubscription[]
   forumReports    ForumReport[]
+  products        Product[]
+  ordersBuyer     Order[] @relation("BuyerOrders")
+  ordersSeller    Order[] @relation("SellerOrders")
+  carts           Cart[]
+  productReviews  ProductReview[]
+  coupons         Coupon[]
+  payoutRequests  PayoutRequest[]
 
   @@map("users")
 }
@@ -876,4 +883,194 @@ model ForumReport {
   @@index([reportedByUserId])
   @@index([status])
   @@map("forum_reports")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// E-COMMERCE & PRODUCTS SYSTEM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Product model
+model Product {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  price           Float
+  currency        String   @default("GBP") // GBP, USD, EUR
+  productType     String   @default("DIGITAL") // DIGITAL, PHYSICAL, SUBSCRIPTION, SERVICE
+  category        String?
+  tags            String[] @default([])
+  thumbnail       String?
+  images          String[] @default([])
+  downloadUrl     String?  // For digital products
+  fileSize        Int?     // In bytes
+  fileType        String?
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  salesCount      Int      @default(0)
+  revenue         Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variants        ProductVariant[]
+  orders          Order[]
+  reviews         ProductReview[]
+  
+  @@index([userId])
+  @@index([slug])
+  @@index([category])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+// ProductVariant model (for products with options)
+model ProductVariant {
+  id              String   @id @default(cuid())
+  productId       String
+  name            String
+  price           Float
+  sku             String?  @unique
+  stock           Int?     // For physical products
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orders          Order[]
+  
+  @@index([productId])
+  @@index([sku])
+  @@map("product_variants")
+}
+
+// Order model
+model Order {
+  id              String   @id @default(cuid())
+  buyerId         String?  // Can be null for guest checkout
+  sellerId        String
+  productId       String
+  variantId       String?
+  quantity        Int      @default(1)
+  unitPrice       Float
+  totalAmount     Float
+  currency        String   @default("GBP")
+  status          String   @default("PENDING") // PENDING, PAID, COMPLETED, REFUNDED, FAILED
+  paymentIntentId String?  @unique // Stripe payment intent ID
+  customerEmail   String
+  customerName    String?
+  downloadUrl     String?
+  downloadExpiresAt DateTime?
+  downloadCount   Int      @default(0)
+  maxDownloads    Int      @default(5)
+  paidAt          DateTime?
+  completedAt     DateTime?
+  refundedAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  buyer           User? @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: SetNull)
+  seller          User @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([productId])
+  @@index([status])
+  @@index([paymentIntentId])
+  @@map("orders")
+}
+
+// Cart model
+model Cart {
+  id              String   @id @default(cuid())
+  userId          String?  // Null for guest carts
+  sessionId       String?  // For guest users
+  items           Json     // Array of cart items
+  totalAmount     Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([sessionId])
+  @@map("carts")
+}
+
+// ProductReview model
+model ProductReview {
+  id              String   @id @default(cuid())
+  productId       String
+  userId          String
+  rating          Int      // 1-5
+  review          String?  @db.Text
+  isVerifiedPurchase Boolean @default(false)
+  helpfulCount    Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
+  @@map("product_reviews")
+}
+
+// Coupon model
+model Coupon {
+  id              String   @id @default(cuid())
+  userId          String
+  code            String   @unique
+  discountType    String   // PERCENTAGE, FIXED_AMOUNT
+  discountValue   Float
+  minPurchaseAmount Float? // Minimum purchase to apply coupon
+  maxUses         Int?     // Maximum total uses (null = unlimited)
+  usedCount       Int      @default(0)
+  expiresAt       DateTime?
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([code])
+  @@index([isActive])
+  @@map("coupons")
+}
+
+// PayoutRequest model
+model PayoutRequest {
+  id              String   @id @default(cuid())
+  userId          String
+  amount          Float
+  currency        String   @default("GBP")
+  status          String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  payoutMethod    String   // STRIPE, PAYPAL, BANK
+  payoutDetails   Json?    // Store payout account details
+  requestedAt     DateTime @default(now())
+  processedAt     DateTime?
+  failureReason   String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@map("payout_requests")
 }
