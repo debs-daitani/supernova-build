@@ -1,0 +1,693 @@
+// Design templates data for seeding
+
+export const designTemplates = [
+  // Social Media Templates
+  {
+    name: 'Instagram Post - Gradient',
+    category: 'social-media',
+    width: 1080,
+    height: 1080,
+    tags: ['instagram', 'social', 'gradient', 'modern'],
+    jsonData: {
+      version: '5.3.0',
+      objects: [
+        {
+          type: 'rect',
+          width: 1080,
+          height: 1080,
+          fill: {
+            type: 'linear',
+            coords: { x1: 0, y1: 0, x2: 1080, y2: 1080 },
+            colorStops: [
+              { offset: 0, color: '#ec4899' },
+              { offset: 1, color: '#8b5cf6' },
+            ],
+          },
+        },
+        {
+          type: 'textbox',
+          text: 'Your Message Here',
+          fontSize: 72,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 480,
+          left: 540,
+          width: 900,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Instagram Story - Quote',
+    category: 'social-media',
+    width: 1080,
+    height: 1920,
+    tags: ['instagram', 'story', 'quote', 'minimal'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1080,
+          height: 1920,
+          fill: '#f8f9fa',
+        },
+        {
+          type: 'textbox',
+          text: '"Your inspiring quote goes here"',
+          fontSize: 64,
+          fontFamily: 'Georgia',
+          fill: '#1f2937',
+          fontStyle: 'italic',
+          textAlign: 'center',
+          top: 800,
+          left: 540,
+          width: 900,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Facebook Post - Promo',
+    category: 'social-media',
+    width: 1200,
+    height: 630,
+    tags: ['facebook', 'promo', 'sale'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1200,
+          height: 630,
+          fill: '#1f2937',
+        },
+        {
+          type: 'textbox',
+          text: 'SPECIAL OFFER',
+          fontSize: 96,
+          fontFamily: 'Montserrat',
+          fill: '#ec4899',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 200,
+          left: 600,
+          width: 1000,
+        },
+        {
+          type: 'textbox',
+          text: '50% OFF',
+          fontSize: 128,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 320,
+          left: 600,
+          width: 1000,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Twitter/X Post - Announcement',
+    category: 'social-media',
+    width: 1024,
+    height: 512,
+    tags: ['twitter', 'x', 'announcement'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1024,
+          height: 512,
+          fill: '#8b5cf6',
+        },
+        {
+          type: 'textbox',
+          text: 'BIG NEWS!',
+          fontSize: 72,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 200,
+          left: 512,
+          width: 900,
+        },
+      ],
+    },
+  },
+  {
+    name: 'LinkedIn Post - Professional',
+    category: 'social-media',
+    width: 1200,
+    height: 627,
+    tags: ['linkedin', 'professional', 'business'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1200,
+          height: 627,
+          fill: '#ffffff',
+        },
+        {
+          type: 'rect',
+          width: 1200,
+          height: 100,
+          fill: '#0a66c2',
+          top: 0,
+        },
+        {
+          type: 'textbox',
+          text: 'Professional Insight',
+          fontSize: 64,
+          fontFamily: 'Inter',
+          fill: '#1f2937',
+          fontWeight: '600',
+          textAlign: 'center',
+          top: 300,
+          left: 600,
+          width: 1000,
+        },
+      ],
+    },
+  },
+
+  // YouTube Templates
+  {
+    name: 'YouTube Thumbnail - Gaming',
+    category: 'youtube',
+    width: 1280,
+    height: 720,
+    tags: ['youtube', 'thumbnail', 'gaming'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1280,
+          height: 720,
+          fill: {
+            type: 'linear',
+            coords: { x1: 0, y1: 0, x2: 1280, y2: 720 },
+            colorStops: [
+              { offset: 0, color: '#ef4444' },
+              { offset: 1, color: '#dc2626' },
+            ],
+          },
+        },
+        {
+          type: 'textbox',
+          text: 'EPIC GAMEPLAY',
+          fontSize: 96,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          stroke: '#000000',
+          strokeWidth: 4,
+          textAlign: 'center',
+          top: 300,
+          left: 640,
+          width: 1100,
+        },
+      ],
+    },
+  },
+  {
+    name: 'YouTube Channel Banner',
+    category: 'youtube',
+    width: 2560,
+    height: 1440,
+    tags: ['youtube', 'banner', 'channel'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 2560,
+          height: 1440,
+          fill: '#1f2937',
+        },
+        {
+          type: 'textbox',
+          text: 'YOUR CHANNEL NAME',
+          fontSize: 128,
+          fontFamily: 'Montserrat',
+          fill: '#ec4899',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 650,
+          left: 1280,
+          width: 2200,
+        },
+      ],
+    },
+  },
+
+  // Marketing Templates
+  {
+    name: 'Facebook Ad - E-commerce',
+    category: 'marketing',
+    width: 1200,
+    height: 628,
+    tags: ['facebook', 'ad', 'ecommerce', 'sale'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1200,
+          height: 628,
+          fill: '#ffffff',
+        },
+        {
+          type: 'rect',
+          width: 600,
+          height: 628,
+          fill: '#ec4899',
+          left: 0,
+        },
+        {
+          type: 'textbox',
+          text: 'SHOP NOW',
+          fontSize: 96,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 250,
+          left: 300,
+          width: 500,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Email Header - Newsletter',
+    category: 'marketing',
+    width: 600,
+    height: 200,
+    tags: ['email', 'newsletter', 'header'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 600,
+          height: 200,
+          fill: '#8b5cf6',
+        },
+        {
+          type: 'textbox',
+          text: 'Monthly Newsletter',
+          fontSize: 48,
+          fontFamily: 'Inter',
+          fill: '#ffffff',
+          fontWeight: '600',
+          textAlign: 'center',
+          top: 75,
+          left: 300,
+          width: 550,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Blog Banner - Tech',
+    category: 'marketing',
+    width: 1200,
+    height: 400,
+    tags: ['blog', 'banner', 'tech'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1200,
+          height: 400,
+          fill: {
+            type: 'linear',
+            coords: { x1: 0, y1: 0, x2: 1200, y2: 400 },
+            colorStops: [
+              { offset: 0, color: '#3b82f6' },
+              { offset: 1, color: '#1d4ed8' },
+            ],
+          },
+        },
+        {
+          type: 'textbox',
+          text: 'Latest Tech News',
+          fontSize: 72,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 165,
+          left: 600,
+          width: 1000,
+        },
+      ],
+    },
+  },
+
+  // Business Templates
+  {
+    name: 'Business Card - Modern',
+    category: 'business',
+    width: 1050, // 3.5 inches at 300 DPI
+    height: 600,  // 2 inches at 300 DPI
+    tags: ['business-card', 'professional', 'modern'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1050,
+          height: 600,
+          fill: '#ffffff',
+        },
+        {
+          type: 'rect',
+          width: 1050,
+          height: 200,
+          fill: '#ec4899',
+          top: 0,
+        },
+        {
+          type: 'textbox',
+          text: 'John Doe',
+          fontSize: 48,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          top: 50,
+          left: 50,
+        },
+        {
+          type: 'textbox',
+          text: 'CEO & Founder',
+          fontSize: 24,
+          fontFamily: 'Inter',
+          fill: '#ffffff',
+          top: 120,
+          left: 50,
+        },
+        {
+          type: 'textbox',
+          text: 'email@company.com',
+          fontSize: 18,
+          fontFamily: 'Inter',
+          fill: '#1f2937',
+          top: 300,
+          left: 50,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Presentation Slide - Title',
+    category: 'business',
+    width: 1920,
+    height: 1080,
+    tags: ['presentation', 'slide', 'title'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1920,
+          height: 1080,
+          fill: '#1f2937',
+        },
+        {
+          type: 'textbox',
+          text: 'Presentation Title',
+          fontSize: 128,
+          fontFamily: 'Montserrat',
+          fill: '#ec4899',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 450,
+          left: 960,
+          width: 1700,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Flyer - Event',
+    category: 'business',
+    width: 2550, // 8.5 inches at 300 DPI
+    height: 3300, // 11 inches at 300 DPI
+    tags: ['flyer', 'event', 'promotional'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 2550,
+          height: 3300,
+          fill: '#ffffff',
+        },
+        {
+          type: 'rect',
+          width: 2550,
+          height: 800,
+          fill: '#8b5cf6',
+          top: 0,
+        },
+        {
+          type: 'textbox',
+          text: 'SPECIAL EVENT',
+          fontSize: 144,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 300,
+          left: 1275,
+          width: 2400,
+        },
+      ],
+    },
+  },
+
+  // Other Templates
+  {
+    name: 'Logo - Minimalist',
+    category: 'other',
+    width: 500,
+    height: 500,
+    tags: ['logo', 'minimalist', 'brand'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 500,
+          height: 500,
+          fill: '#ffffff',
+        },
+        {
+          type: 'circle',
+          radius: 150,
+          fill: '#ec4899',
+          left: 250,
+          top: 250,
+        },
+        {
+          type: 'textbox',
+          text: 'LOGO',
+          fontSize: 48,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 220,
+          left: 250,
+          width: 200,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Favicon - Simple',
+    category: 'other',
+    width: 512,
+    height: 512,
+    tags: ['favicon', 'icon', 'web'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 512,
+          height: 512,
+          fill: '#8b5cf6',
+          rx: 100,
+          ry: 100,
+        },
+        {
+          type: 'textbox',
+          text: 'F',
+          fontSize: 256,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 120,
+          left: 256,
+          width: 300,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Website Header - Hero',
+    category: 'other',
+    width: 1920,
+    height: 400,
+    tags: ['website', 'header', 'hero'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1920,
+          height: 400,
+          fill: {
+            type: 'linear',
+            coords: { x1: 0, y1: 0, x2: 1920, y2: 400 },
+            colorStops: [
+              { offset: 0, color: '#ec4899' },
+              { offset: 1, color: '#8b5cf6' },
+            ],
+          },
+        },
+        {
+          type: 'textbox',
+          text: 'Welcome to Our Website',
+          fontSize: 96,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 150,
+          left: 960,
+          width: 1700,
+        },
+      ],
+    },
+  },
+
+  // Additional Social Media Templates
+  {
+    name: 'TikTok Thumbnail - Vertical',
+    category: 'social-media',
+    width: 1080,
+    height: 1920,
+    tags: ['tiktok', 'vertical', 'short-form'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1080,
+          height: 1920,
+          fill: '#000000',
+        },
+        {
+          type: 'textbox',
+          text: 'WATCH THIS!',
+          fontSize: 96,
+          fontFamily: 'Montserrat',
+          fill: '#00f2ea',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 850,
+          left: 540,
+          width: 900,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Pinterest Pin - Recipe',
+    category: 'social-media',
+    width: 1000,
+    height: 1500,
+    tags: ['pinterest', 'recipe', 'food'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 1000,
+          height: 1500,
+          fill: '#fef3c7',
+        },
+        {
+          type: 'textbox',
+          text: 'DELICIOUS RECIPE',
+          fontSize: 72,
+          fontFamily: 'Montserrat',
+          fill: '#92400e',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 650,
+          left: 500,
+          width: 900,
+        },
+      ],
+    },
+  },
+
+  // More Marketing Templates
+  {
+    name: 'Google Display Ad - Small',
+    category: 'marketing',
+    width: 300,
+    height: 250,
+    tags: ['google', 'display-ad', 'banner'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 300,
+          height: 250,
+          fill: '#ec4899',
+        },
+        {
+          type: 'textbox',
+          text: 'Ad Text',
+          fontSize: 32,
+          fontFamily: 'Inter',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 100,
+          left: 150,
+          width: 280,
+        },
+      ],
+    },
+  },
+  {
+    name: 'Google Display Ad - Leaderboard',
+    category: 'marketing',
+    width: 728,
+    height: 90,
+    tags: ['google', 'leaderboard', 'banner'],
+    jsonData: {
+      objects: [
+        {
+          type: 'rect',
+          width: 728,
+          height: 90,
+          fill: '#8b5cf6',
+        },
+        {
+          type: 'textbox',
+          text: 'Your Ad Here',
+          fontSize: 36,
+          fontFamily: 'Montserrat',
+          fill: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          top: 25,
+          left: 364,
+          width: 700,
+        },
+      ],
+    },
+  },
+]
