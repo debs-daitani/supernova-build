@@ -69,6 +69,8 @@ model User {
   payoutRequests  PayoutRequest[]
   aiVideos        AIVideo[]
   aiVideoTemplates AIVideoTemplate[]
+  quizzes         Quiz[]
+  quizResponses   QuizResponse[]
 
   @@map("users")
 }
@@ -1144,4 +1146,237 @@ model AIVideoTemplate {
   @@index([category])
   @@index([isPublic])
   @@map("ai_video_templates")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// QUIZ & FORM BUILDER SYSTEM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Quiz model
+model Quiz {
+  id                String   @id @default(cuid())
+  userId            String
+  title             String
+  description       String?  @db.Text
+  slug              String   @unique
+  quizType          String   @default("SCORED") // SCORED, PERSONALITY, ASSESSMENT, SURVEY, LEAD_MAGNET
+  coverImage        String?
+  thumbnail         String?
+  welcomeMessage    String?  @db.Text
+  completionMessage String?  @db.Text
+  isPublished       Boolean  @default(false)
+  isEmbeddable      Boolean  @default(true)
+
+  // Analytics
+  viewCount         Int      @default(0)
+  startCount        Int      @default(0)
+  completionCount   Int      @default(0)
+  conversionRate    Float?   // Percentage
+
+  // Settings
+  requireEmail      Boolean  @default(false)
+  showProgressBar   Boolean  @default(true)
+  allowRetake       Boolean  @default(true)
+  shuffleQuestions  Boolean  @default(false)
+
+  // Design
+  primaryColor      String?  @default("#8B5CF6")
+  fontFamily        String?  @default("Inter")
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  publishedAt       DateTime?
+
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions         QuizQuestion[]
+  logicRules        QuizLogic[]
+  results           QuizResult[]
+  responses         QuizResponse[]
+  analytics         QuizAnalytics[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([quizType])
+  @@index([isPublished])
+  @@map("quizzes")
+}
+
+// QuizQuestion model
+model QuizQuestion {
+  id              String   @id @default(cuid())
+  quizId          String
+  questionText    String   @db.Text
+  questionType    String   @default("SINGLE_CHOICE") // MULTIPLE_CHOICE, SINGLE_CHOICE, TEXT, EMAIL, SCALE, YES_NO, DROPDOWN
+  order           Int
+  isRequired      Boolean  @default(true)
+
+  // Options for multiple choice, dropdown (JSON array)
+  options         Json?    // [{text: "Option A", points: 10, category: "A"}, ...]
+
+  // Scoring
+  correctAnswer   String?  // For scored quizzes
+  points          Int?     // Points for correct answer
+  dimension       String?  // For dimensional scoring (e.g., "Body", "Brain", "Business")
+
+  // Media
+  imageUrl        String?
+  helpText        String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  quiz            Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  logicRules      QuizLogic[]
+
+  @@index([quizId])
+  @@index([order])
+  @@map("quiz_questions")
+}
+
+// QuizLogic model (conditional branching)
+model QuizLogic {
+  id              String   @id @default(cuid())
+  questionId      String
+
+  // Condition
+  conditionType   String   // IF_ANSWER_EQUALS, IF_ANSWER_CONTAINS, IF_SCORE_GREATER_THAN, IF_SCORE_LESS_THAN
+  conditionValue  String   // Value to check against
+
+  // Action
+  actionType      String   // SHOW_QUESTION, SKIP_TO_QUESTION, SHOW_RESULT, HIDE_QUESTION
+  actionValue     String   // QuestionId or ResultId to route to
+
+  createdAt       DateTime @default(now())
+
+  question        QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("quiz_logic")
+}
+
+// QuizResult model (outcome pages)
+model QuizResult {
+  id              String   @id @default(cuid())
+  quizId          String
+  title           String
+  description     String?  @db.Text
+  resultImage     String?
+
+  // Scoring conditions
+  minScore        Int?     // For scored quizzes
+  maxScore        Int?     // For scored quizzes
+
+  // Personality conditions (JSON)
+  conditions      Json?    // {category: "A", minCount: 5} or complex logic
+
+  // Call to Action
+  ctaText         String?
+  ctaUrl          String?
+
+  // Email delivery
+  emailSubject    String?
+  emailTemplate   String?  @db.Text
+
+  // Tags to apply
+  tags            String[] @default([])
+
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  quiz            Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  responses       QuizResponse[]
+
+  @@index([quizId])
+  @@map("quiz_results")
+}
+
+// QuizResponse model
+model QuizResponse {
+  id              String   @id @default(cuid())
+  quizId          String
+  userId          String?  // Can be null for anonymous
+  resultId        String?
+
+  // Respondent info
+  respondentName  String?
+  respondentEmail String?
+
+  // Answers (JSON object - {questionId: answer})
+  answers         Json
+
+  // Scoring
+  score           Int?
+  dimensionScores Json?    // {Body: 85, Brain: 72, Business: 90}
+
+  // Metadata
+  completedAt     DateTime
+  timeSpent       Int?     // Seconds
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  quiz            Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user            User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  result          QuizResult? @relation(fields: [resultId], references: [id], onDelete: SetNull)
+
+  @@index([quizId])
+  @@index([userId])
+  @@index([respondentEmail])
+  @@index([completedAt])
+  @@map("quiz_responses")
+}
+
+// QuizAnalytics model
+model QuizAnalytics {
+  id              String   @id @default(cuid())
+  quizId          String
+  date            DateTime @default(now())
+
+  // Daily metrics
+  views           Int      @default(0)
+  starts          Int      @default(0)
+  completions     Int      @default(0)
+
+  // Performance
+  avgScore        Float?
+  avgTimeSpent    Int?     // Seconds
+  dropOffRate     Float?   // Percentage
+  conversionRate  Float?   // Percentage (completions/starts)
+
+  // Popular answers (JSON - {questionId: {answer: count}})
+  popularAnswers  Json?
+
+  createdAt       DateTime @default(now())
+
+  quiz            Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, date])
+  @@index([quizId])
+  @@index([date])
+  @@map("quiz_analytics")
+}
+
+// QuizTemplate model
+model QuizTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  category        String   // ASSESSMENT, PERSONALITY, LEAD_MAGNET, SURVEY, FEEDBACK
+  description     String?  @db.Text
+  thumbnailUrl    String?
+  previewUrl      String?
+
+  // Complete quiz structure (JSON)
+  quizData        Json     // {title, questions, results, settings}
+
+  isPublic        Boolean  @default(true)
+  usageCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("quiz_templates")
 }
