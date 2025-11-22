@@ -1,0 +1,102 @@
+// Prisma Schema for SUPERNova AI
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  tier      UserTier @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversations  Conversation[]
+  messages       Message[]
+  usageTracking  UsageTracking?
+
+  @@index([email])
+}
+
+enum UserTier {
+  FREE
+  UPGRADE
+  MEMBER
+  ADMIN
+}
+
+// Conversation model
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String?
+  mode      AIMode   @default(BRAIN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages  Message[]
+
+  @@index([userId, createdAt])
+}
+
+enum AIMode {
+  BODY
+  BRAIN
+  BUSINESS
+}
+
+// Message model
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role           MessageRole
+  content        String       @db.Text
+
+  tokensUsed     Int?
+  modelUsed      String?
+
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([userId])
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// Usage tracking model
+model UsageTracking {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Monthly counters (reset each month)
+  supernovaMessages Int      @default(0)
+  currentMonth      DateTime @default(now())
+
+  // Total lifetime counters
+  totalMessages     Int      @default(0)
+  totalTokens       Int      @default(0)
+
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
