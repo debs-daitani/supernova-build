@@ -15,6 +15,7 @@ yarn.lock
 *.swp
 *.swo
 *~
+.claude/settings.local.json
 
 # OS
 .DS_Store
@@ -31,6 +32,7 @@ yarn-error.log*
 dist/
 build/
 *.tsbuildinfo
+.next/
 
 # Temporary files
 tmp/

@@ -1,0 +1,226 @@
+// This is your Prisma schema file for SUPERNova AI
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// USER MANAGEMENT
+// ==========================================
+
+enum UserRole {
+  USER
+  ADMIN
+  COACH
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+  CANCELLED
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  password           String
+  name               String?
+  role               UserRole            @default(USER)
+  subscriptionStatus SubscriptionStatus  @default(TRIAL)
+  subscriptionTier   SubscriptionTier    @default(FREE)
+
+  // Profile info
+  bio                String?
+  location           String?
+  niche              String?
+  skills             String[]
+
+  // Relationships
+  conversations      Conversation[]
+  messages           Message[]
+  memories           UserMemory[]
+  folders            Folder[]
+
+  // Timestamps
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  lastLogin          DateTime?
+
+  @@index([email])
+}
+
+// ==========================================
+// CONVERSATION SYSTEM
+// ==========================================
+
+enum CoachingMode {
+  BODY      // Health, wellness, fitness
+  BRAIN     // ADHD, mindset, mental health
+  BUSINESS  // Strategy, growth, entrepreneurship
+  GENERAL   // Mixed or unspecified
+}
+
+model Conversation {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title           String        @default("New Conversation")
+  mode            CoachingMode  @default(GENERAL)
+
+  // Organization
+  archived        Boolean       @default(false)
+  folderId        String?
+  folder          Folder?       @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  // Related data
+  messages        Message[]
+  memories        UserMemory[]
+
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  lastMessageAt   DateTime      @default(now())
+
+  @@index([userId])
+  @@index([userId, archived])
+  @@index([userId, lastMessageAt])
+  @@index([folderId])
+  @@index([mode])
+}
+
+model Message {
+  id              String        @id @default(cuid())
+  conversationId  String
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role            String        // 'user' or 'assistant'
+  content         String        @db.Text
+
+  // Metadata
+  tokensUsed      Int?
+  modelUsed       String?       @default("claude-3-5-sonnet-20241022")
+
+  // Timestamps
+  createdAt       DateTime      @default(now())
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// MEMORY SYSTEM
+// ==========================================
+
+enum MemoryType {
+  FACT        // User stated facts (name, job, etc.)
+  PREFERENCE  // User preferences and likes
+  GOAL        // User goals and objectives
+  CONTEXT     // Important context from conversations
+  INSIGHT     // AI-discovered patterns/insights
+}
+
+model UserMemory {
+  id                    String        @id @default(cuid())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  memoryType            MemoryType
+  content               String        @db.Text
+
+  // Source tracking
+  sourceConversationId  String?
+  sourceConversation    Conversation? @relation(fields: [sourceConversationId], references: [id], onDelete: SetNull)
+
+  // Importance and categorization
+  importanceScore       Float         @default(5.0) // 0-10 scale
+  pillarTags            String[]      // BODY, BRAIN, BUSINESS tags
+
+  // Timestamps
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, memoryType])
+  @@index([importanceScore])
+}
+
+// ==========================================
+// ORGANIZATION
+// ==========================================
+
+model Folder {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  color           String?         @default("#8B5CF6")
+  order           Int             @default(0)
+
+  conversations   Conversation[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+// ==========================================
+// PROGRAM/CONTENT LIBRARY
+// ==========================================
+
+enum ProgramType {
+  COURSE
+  WORKSHOP
+  COACHING_PROGRAM
+  RESOURCE
+  TEMPLATE
+}
+
+model Program {
+  id              String        @id @default(cuid())
+
+  title           String
+  description     String        @db.Text
+  programType     ProgramType
+  mode            CoachingMode  // Which pillar it belongs to
+
+  // Content
+  content         String        @db.Text
+  objectives      String[]
+  outcomes        String[]
+
+  // Metadata
+  duration        String?       // e.g., "6 weeks", "90 days"
+  level           String?       // Beginner, Intermediate, Advanced
+  tags            String[]
+
+  // Availability
+  isPublic        Boolean       @default(false)
+  price           Float?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([mode])
+  @@index([programType])
+  @@index([isPublic])
+}
