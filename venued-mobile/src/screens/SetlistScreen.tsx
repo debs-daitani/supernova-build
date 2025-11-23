@@ -31,12 +31,17 @@ const SetlistScreen: React.FC = () => {
 
       // Validate data structure
       const validPhases = data.filter(phase =>
-        phase &&
-        typeof phase === 'object' &&
-        phase.id &&
-        phase.name &&
-        typeof phase.name === 'string'
-      );
+  phase &&
+  typeof phase === 'object' &&
+  phase.id &&
+  phase.name &&
+  typeof phase.name === 'string'
+).map(phase => ({
+  ...phase,
+  tasks: Array.isArray(phase.tasks) ? phase.tasks.filter(t => t && t.id) : []
+}));
+
+if (validPhases.length === 0 || data.length !== validPhases.length) {
 
       if (validPhases.length === 0) {
         // Initialize with default phases if none exist or data is corrupted
@@ -148,8 +153,20 @@ const SetlistScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+return (
+  <SafeAreaView style={styles.container}>
+    {/* TEMPORARY: Clear Storage Button */}
+    <TouchableOpacity 
+      style={{position: 'absolute', top: 100, right: 20, backgroundColor: 'red', padding: 10, zIndex: 999}}
+      onPress={async () => {
+        await AsyncStorage.clear();
+        Alert.alert('Storage Cleared', 'Please restart the app');
+      }}
+    >
+      <Text style={{color: 'white'}}>Clear Data</Text>
+    </TouchableOpacity>
+    
+    <StatusBar barStyle="light-content" />      <StatusBar barStyle="light-content" />
 
       {/* Header */}
       <LinearGradient colors={gradients.primary} style={styles.header}>

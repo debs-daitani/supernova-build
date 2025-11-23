@@ -53,6 +53,18 @@ model User {
   messages           Message[]
   memories           UserMemory[]
   folders            Folder[]
+  conversationSummaries ConversationSummary[]
+  extractedEntities  ExtractedEntity[]
+  userPatterns       UserPattern[]
+  memorySessions     MemorySession[]
+  curatedPrograms    CuratedProgram[]
+  dopamineMenuItems  DopamineMenuItem[]
+  commitments        Commitment[]
+  voiceMemos         VoiceMemo[]
+  loopDetections     LoopDetection[]
+  decisions          Decision[]
+  energyLogs         EnergyLog[]
+  quizzes            Quiz[]
 
   // Timestamps
   createdAt          DateTime            @default(now())
@@ -89,6 +101,10 @@ model Conversation {
   // Related data
   messages        Message[]
   memories        UserMemory[]
+  summary         ConversationSummary?
+  memorySessions  MemorySession[]
+  outgoingLinks   ConversationLink[] @relation("SourceConversation")
+  incomingLinks   ConversationLink[] @relation("LinkedConversation")
 
   // Timestamps
   createdAt       DateTime      @default(now())
@@ -134,6 +150,8 @@ enum MemoryType {
   PREFERENCE  // User preferences and likes
   GOAL        // User goals and objectives
   CONTEXT     // Important context from conversations
+  STRUGGLE    // Challenges and pain points
+  STRENGTH    // Skills, abilities, wins
   INSIGHT     // AI-discovered patterns/insights
 }
 
@@ -195,6 +213,104 @@ enum ProgramType {
   TEMPLATE
 }
 
+enum AlbumPillar {
+  BRANDING
+  BODY
+  BRAIN
+  BUSINESS
+  MIXED
+}
+
+// Albums are the top-level content containers (e.g., "The Badass Branding Blueprint")
+model Album {
+  id              String        @id @default(cuid())
+
+  title           String        // e.g., "TOO GOOD AT RAISING HELL"
+  subtitle        String?       // e.g., "Finding Your Fight"
+  description     String        @db.Text
+  pillar          AlbumPillar   // Which pillar this belongs to
+  order           Int           // Album 1, 2, 3, etc.
+
+  // Metadata
+  soundtrack      String?       // e.g., "The Struts (+ Luke Spiller Solo)"
+  objectives      String[]
+  outcomes        String[]
+  tags            String[]
+
+  // Relationships
+  tracks          Track[]
+
+  // Availability
+  isPublic        Boolean       @default(false)
+  price           Float?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([pillar])
+  @@index([order])
+  @@index([isPublic])
+}
+
+// Tracks are individual topics within an Album (e.g., "I WON'T RUN")
+model Track {
+  id              String        @id @default(cuid())
+  albumId         String
+  album           Album         @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  title           String        // e.g., "I WON'T RUN"
+  subtitle        String?       // e.g., "Saying Yes to Your Yell (No Backing Down)"
+  songTitle       String?       // The actual song name
+  order           Int           // Track 1.1, 1.2, etc.
+
+  // Metadata
+  estimatedReadTime String?     // e.g., "15 min"
+  objectives      String[]
+  tags            String[]
+
+  // Relationships
+  sections        Section[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([albumId])
+  @@index([order])
+}
+
+enum SectionType {
+  TRUTH_BOMB      // The main teaching/truth section
+  REBELLION       // How we flip the script
+  IMPACTFUL_ACTION // One clear action
+  ENCORE          // Reflection prompts
+  BACKSTAGE_PASS  // Resources & examples
+}
+
+// Sections are the content blocks within each Track
+model Section {
+  id              String        @id @default(cuid())
+  trackId         String
+  track           Track         @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  sectionType     SectionType
+  title           String?       // Optional custom title
+  content         String        @db.Text
+  order           Int           // Section order within track
+
+  // Metadata
+  estimatedReadTime String?     // e.g., "3-5 min"
+  examples        String[]      // JSON array of examples
+  resources       String[]      // Links, references
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([trackId])
+  @@index([sectionType])
+  @@index([order])
+}
+
+// Legacy Program model (keeping for backwards compatibility)
 model Program {
   id              String        @id @default(cuid())
 
@@ -223,4 +339,670 @@ model Program {
   @@index([mode])
   @@index([programType])
   @@index([isPublic])
+}
+
+// ==========================================
+// ADVANCED MEMORY SYSTEM
+// ==========================================
+
+// Store AI-generated summaries of conversations to reduce token usage
+model ConversationSummary {
+  id                String       @id @default(cuid())
+  conversationId    String       @unique
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Summary fields
+  summary           String       @db.Text  // Concise summary of entire conversation
+  keyTopics         String[]     // ['purpose', 'rebel yell', 'branding']
+  keyConcepts       String[]     // Main ideas discussed
+  actionItems       String[]     // TODOs or commitments made
+  emotionalTone     String?      // 'frustrated', 'motivated', 'stuck', etc.
+
+  // Metadata
+  messageCount      Int          // Number of messages summarized
+  pillar            String       // BODY, BRAIN, BUSINESS, GENERAL
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([pillar])
+}
+
+// Extract and store people, places, projects, concepts mentioned
+model ExtractedEntity {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Entity details
+  entityType        String       // 'person', 'place', 'project', 'concept', 'business', 'tool'
+  name              String       // "My new coaching program"
+  description       String?      @db.Text // Additional context
+
+  // Relationships
+  conversationIds   String[]     // Where this entity was mentioned
+  relatedMemoryIds  String[]     // Links to UserMemory records
+
+  // Metadata
+  firstMentioned    DateTime     @default(now())
+  lastMentioned     DateTime     @updatedAt
+  mentionCount      Int          @default(1)
+  importanceScore   Float        @default(5.0) // 1-10
+  pillarTags        String[]     // BODY, BRAIN, BUSINESS
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([userId, entityType])
+  @@index([name])
+}
+
+// Track behavior patterns, triggers, and recurring themes
+model UserPattern {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Pattern details
+  patternType       String   // 'trigger', 'recurring_theme', 'limiting_belief', 'strength', 'struggle'
+  description       String   @db.Text  // "Gets stuck on branding when overwhelmed"
+  evidence          String[] // ["conv-123", "conv-456"] - Supporting conversation IDs
+
+  // Tracking
+  firstObserved     DateTime @default(now())
+  lastObserved      DateTime @updatedAt
+  observationCount  Int      @default(1)
+  confidence        Float    @default(0.5) // 0.0 - 1.0 confidence in pattern
+  pillarTags        String[] // BODY, BRAIN, BUSINESS
+
+  @@index([userId])
+  @@index([patternType])
+  @@index([confidence])
+}
+
+// Link related conversations and track conversation threads
+model ConversationLink {
+  id                  String       @id @default(cuid())
+  conversationId      String
+  conversation        Conversation @relation("SourceConversation", fields: [conversationId], references: [id], onDelete: Cascade)
+  linkedConversationId String
+  linkedConversation  Conversation @relation("LinkedConversation", fields: [linkedConversationId], references: [id], onDelete: Cascade)
+
+  linkType            String       // 'continuation', 'related_topic', 'follow_up', 'callback'
+  relevanceScore      Float        @default(0.5) // How related are these conversations
+  createdAt           DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([linkedConversationId])
+  @@index([linkType])
+}
+
+// Track what memories were used in each conversation
+model MemorySession {
+  id                String       @id @default(cuid())
+  conversationId    String
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Memory tracking
+  memoriesUsed      String[]     // IDs of UserMemory records included
+  entitiesReferenced String[]    // IDs of ExtractedEntity records used
+  patternsApplied   String[]     // IDs of UserPattern records leveraged
+  summariesIncluded String[]     // IDs of ConversationSummary records included
+
+  // Performance
+  totalTokensUsed   Int?         // Tokens used for memory context
+  retrievalTimeMs   Int?         // How long memory retrieval took
+
+  createdAt         DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([userId])
+}
+
+// ==========================================
+// KNOWLEDGE BASE & PROGRAM CURATION SYSTEM
+// ==========================================
+
+// Programs uploaded to the knowledge base
+model KnowledgeProgram {
+  id              String          @id @default(cuid())
+
+  title           String
+  description     String          @db.Text
+  pillar          String          // BODY, BRAIN, BUSINESS, GENERAL
+  topics          String[]        // ['pricing', 'strategy', 'positioning']
+  level           String?         // 'beginner', 'intermediate', 'advanced'
+
+  // Source info
+  sourceType      String          // 'pdf', 'docx', 'markdown', 'manual'
+  sourceFileName  String?
+  sourceUrl       String?
+
+  // Metadata
+  isPublic        Boolean         @default(false)
+  uploadedAt      DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relationships
+  chunks          ContentChunk[]
+  scoringRules    ScoringRule[]
+  programRecommendations ProgramRecommendation[]
+
+  @@index([pillar])
+  @@index([isPublic])
+}
+
+// Chunked content with embeddings for semantic search
+model ContentChunk {
+  id              String          @id @default(cuid())
+  programId       String
+  program         KnowledgeProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  // Content
+  content         String          @db.Text
+  chunkIndex      Int             // Order within the program
+
+  // Vector embedding (1536 dimensions for OpenAI text-embedding-3-small)
+  // TODO: Add after installing pgvector extension
+  // embedding       Unsupported("vector(1536)")?
+  embeddingJson   String?         @db.Text // Temporary: JSON array of floats until pgvector is installed
+
+  // Metadata
+  chunkType       String          // 'framework', 'exercise', 'example', 'concept', 'instruction'
+  topics          String[]        // Specific topics this chunk covers
+  pillar          String          // BODY, BRAIN, BUSINESS, GENERAL
+
+  // Context
+  precedingText   String?         @db.Text // Text before this chunk for context
+  followingText   String?         @db.Text // Text after this chunk for context
+
+  // Usage tracking
+  usageCount      Int             @default(0)
+  lastUsed        DateTime?
+
+  createdAt       DateTime        @default(now())
+
+  @@index([programId])
+  @@index([pillar])
+  @@index([chunkType])
+}
+
+// Personalized programs curated for users
+model CuratedProgram {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Source
+  sourceRequest   String          @db.Text // Original user request
+  sourceConversationId String?
+
+  // Program details
+  title           String
+  description     String          @db.Text
+  outline         String          @db.Text // JSON structure of program outline
+
+  // Source programs used
+  sourcePrograms  String[]        // IDs of KnowledgePrograms used
+  chunkIds        String[]        // Specific ContentChunk IDs included
+
+  // Delivery
+  pillar          String          // BODY, BRAIN, BUSINESS, GENERAL
+  estimatedDuration String?       // "3 sessions", "2 weeks", etc.
+
+  // Progress tracking
+  status          String          @default("draft") // draft, active, completed, archived
+  progress        Float           @default(0.0)     // 0.0 to 1.0
+  currentStep     Int             @default(0)
+
+  // Relationships
+  sessions        ProgramSession[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([pillar])
+}
+
+// Individual sessions within a curated program
+model ProgramSession {
+  id              String          @id @default(cuid())
+  programId       String
+  program         CuratedProgram  @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  sessionNumber   Int             // 1, 2, 3, etc.
+  title           String
+  content         String          @db.Text // Content for this session
+  chunkIds        String[]        // ContentChunk IDs used in this session
+
+  // Delivery
+  conversationId  String?         // Where this was delivered
+  completed       Boolean         @default(false)
+  completedAt     DateTime?
+
+  // User response
+  userNotes       String?         @db.Text
+  userRating      Int?            // 1-5 stars
+
+  createdAt       DateTime        @default(now())
+
+  @@index([programId])
+  @@index([sessionNumber])
+}
+
+// ==========================================
+// GAME-CHANGING ADHD-FRIENDLY FEATURES
+// ==========================================
+
+// Dopamine menu items for instant ADHD rescue
+model DopamineMenuItem {
+  id              String   @id @default(cuid())
+  userId          String?  // null = global, set = personalized
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title           String   // "Text one person"
+  description     String   @db.Text
+  pillar          String   // BODY, BRAIN, BUSINESS, GENERAL
+  difficultyLevel Int      // 1-10 (1 = easiest)
+
+  // Effectiveness tracking
+  timesOffered    Int      @default(0)
+  timesCompleted  Int      @default(0)
+  avgCompletionTime Int?   // Minutes
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([pillar])
+  @@index([difficultyLevel])
+}
+
+// Commitments for accountability partner mode
+model Commitment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  description     String   @db.Text // "Post on LinkedIn 3x this week"
+  frequency       String   // 'daily', 'weekly', 'one-time'
+  deadline        DateTime?
+  pillar          String
+
+  // Tracking
+  status          String   @default("active") // active, completed, abandoned
+  checkIns        CheckIn[]
+  completionCount Int      @default(0)
+  missedCount     Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([deadline])
+}
+
+model CheckIn {
+  id              String      @id @default(cuid())
+  commitmentId    String
+  commitment      Commitment  @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
+
+  completed       Boolean
+  userResponse    String?     @db.Text
+  snResponse      String?     @db.Text
+
+  checkedAt       DateTime    @default(now())
+
+  @@index([commitmentId])
+}
+
+// Voice memos with auto-transcription
+model VoiceMemo {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId  String?
+
+  // Audio file
+  audioUrl        String   // S3 or local storage path
+  duration        Int      // Seconds
+
+  // Transcription
+  transcription   String   @db.Text
+
+  // Extracted from transcription
+  extractedMemories String[] // IDs of memories created
+  summary         String?  @db.Text
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([conversationId])
+}
+
+// Loop detection for pattern interrupts
+model LoopDetection {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  loopType        String   // 'pricing_paralysis', 'imposter_syndrome', etc.
+  description     String   @db.Text
+
+  // Tracking
+  occurrences     String[] // Conversation IDs where this loop appeared
+  lastInterrupted DateTime?
+  interruptCount  Int      @default(0)
+
+  // Effectiveness
+  wasResolved     Boolean  @default(false)
+  resolvedAt      DateTime?
+
+  firstDetected   DateTime @default(now())
+  lastDetected    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([loopType])
+}
+
+// Decision tracking for paralysis killer
+model Decision {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId  String?
+
+  question        String   @db.Text // "What's your pricing?"
+  options         String[] // ["$297", "$497"]
+  chosenOption    String?
+
+  // Paralysis detection
+  timesAsked      Int      @default(1)
+  timeToDecide    Int?     // Seconds
+
+  // Commitment
+  lockedIn        Boolean  @default(false)
+  lockedAt        DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([lockedIn])
+}
+
+// ==========================================
+// ENERGY TRACKING
+// ==========================================
+
+model EnergyLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  conversationId  String?
+
+  // Energy data
+  energyLevel     String   // 'high', 'medium', 'low'
+  timeOfDay       String   // 'morning', 'afternoon', 'evening', 'night'
+  dayOfWeek       Int      // 0-6 (Sunday = 0)
+  messageLength   Int      // Length of message (indicator of energy)
+
+  timestamp       DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([energyLevel])
+}
+
+// ==========================================
+// QUIZ BUILDER SYSTEM
+// ==========================================
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SCALE
+  YES_NO
+  SHORT_TEXT
+  LONG_TEXT
+}
+
+model Quiz {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+
+  // Quiz metadata
+  title           String
+  description     String?     @db.Text
+  coverImage      String?     // URL to cover image
+  status          QuizStatus  @default(DRAFT)
+
+  // Branding
+  primaryColor    String      @default("#FF008E") // Hot Pink
+  secondaryColor  String      @default("#00F0E9") // Light Teal
+  logoUrl         String?
+  fontFamily      String      @default("Josefin Sans")
+
+  // Settings
+  showProgressBar Boolean     @default(true)
+  randomizeQuestions Boolean  @default(false)
+  requireEmail    Boolean     @default(true)
+  collectPhone    Boolean     @default(false)
+
+  // Results page
+  resultsTitle    String      @default("Your Results")
+  resultsMessage  String?     @db.Text
+  showScore       Boolean     @default(true)
+
+  // Embed settings
+  embedCode       String?     @db.Text // Generated embed code
+  embedDomain     String?     // Allowed domain for embedding
+
+  // Analytics
+  totalViews      Int         @default(0)
+  totalStarts     Int         @default(0)
+  totalCompletions Int        @default(0)
+
+  // Relationships
+  questions       Question[]
+  resultTiers     ResultTier[]
+  responses       QuizResponse[]
+  programRecommendations ProgramRecommendation[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Question {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  // Question content
+  questionText    String        @db.Text
+  description     String?       @db.Text // Optional helper text
+  type            QuestionType
+  required        Boolean       @default(true)
+  order           Int           // Display order
+
+  // Question settings
+  imageUrl        String?       // Optional question image
+  videoUrl        String?       // Optional question video
+
+  // Options for multiple choice
+  options         QuestionOption[]
+
+  // Scale settings (if type = SCALE)
+  scaleMin        Int?          @default(1)
+  scaleMax        Int?          @default(10)
+  scaleMinLabel   String?       // e.g., "Not at all"
+  scaleMaxLabel   String?       // e.g., "Extremely"
+
+  // Scoring - maps to result tiers or program recommendations
+  scoringRules    ScoringRule[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([quizId])
+  @@index([order])
+}
+
+model QuestionOption {
+  id              String        @id @default(cuid())
+  questionId      String
+  question        Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Option content
+  text            String
+  imageUrl        String?
+  order           Int           // Display order
+
+  // Scoring
+  points          Int           @default(0) // Points awarded for selecting this option
+  tags            String[]      // Tags for categorization (e.g., ["BODY", "high-energy"])
+
+  createdAt       DateTime      @default(now())
+
+  @@index([questionId])
+}
+
+model ScoringRule {
+  id              String        @id @default(cuid())
+  questionId      String
+  question        Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Rule definition
+  condition       String        // JSON: { "operator": "equals|range|contains", "value": ... }
+  resultTierId    String?       // Links to a result tier
+  resultTier      ResultTier?   @relation(fields: [resultTierId], references: [id], onDelete: SetNull)
+
+  programId       String?       // Links to a program recommendation
+  program         KnowledgeProgram? @relation(fields: [programId], references: [id], onDelete: SetNull)
+
+  points          Int           @default(0) // Points to add if condition is met
+
+  createdAt       DateTime      @default(now())
+
+  @@index([questionId])
+}
+
+model ResultTier {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  // Tier definition
+  name            String        // e.g., "Beginner", "Stuck in Analysis Paralysis"
+  description     String        @db.Text
+  minScore        Int           // Minimum score to get this result
+  maxScore        Int           // Maximum score for this result
+
+  // Result content
+  imageUrl        String?
+  videoUrl        String?
+  ctaText         String?       // e.g., "Join dAItaniverse"
+  ctaUrl          String?       // Link to membership page
+
+  // Program recommendations
+  recommendedPrograms String[]   // Array of program IDs to recommend
+
+  scoringRules    ScoringRule[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([quizId])
+}
+
+model ProgramRecommendation {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  programId       String
+  program         KnowledgeProgram @relation(fields: [programId], references: [id])
+
+  // Recommendation logic
+  triggerTags     String[]      // Tags that trigger this recommendation
+  minMatches      Int           @default(1) // Minimum tag matches required
+  priority        Int           @default(0) // Higher = shown first
+
+  createdAt       DateTime      @default(now())
+
+  @@index([quizId])
+  @@index([programId])
+}
+
+model QuizResponse {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  // User info (lead capture)
+  userId          String?       // Null if they're not logged in yet
+  email           String
+  name            String?
+  phone           String?
+
+  // Response data
+  answers         Json          // { questionId: answer }
+  totalScore      Int           @default(0)
+  resultTierId    String?       // Which tier they got
+
+  // Recommended programs
+  recommendedProgramIds String[]
+
+  // Metadata
+  completedAt     DateTime?     // Null if abandoned
+  timeSpent       Int?          // Seconds spent on quiz
+  ipAddress       String?
+  userAgent       String?
+
+  // Email delivery
+  resultsSent     Boolean       @default(false)
+  resultsSentAt   DateTime?
+
+  createdAt       DateTime      @default(now())
+
+  @@index([quizId])
+  @@index([email])
+  @@index([completedAt])
+}
+
+model QuizAnalytics {
+  id              String        @id @default(cuid())
+  quizId          String
+
+  // Daily aggregates
+  date            DateTime      @db.Date
+  views           Int           @default(0)
+  starts          Int           @default(0)
+  completions     Int           @default(0)
+  avgTimeSpent    Int?          // Average seconds
+
+  // Top results
+  topResultTiers  Json          // { tierId: count }
+
+  createdAt       DateTime      @default(now())
+
+  @@unique([quizId, date])
+  @@index([quizId])
+  @@index([date])
 }

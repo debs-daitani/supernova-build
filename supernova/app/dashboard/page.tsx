@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, Zap, Brain, Heart, TrendingUp, Sparkles, LogOut, User } from 'lucide-react'
+import { Send, LogOut, User, MessageSquare, Plus } from 'lucide-react'
+import VoiceRecorder from '../../components/VoiceRecorder'
 
 type CoachingMode = 'GENERAL' | 'BODY' | 'BRAIN' | 'BUSINESS'
 
@@ -17,37 +18,6 @@ interface UserData {
   id: string
   email: string
   name: string | null
-}
-
-const MODE_CONFIG = {
-  GENERAL: {
-    icon: Sparkles,
-    label: 'General',
-    color: 'from-neon-pink to-electric-purple',
-    bg: 'bg-electric-purple',
-    glow: 'shadow-[0_0_20px_rgba(157,78,221,0.6)]',
-  },
-  BODY: {
-    icon: Heart,
-    label: 'Body',
-    color: 'from-red-500 to-neon-pink',
-    bg: 'bg-neon-pink',
-    glow: 'shadow-[0_0_20px_rgba(255,27,141,0.6)]',
-  },
-  BRAIN: {
-    icon: Brain,
-    label: 'Brain',
-    color: 'from-electric-purple to-blue-500',
-    bg: 'bg-electric-purple',
-    glow: 'shadow-[0_0_20px_rgba(157,78,221,0.6)]',
-  },
-  BUSINESS: {
-    icon: TrendingUp,
-    label: 'Business',
-    color: 'from-neon-green to-emerald-500',
-    bg: 'bg-neon-green',
-    glow: 'shadow-[0_0_20px_rgba(57,255,20,0.6)]',
-  },
 }
 
 export default function Dashboard() {
@@ -200,169 +170,322 @@ export default function Dashboard() {
     }
   }
 
+  const handleNewChat = () => {
+    setMessages([])
+    setConversationId(null)
+    setMode('GENERAL')
+  }
+
+  const handleTranscriptionComplete = (transcription: string) => {
+    // Transcription is already saved as a message by the API
+    // Just trigger a reload of the chat to get the AI response
+    // The transcription was added as a user message, so we need to get AI response
+    if (user) {
+      // Send empty message to trigger AI response to the transcription
+      handleSendTranscription(transcription)
+    }
+  }
+
+  const handleSendTranscription = async (transcription: string) => {
+    if (!user) return
+
+    setIsStreaming(true)
+
+    const assistantMessageId = (Date.now() + 1).toString()
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, assistantMessage])
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: transcription,
+          conversationId,
+          userId: user.id,
+          mode,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get response')
+      }
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+
+      if (!reader) throw new Error('No reader available')
+
+      let accumulatedText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              if (data.text) {
+                accumulatedText += data.text
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: accumulatedText }
+                      : msg
+                  )
+                )
+              }
+
+              if (data.done) {
+                setConversationId(data.conversationId)
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Chat error:', error)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: 'Sorry, something went wrong. Please try again.' }
+            : msg
+        )
+      )
+    } finally {
+      setIsStreaming(false)
+    }
+  }
+
   if (isLoadingAuth) {
     return (
       <div className="h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-neon-pink to-electric-purple shadow-[0_0_30px_rgba(255,27,141,0.6)] mb-4 animate-pulse">
-            <Zap className="w-12 h-12 text-white" />
+          <div className="inline-flex p-6 rounded-2xl bg-gradient-to-br from-hot-pink to-light-teal shadow-[0_0_40px_rgba(255,0,142,0.6)] mb-4 animate-pulse">
+            <span className="text-4xl font-supernova text-white">SN</span>
           </div>
-          <p className="text-gray-400 font-semibold">Loading...</p>
+          <p className="text-gray-400 font-josefin font-semibold">Loading...</p>
         </div>
       </div>
     )
   }
 
-  const ModeIcon = MODE_CONFIG[mode].icon
-
   return (
-    <div className="h-screen flex flex-col bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-neon-pink/20 bg-black/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-lg bg-gradient-to-br from-neon-pink to-electric-purple ${MODE_CONFIG[mode].glow}`}>
-                <Zap className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-electric-purple to-neon-pink">
-                  SUPERNova AI
-                </h1>
-                <p className="text-sm text-gray-400 font-semibold">
-                  Your bold, direct, anti-BS coach
-                </p>
-              </div>
-            </div>
+    <div
+      className="h-screen flex overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/dAitaniverse Stage.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Left Sidebar */}
+      <aside className="w-80 flex flex-col backdrop-blur-xl bg-dark-teal/40 border-r border-light-teal/20 shadow-2xl">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-light-teal/20">
+          <h1 className="text-3xl font-supernova text-transparent bg-clip-text bg-gradient-to-r from-hot-pink via-light-teal to-neon-lime mb-2">
+            SUPERNova
+          </h1>
+          <p className="text-sm text-gray-300 font-josefin">
+            AI Coaching Platform
+          </p>
+        </div>
 
-            {/* User Menu */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg border border-gray-800">
-                <User className="w-4 h-4 text-neon-pink" />
-                <span className="text-sm font-semibold text-gray-300">
-                  {user?.name || user?.email}
-                </span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-neon-pink border border-gray-800 font-semibold transition-all"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="text-sm">Logout</span>
-              </button>
-            </div>
+        {/* New Chat Button */}
+        <div className="p-4">
+          <button
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-hot-pink hover:bg-hot-pink/90 text-white font-josefin font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,0,142,0.4)] hover:shadow-[0_0_30px_rgba(255,0,142,0.6)] hover:scale-105"
+          >
+            <Plus className="w-5 h-5" />
+            NEW CHAT
+          </button>
+        </div>
+
+        {/* Mode Buttons */}
+        <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+          <div className="text-xs text-gray-400 font-josefin font-semibold mb-2 uppercase tracking-wide">
+            Coaching Modes
           </div>
-        </div>
-      </header>
 
-      {/* Mode Selector */}
-      <div className="border-b border-neon-pink/10 bg-black/80">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex gap-2">
-            {(Object.keys(MODE_CONFIG) as CoachingMode[]).map((m) => {
-              const Icon = MODE_CONFIG[m].icon
-              const isActive = mode === m
-              return (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                    isActive
-                      ? `bg-gradient-to-br ${MODE_CONFIG[m].color} text-white ${MODE_CONFIG[m].glow} scale-105`
-                      : 'bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-neon-pink border border-gray-800'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-bold tracking-wide">
-                    {MODE_CONFIG[m].label.toUpperCase()}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
+          <button
+            onClick={() => setMode('BRAIN')}
+            className={`w-full px-4 py-3 rounded-xl font-josefin font-bold text-sm transition-all ${
+              mode === 'BRAIN'
+                ? 'bg-light-teal text-charcoal shadow-[0_0_20px_rgba(0,240,233,0.5)]'
+                : 'bg-light-teal/20 text-light-teal hover:bg-light-teal/30 border border-light-teal/30'
+            }`}
+          >
+            BRAIN
+          </button>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-black via-gray-950 to-black">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          {messages.length === 0 ? (
-            <div className="text-center py-12">
-              <div className={`inline-flex p-6 rounded-full bg-gradient-to-br ${MODE_CONFIG[mode].color} mb-6 ${MODE_CONFIG[mode].glow} animate-pulse-glow`}>
-                <ModeIcon className="w-12 h-12" />
-              </div>
-              <h2 className="text-3xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-neon-pink to-electric-purple">
-                Ready to TRANSFORM?
-              </h2>
-              <p className="text-gray-300 mb-8 text-lg font-semibold">
-                {mode === 'BODY' && 'Let\'s optimize your health and energy.'}
-                {mode === 'BRAIN' && 'Let\'s work with your ADHD brain, not against it.'}
-                {mode === 'BUSINESS' && 'Let\'s build a business that serves your life.'}
-                {mode === 'GENERAL' && 'Choose a mode or ask me anything.'}
-              </p>
+          <button
+            onClick={() => setMode('BODY')}
+            className={`w-full px-4 py-3 rounded-xl font-josefin font-bold text-sm transition-all ${
+              mode === 'BODY'
+                ? 'bg-light-teal text-neon-lime shadow-[0_0_20px_rgba(0,240,233,0.5)]'
+                : 'bg-light-teal/20 text-light-teal hover:bg-light-teal/30 border border-light-teal/30'
+            }`}
+          >
+            BODY
+          </button>
+
+          <button
+            onClick={() => setMode('BUSINESS')}
+            className={`w-full px-4 py-3 rounded-xl font-josefin font-bold text-sm transition-all ${
+              mode === 'BUSINESS'
+                ? 'bg-light-teal text-charcoal shadow-[0_0_20px_rgba(0,240,233,0.5)]'
+                : 'bg-light-teal/20 text-light-teal hover:bg-light-teal/30 border border-light-teal/30'
+            }`}
+          >
+            BUSINESS
+          </button>
+        </div>
+
+        {/* Chat History */}
+        <div className="p-4 border-t border-light-teal/20">
+          <button className="w-full flex items-center gap-2 px-4 py-3 rounded-xl bg-charcoal/60 backdrop-blur-sm text-gray-300 hover:bg-charcoal/80 font-josefin text-sm transition-all border border-light-teal/10">
+            <MessageSquare className="w-4 h-4" />
+            <span>Chat History</span>
+          </button>
+        </div>
+
+        {/* User Info */}
+        <div className="p-4 border-t border-light-teal/20">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 bg-charcoal/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-light-teal/10 flex-1">
+              <User className="w-4 h-4 text-light-teal" />
+              <span className="text-xs font-josefin font-semibold text-gray-300 truncate">
+                {user?.name || user?.email}
+              </span>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-2xl px-5 py-4 rounded-2xl ${
-                      msg.role === 'user'
-                        ? `bg-gradient-to-br ${MODE_CONFIG[mode].color} text-white ${MODE_CONFIG[mode].glow} font-semibold`
-                        : 'bg-gray-900 text-gray-100 border border-gray-800'
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                    {msg.role === 'assistant' && isStreaming && msg.content === '' && (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-neon-pink rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-electric-purple rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Input */}
-      <div className="border-t border-neon-pink/20 bg-black/90 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex gap-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-              className="flex-1 bg-gray-900 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-neon-pink border border-gray-800 font-medium"
-              rows={1}
-              disabled={isStreaming}
-            />
             <button
-              onClick={handleSend}
-              disabled={!input.trim() || isStreaming}
-              className={`px-6 py-3 rounded-lg font-bold transition-all ${
-                !input.trim() || isStreaming
-                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                  : `bg-gradient-to-br ${MODE_CONFIG[mode].color} text-white hover:scale-105 ${MODE_CONFIG[mode].glow}`
-              }`}
+              onClick={handleLogout}
+              className="p-2 rounded-lg bg-charcoal/60 backdrop-blur-sm text-gray-400 hover:bg-hot-pink/20 hover:text-hot-pink border border-light-teal/10 transition-all"
             >
-              <Send className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 font-semibold">
-            SUPERNova AI • {MODE_CONFIG[mode].label} Mode • Powered by Claude
-          </p>
+        </div>
+      </aside>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto backdrop-blur-2xl bg-charcoal/30">
+          <div className="max-w-4xl mx-auto px-6 py-8">
+            {messages.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-8 rounded-3xl bg-gradient-to-br from-hot-pink via-mid-teal to-light-teal mb-6 shadow-[0_0_60px_rgba(0,240,233,0.4)] animate-pulse-glow">
+                  <span className="text-6xl font-supernova text-white">SN</span>
+                </div>
+                <h2 className="text-4xl font-arp-display font-bold mb-4 text-white">
+                  Ready to Transform?
+                </h2>
+                <p className="text-gray-200 mb-8 text-lg font-josefin">
+                  {mode === 'BODY' && 'Let\'s optimize your health and energy.'}
+                  {mode === 'BRAIN' && 'Let\'s work with your ADHD brain, not against it.'}
+                  {mode === 'BUSINESS' && 'Let\'s build a business that serves your life.'}
+                  {mode === 'GENERAL' && 'Choose a mode or ask me anything.'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${
+                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <div
+                      className={`max-w-2xl px-6 py-4 rounded-2xl backdrop-blur-xl font-josefin ${
+                        msg.role === 'user'
+                          ? 'bg-light-teal/90 text-charcoal font-semibold shadow-[0_0_20px_rgba(0,240,233,0.3)]'
+                          : 'bg-charcoal/80 text-white border border-light-teal/20'
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                      {msg.role === 'assistant' && isStreaming && msg.content === '' && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-hot-pink rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-light-teal rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-neon-lime rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="backdrop-blur-2xl bg-charcoal/50 border-t border-light-teal/30">
+          <div className="max-w-4xl mx-auto px-6 py-6">
+            {/* "How can I help?" header */}
+            <div className="mb-3">
+              <h3 className="text-lg font-josefin font-semibold text-light-teal">
+                How can I help?
+              </h3>
+            </div>
+
+            {/* Voice Recorder */}
+            {user && (
+              <div className="mb-4">
+                <VoiceRecorder
+                  userId={user.id}
+                  conversationId={conversationId}
+                  onTranscriptionComplete={handleTranscriptionComplete}
+                />
+              </div>
+            )}
+
+            {/* Input box with glass effect */}
+            <div className="flex gap-3">
+              <div className="flex-1 backdrop-blur-xl bg-white/5 rounded-2xl border-2 border-light-teal/40 shadow-[0_0_30px_rgba(0,240,233,0.2)] focus-within:border-light-teal focus-within:shadow-[0_0_40px_rgba(0,240,233,0.4)] transition-all">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask anything!"
+                  className="w-full bg-transparent text-white px-5 py-4 rounded-2xl resize-none focus:outline-none font-josefin placeholder-gray-400"
+                  rows={1}
+                  disabled={isStreaming}
+                />
+              </div>
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isStreaming}
+                className={`px-8 py-4 rounded-2xl font-josefin font-bold text-sm transition-all ${
+                  !input.trim() || isStreaming
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-br from-hot-pink to-light-teal text-white hover:scale-105 shadow-[0_0_30px_rgba(255,0,142,0.4)] hover:shadow-[0_0_40px_rgba(255,0,142,0.6)]'
+                }`}
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-3 font-josefin text-center">
+              SUPERNova AI • {mode} Mode • Powered by Claude
+            </p>
+          </div>
         </div>
       </div>
     </div>

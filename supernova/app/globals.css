@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap');
 
 :root {
   --background: #000000;
@@ -6,6 +7,14 @@
   --neon-pink: #FF1B8D;
   --electric-purple: #9D4EDD;
   --neon-green: #39FF14;
+
+  /* dAItaniverse brand colors */
+  --hot-pink: #ff008e;
+  --neon-lime: #d3ff2c;
+  --dark-teal: #366f7e;
+  --mid-teal: #00919a;
+  --light-teal: #00f0e9;
+  --charcoal: #3d3d3d;
 }
 
 @theme inline {
@@ -14,14 +23,26 @@
   --color-neon-pink: var(--neon-pink);
   --color-electric-purple: var(--electric-purple);
   --color-neon-green: var(--neon-green);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* dAItaniverse brand colors */
+  --color-hot-pink: var(--hot-pink);
+  --color-neon-lime: var(--neon-lime);
+  --color-dark-teal: var(--dark-teal);
+  --color-mid-teal: var(--mid-teal);
+  --color-light-teal: var(--light-teal);
+  --color-charcoal: var(--charcoal);
+
+  /* Custom fonts */
+  --font-supernova: var(--font-supernova);
+  --font-arp-display: var(--font-arp-display);
+  --font-josefin: 'Josefin Sans', sans-serif;
+  --font-sans: var(--font-josefin);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   margin: 0;
   padding: 0;
 }
@@ -29,6 +50,41 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Custom font utilities */
+.font-supernova {
+  font-family: var(--font-supernova), sans-serif;
+}
+
+.font-arp-display {
+  font-family: var(--font-arp-display), sans-serif;
+}
+
+.font-josefin {
+  font-family: 'Josefin Sans', sans-serif;
+}
+
+/* Custom color utilities */
+.bg-hot-pink { background-color: var(--hot-pink); }
+.bg-neon-lime { background-color: var(--neon-lime); }
+.bg-dark-teal { background-color: var(--dark-teal); }
+.bg-mid-teal { background-color: var(--mid-teal); }
+.bg-light-teal { background-color: var(--light-teal); }
+.bg-charcoal { background-color: var(--charcoal); }
+
+.text-hot-pink { color: var(--hot-pink); }
+.text-neon-lime { color: var(--neon-lime); }
+.text-dark-teal { color: var(--dark-teal); }
+.text-mid-teal { color: var(--mid-teal); }
+.text-light-teal { color: var(--light-teal); }
+.text-charcoal { color: var(--charcoal); }
+
+.border-hot-pink { border-color: var(--hot-pink); }
+.border-neon-lime { border-color: var(--neon-lime); }
+.border-dark-teal { border-color: var(--dark-teal); }
+.border-mid-teal { border-color: var(--mid-teal); }
+.border-light-teal { border-color: var(--light-teal); }
+.border-charcoal { border-color: var(--charcoal); }
 
 /* Custom animations */
 @keyframes fade-in {
@@ -49,10 +105,10 @@ body {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 27, 141, 0.5);
+    box-shadow: 0 0 30px rgba(0, 240, 233, 0.4);
   }
   50% {
-    box-shadow: 0 0 40px rgba(255, 27, 141, 0.8);
+    box-shadow: 0 0 60px rgba(0, 240, 233, 0.7);
   }
 }
 
