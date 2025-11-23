@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import PWAInstall from "@/components/PWAInstall";
+import OnboardingFlow from "@/components/OnboardingFlow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,6 +64,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <OnboardingFlow />
         <Navigation />
         <main className="min-h-screen">
           {children}
