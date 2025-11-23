@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X, Zap } from 'lucide-react';
+import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X } from 'lucide-react';
 
 const navItems = [
-  { name: 'SUPERNova', href: '/supernova', icon: Zap },
   { name: 'Backstage', href: '/backstage', icon: Music },
   { name: 'Setlist', href: '/setlist', icon: ListChecks },
   { name: 'Crew', href: '/crew', icon: Users },
