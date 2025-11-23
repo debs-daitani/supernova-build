@@ -63,6 +63,7 @@ const SetlistScreen: React.FC = () => {
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
 
   const addTask = (phaseId: string) => {
+    if (!phaseId) return;
     setSelectedPhase(phaseId);
     setShowTaskModal(true);
   };
@@ -70,18 +71,19 @@ const SetlistScreen: React.FC = () => {
   const handleSaveTask = (taskData: Omit<Task, 'id' | 'phaseId' | 'order' | 'createdAt' | 'completed'>) => {
     if (!selectedPhase) return;
 
+    const targetPhase = phases.find(p => p?.id === selectedPhase);
     const newTask: Task = {
       ...taskData,
       id: `task-${Date.now()}`,
       phaseId: selectedPhase,
-      order: phases.find(p => p.id === selectedPhase)?.tasks.length || 0,
+      order: targetPhase?.tasks?.length || 0,
       completed: false,
       createdAt: new Date().toISOString(),
     };
 
     setPhases(phases.map(phase =>
-      phase.id === selectedPhase
-        ? { ...phase, tasks: [...phase.tasks, newTask] }
+      phase?.id === selectedPhase
+        ? { ...phase, tasks: [...(phase.tasks || []), newTask] }
         : phase
     ));
 
@@ -119,7 +121,7 @@ const SetlistScreen: React.FC = () => {
 
       {/* Phases */}
       <ScrollView style={styles.phasesContainer}>
-        {phases.map((phase) => (
+        {(phases || []).filter(phase => phase != null).map((phase) => (
           <View key={phase.id} style={styles.phaseCard}>
             <View style={styles.phaseHeader}>
               <View style={[styles.phaseColorBar, { backgroundColor: phase?.color || colors.pink }]} />
@@ -131,7 +133,7 @@ const SetlistScreen: React.FC = () => {
             </View>
 
             {/* Tasks */}
-            {(phase?.tasks || []).map((task) => (
+            {(phase?.tasks || []).filter(task => task != null).map((task) => (
               <View key={task.id} style={styles.taskCard}>
                 <View style={styles.taskHeader}>
                   <Text style={styles.taskTitle}>{task?.title || 'Untitled Task'}</Text>
@@ -154,7 +156,7 @@ const SetlistScreen: React.FC = () => {
             {/* Add Task Button */}
             <TouchableOpacity
               style={styles.addTaskButton}
-              onPress={() => addTask(phase.id)}
+              onPress={() => phase?.id && addTask(phase.id)}
             >
               <Text style={styles.addTaskText}>+ Add Task</Text>
             </TouchableOpacity>
