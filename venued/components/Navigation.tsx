@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X } from 'lucide-react';
+import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X, TrendingUp } from 'lucide-react';
 
 const navItems = [
   { name: 'Backstage', href: '/backstage', icon: Music },
@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Crew', href: '/crew', icon: Users },
   { name: 'Tour', href: '/tour', icon: Calendar },
   { name: 'Entourage', href: '/entourage', icon: Sparkles },
+  { name: 'Analytics', href: '/analytics', icon: TrendingUp },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
