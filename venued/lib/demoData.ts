@@ -277,6 +277,9 @@ export const exportData = () => {
       projects: localStorage.getItem('venued_projects'),
       crewTasks: localStorage.getItem('venued_crew_tasks'),
       adhdData: localStorage.getItem('venued_adhd_data'),
+      userProfile: localStorage.getItem('venued_user_profile'),
+      userPreferences: localStorage.getItem('venued_user_preferences'),
+      achievements: localStorage.getItem('venued_achievements_unlocked'),
     },
   };
 
@@ -287,6 +290,14 @@ export const exportData = () => {
   a.download = `venued-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
+
+  // Mark achievement
+  try {
+    const { markDataExportAchievement } = require('./achievements');
+    markDataExportAchievement();
+  } catch (e) {
+    // Ignore if achievements not available
+  }
 };
 
 export const importData = (file: File): Promise<void> => {
@@ -305,6 +316,15 @@ export const importData = (file: File): Promise<void> => {
         }
         if (data.data.adhdData) {
           localStorage.setItem('venued_adhd_data', data.data.adhdData);
+        }
+        if (data.data.userProfile) {
+          localStorage.setItem('venued_user_profile', data.data.userProfile);
+        }
+        if (data.data.userPreferences) {
+          localStorage.setItem('venued_user_preferences', data.data.userPreferences);
+        }
+        if (data.data.achievements) {
+          localStorage.setItem('venued_achievements_unlocked', data.data.achievements);
         }
 
         resolve();
