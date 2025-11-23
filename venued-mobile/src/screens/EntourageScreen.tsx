@@ -87,7 +87,7 @@ const EntourageScreen: React.FC = () => {
               placeholderTextColor={colors.textMuted}
               value={newDump}
               onChangeText={setNewDump}
-              multiline
+              multiline={true}
             />
             <TouchableOpacity style={styles.addButton} onPress={addBrainDump}>
               <Text style={styles.addButtonText}>Add</Text>

@@ -63,7 +63,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   return (
     <Modal
       visible={visible}
-      transparent
+      transparent={true}
       animationType="slide"
       onRequestClose={onClose}
     >
@@ -92,7 +92,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               placeholderTextColor={colors.textMuted}
               value={title}
               onChangeText={setTitle}
-              autoFocus
+              autoFocus={true}
             />
 
             <Text style={styles.label}>Description</Text>
@@ -102,7 +102,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               placeholderTextColor={colors.textMuted}
               value={description}
               onChangeText={setDescription}
-              multiline
+              multiline={true}
               numberOfLines={3}
             />
 
@@ -188,10 +188,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.saveButton, !title.trim() && styles.saveButtonDisabled]}
-              onPress={handleSave}
-              disabled={!title.trim()}
-            >
+  style={[styles.saveButton, !name.trim() && styles.disabledButton]}
+  onPress={!name.trim() ? undefined : handleSave}
+  activeOpacity={!name.trim() ? 1 : 0.7}
+>
               <LinearGradient colors={gradients.primary} style={styles.saveButtonGradient}>
                 <Text style={styles.saveButtonText}>Save Task</Text>
               </LinearGradient>

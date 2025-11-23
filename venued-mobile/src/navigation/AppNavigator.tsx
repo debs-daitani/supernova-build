@@ -17,15 +17,18 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Tab icon component
-const TabIcon = ({ label, focused }: { label: string; focused: boolean }) => (
-  <Text style={{
-    color: focused ? colors.pink : colors.textMuted,
-    fontSize: 10,
-    fontWeight: focused ? '700' : '400',
-  }}>
-    {label}
-  </Text>
-);
+const TabIcon = ({ label, focused }: { label: string; focused: boolean | string }) => {
+  const isFocused = focused === true || focused === 'true';
+  return (
+    <Text style={{
+      color: isFocused ? colors.pink : colors.textMuted,
+      fontSize: 10,
+      fontWeight: isFocused ? '700' : '400',
+    }}>
+      {label}
+    </Text>
+  );
+};
 
 const MainTabs = () => {
   return (

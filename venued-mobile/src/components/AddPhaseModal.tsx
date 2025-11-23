@@ -57,7 +57,7 @@ const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   return (
     <Modal
       visible={visible}
-      transparent
+      transparent={true}
       animationType="slide"
       onRequestClose={onClose}
     >
@@ -86,7 +86,7 @@ const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
               placeholderTextColor={colors.textMuted}
               value={name}
               onChangeText={setName}
-              autoFocus
+              autoFocus={true}
             />
 
             <Text style={styles.label}>Description</Text>
@@ -96,7 +96,7 @@ const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
               placeholderTextColor={colors.textMuted}
               value={description}
               onChangeText={setDescription}
-              multiline
+              multiline={true}
               numberOfLines={3}
             />
 
@@ -126,10 +126,10 @@ const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.saveButton, !name.trim() && styles.saveButtonDisabled]}
-              onPress={handleSave}
-              disabled={!name.trim()}
-            >
+  style={[styles.saveButton, !name.trim() && styles.disabledButton]}
+  onPress={!name.trim() ? undefined : handleSave}
+  activeOpacity={!name.trim() ? 1 : 0.7}
+>
               <LinearGradient colors={gradients.primary} style={styles.saveButtonGradient}>
                 <Text style={styles.saveButtonText}>Save Phase</Text>
               </LinearGradient>
