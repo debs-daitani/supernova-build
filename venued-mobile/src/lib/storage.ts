@@ -9,6 +9,8 @@ const KEYS = {
   PHASES: 'venued_phases',
   CREW_STATS: 'venued_crew_stats',
   EXECUTIVE_FUNCTION: 'venued_executive_function',
+  FOCUS_SESSIONS: 'venued_focus_sessions',
+  TIME_TRACKING: 'venued_time_tracking',
 };
 
 // Projects
@@ -211,6 +213,46 @@ export const saveExecutiveFunctionTasks = async (tasks: any[]): Promise<void> =>
   }
 };
 
+// Focus Sessions
+export const getFocusSessions = async (): Promise<any[]> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.FOCUS_SESSIONS);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading focus sessions:', error);
+    return [];
+  }
+};
+
+export const saveFocusSession = async (session: any): Promise<void> => {
+  try {
+    const sessions = await getFocusSessions();
+    await AsyncStorage.setItem(KEYS.FOCUS_SESSIONS, JSON.stringify([session, ...sessions]));
+  } catch (error) {
+    console.error('Error saving focus session:', error);
+  }
+};
+
+// Time Tracking
+export const getTimeTrackingData = async (): Promise<any[]> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.TIME_TRACKING);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading time tracking:', error);
+    return [];
+  }
+};
+
+export const saveTimeTrackingEntry = async (entry: any): Promise<void> => {
+  try {
+    const entries = await getTimeTrackingData();
+    await AsyncStorage.setItem(KEYS.TIME_TRACKING, JSON.stringify([entry, ...entries]));
+  } catch (error) {
+    console.error('Error saving time tracking:', error);
+  }
+};
+
 // Clear all data
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -222,6 +264,8 @@ export const clearAllData = async (): Promise<void> => {
       KEYS.PHASES,
       KEYS.CREW_STATS,
       KEYS.EXECUTIVE_FUNCTION,
+      KEYS.FOCUS_SESSIONS,
+      KEYS.TIME_TRACKING,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);

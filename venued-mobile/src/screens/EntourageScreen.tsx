@@ -58,7 +58,7 @@ const EntourageScreen: React.FC<NavigationProps> = ({ navigation }) => {
   };
 
   const adhdTools = [
-    { icon: '⏰', name: 'Time Blindness Tracker', subtitle: 'Track estimates vs reality', route: null },
+    { icon: '⏰', name: 'Time Blindness Tracker', subtitle: 'Track estimates vs reality', route: 'TimeBlindness' },
     { icon: '🎯', name: 'Hyperfocus Logger', subtitle: 'Log your flow states', route: null },
     { icon: '⚡', name: 'Energy Tracker', subtitle: 'Map your energy patterns', route: null },
     { icon: '🧩', name: 'Executive Function Helper', subtitle: 'Break through paralysis', route: 'ExecutiveFunction' },

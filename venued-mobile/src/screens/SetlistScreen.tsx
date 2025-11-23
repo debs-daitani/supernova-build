@@ -26,9 +26,54 @@ const SetlistScreen: React.FC = () => {
   }, []);
 
   const loadPhases = async () => {
-    const data = await getPhases();
-    if (data.length === 0) {
-      // Initialize with default phases if none exist
+    try {
+      const data = await getPhases();
+
+      // Validate data structure
+      const validPhases = data.filter(phase =>
+        phase &&
+        typeof phase === 'object' &&
+        phase.id &&
+        phase.name &&
+        typeof phase.name === 'string'
+      );
+
+      if (validPhases.length === 0) {
+        // Initialize with default phases if none exist or data is corrupted
+        const defaultPhases: Phase[] = [
+          {
+            id: '1',
+            name: 'Planning',
+            description: 'Define and plan the project',
+            order: 0,
+            tasks: [],
+            color: colors.cyan,
+          },
+          {
+            id: '2',
+            name: 'Development',
+            description: 'Build and create',
+            order: 1,
+            tasks: [],
+            color: colors.green,
+          },
+          {
+            id: '3',
+            name: 'Launch',
+            description: 'Go live and celebrate',
+            order: 2,
+            tasks: [],
+            color: colors.pink,
+          },
+        ];
+        await savePhases(defaultPhases);
+        setPhases(defaultPhases);
+      } else {
+        setPhases(validPhases);
+      }
+    } catch (error) {
+      console.error('Error loading phases:', error);
+      // Fallback to default phases on error
       const defaultPhases: Phase[] = [
         {
           id: '1',
@@ -55,10 +100,7 @@ const SetlistScreen: React.FC = () => {
           color: colors.pink,
         },
       ];
-      await savePhases(defaultPhases);
       setPhases(defaultPhases);
-    } else {
-      setPhases(data);
     }
   };
 

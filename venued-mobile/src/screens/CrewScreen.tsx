@@ -17,7 +17,11 @@ import { getCrewTasks, updateCrewTask, getCrewStats, saveCrewStats } from '../li
 import { calculateTaskPoints, getLevelFromPoints } from '../lib/crew';
 import ConfettiCelebration from '../components/ConfettiCelebration';
 
-const CrewScreen: React.FC = () => {
+interface NavigationProps {
+  navigation: any;
+}
+
+const CrewScreen: React.FC<NavigationProps> = ({ navigation }) => {
   const [tasks, setTasks] = useState<CrewTask[]>([]);
   const [filter, setFilter] = useState<'today' | 'tomorrow' | 'week'>('today');
   const [energyFilter, setEnergyFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
@@ -245,7 +249,10 @@ const CrewScreen: React.FC = () => {
       </ScrollView>
 
       {/* Focus Timer Button */}
-      <TouchableOpacity style={styles.focusButton}>
+      <TouchableOpacity
+        style={styles.focusButton}
+        onPress={() => navigation.navigate('FocusTimer')}
+      >
         <LinearGradient colors={gradients.primary} style={styles.focusButtonGradient}>
           <Text style={styles.focusButtonText}>🎯 Start Focus Session</Text>
         </LinearGradient>
