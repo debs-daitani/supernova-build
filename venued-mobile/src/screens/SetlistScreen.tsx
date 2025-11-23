@@ -7,12 +7,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  TextInput,
-  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, gradients } from '../theme/colors';
 import { Phase, Task } from '../types';
+import AddPhaseModal from '../components/AddPhaseModal';
+import AddTaskModal from '../components/AddTaskModal';
 
 const SetlistScreen: React.FC = () => {
   const [phases, setPhases] = useState<Phase[]>([
@@ -59,11 +59,46 @@ const SetlistScreen: React.FC = () => {
   ]);
 
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showPhaseModal, setShowPhaseModal] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
 
   const addTask = (phaseId: string) => {
     setSelectedPhase(phaseId);
     setShowTaskModal(true);
+  };
+
+  const handleSaveTask = (taskData: Omit<Task, 'id' | 'phaseId' | 'order' | 'createdAt' | 'completed'>) => {
+    if (!selectedPhase) return;
+
+    const newTask: Task = {
+      ...taskData,
+      id: `task-${Date.now()}`,
+      phaseId: selectedPhase,
+      order: phases.find(p => p.id === selectedPhase)?.tasks.length || 0,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    setPhases(phases.map(phase =>
+      phase.id === selectedPhase
+        ? { ...phase, tasks: [...phase.tasks, newTask] }
+        : phase
+    ));
+
+    setShowTaskModal(false);
+    setSelectedPhase(null);
+  };
+
+  const handleSavePhase = (phaseData: Omit<Phase, 'id' | 'order' | 'tasks'>) => {
+    const newPhase: Phase = {
+      ...phaseData,
+      id: `phase-${Date.now()}`,
+      order: phases.length,
+      tasks: [],
+    };
+
+    setPhases([...phases, newPhase]);
+    setShowPhaseModal(false);
   };
 
   return (
@@ -127,6 +162,16 @@ const SetlistScreen: React.FC = () => {
         ))}
       </ScrollView>
 
+      {/* Add Phase Button */}
+      <TouchableOpacity
+        style={styles.addPhaseButton}
+        onPress={() => setShowPhaseModal(true)}
+      >
+        <LinearGradient colors={gradients.primary} style={styles.addPhaseGradient}>
+          <Text style={styles.addPhaseText}>+ Add New Phase</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
       {/* ADHD Reality Check */}
       <View style={styles.realityCheck}>
         <Text style={styles.realityText}>⚠️ ADHD Reality Check</Text>
@@ -134,6 +179,22 @@ const SetlistScreen: React.FC = () => {
           Remember to add buffer time - we're usually 1.8x optimistic!
         </Text>
       </View>
+
+      {/* Modals */}
+      <AddPhaseModal
+        visible={showPhaseModal}
+        onClose={() => setShowPhaseModal(false)}
+        onSave={handleSavePhase}
+      />
+
+      <AddTaskModal
+        visible={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setSelectedPhase(null);
+        }}
+        onSave={handleSaveTask}
+      />
     </SafeAreaView>
   );
 };
@@ -278,6 +339,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.pink,
+  },
+  addPhaseButton: {
+    margin: 16,
+    marginTop: 0,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  addPhaseGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  addPhaseText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
   },
   realityCheck: {
     backgroundColor: colors.warning,

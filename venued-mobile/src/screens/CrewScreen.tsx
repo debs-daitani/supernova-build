@@ -7,16 +7,20 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, gradients } from '../theme/colors';
 import { CrewTask, CrewStats } from '../types';
 import { getCrewTasks, updateCrewTask } from '../lib/storage';
+import ConfettiCelebration from '../components/ConfettiCelebration';
 
 const CrewScreen: React.FC = () => {
   const [tasks, setTasks] = useState<CrewTask[]>([]);
   const [filter, setFilter] = useState<'today' | 'tomorrow' | 'week'>('today');
   const [energyFilter, setEnergyFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -30,9 +34,20 @@ const CrewScreen: React.FC = () => {
   const toggleTaskComplete = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (task) {
+      const isCompleting = !task.completed;
+
+      // Trigger haptic feedback
+      if (isCompleting) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
       await updateCrewTask(taskId, {
-        completed: !task.completed,
-        completedAt: !task.completed ? new Date().toISOString() : undefined,
+        completed: isCompleting,
+        completedAt: isCompleting ? new Date().toISOString() : undefined,
       });
       await loadTasks();
     }
@@ -194,6 +209,9 @@ const CrewScreen: React.FC = () => {
           <Text style={styles.focusButtonText}>🎯 Start Focus Session</Text>
         </LinearGradient>
       </TouchableOpacity>
+
+      {/* Confetti Celebration */}
+      <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} />
     </SafeAreaView>
   );
 };
