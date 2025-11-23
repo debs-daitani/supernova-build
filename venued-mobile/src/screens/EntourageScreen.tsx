@@ -15,7 +15,11 @@ import { colors, gradients } from '../theme/colors';
 import { ADHDData, BrainDump } from '../types';
 import { getADHDData, saveADHDData } from '../lib/storage';
 
-const EntourageScreen: React.FC = () => {
+interface NavigationProps {
+  navigation: any;
+}
+
+const EntourageScreen: React.FC<NavigationProps> = ({ navigation }) => {
   const [adhdData, setADHDData] = useState<ADHDData>({
     brainDumps: [],
     energyLogs: [],
@@ -54,21 +58,25 @@ const EntourageScreen: React.FC = () => {
   };
 
   const adhdTools = [
-    { icon: '⏰', name: 'Time Blindness Tracker', subtitle: 'Track estimates vs reality' },
-    { icon: '🎯', name: 'Hyperfocus Logger', subtitle: 'Log your flow states' },
-    { icon: '⚡', name: 'Energy Tracker', subtitle: 'Map your energy patterns' },
-    { icon: '🧩', name: 'Executive Function Helper', subtitle: 'Break through paralysis' },
-    { icon: '🎁', name: 'Dopamine Menu', subtitle: 'Reward system' },
-    { icon: '👥', name: 'Body Doubling', subtitle: 'Virtual work companion' },
-    { icon: '📊', name: 'Pattern Insights', subtitle: 'Personalized recommendations' },
+    { icon: '⏰', name: 'Time Blindness Tracker', subtitle: 'Track estimates vs reality', route: null },
+    { icon: '🎯', name: 'Hyperfocus Logger', subtitle: 'Log your flow states', route: null },
+    { icon: '⚡', name: 'Energy Tracker', subtitle: 'Map your energy patterns', route: null },
+    { icon: '🧩', name: 'Executive Function Helper', subtitle: 'Break through paralysis', route: 'ExecutiveFunction' },
+    { icon: '🎁', name: 'Dopamine Menu', subtitle: 'Reward system', route: null },
+    { icon: '👥', name: 'Body Doubling', subtitle: 'Virtual work companion', route: null },
+    { icon: '📊', name: 'Pattern Insights', subtitle: 'Personalized recommendations', route: null },
   ];
 
-  const handleToolPress = (toolName: string) => {
-    Alert.alert(
-      toolName,
-      'This feature is coming soon! 🚀\n\nWe\'re building specialized ADHD support tools to help you work with your brain, not against it.',
-      [{ text: 'Got it!' }]
-    );
+  const handleToolPress = (tool: { name: string; route: string | null }) => {
+    if (tool.route) {
+      navigation.navigate(tool.route);
+    } else {
+      Alert.alert(
+        tool.name,
+        'This feature is coming soon! 🚀\n\nWe\'re building specialized ADHD support tools to help you work with your brain, not against it.',
+        [{ text: 'Got it!' }]
+      );
+    }
   };
 
   return (
@@ -134,7 +142,7 @@ const EntourageScreen: React.FC = () => {
             <TouchableOpacity
               key={index}
               style={styles.toolCard}
-              onPress={() => handleToolPress(tool.name)}
+              onPress={() => handleToolPress(tool)}
             >
               <Text style={styles.toolIcon}>{tool.icon}</Text>
               <View style={styles.toolContent}>
