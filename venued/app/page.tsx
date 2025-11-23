@@ -114,7 +114,7 @@ export default function Home() {
             ) : (
               <Link
                 href="/backstage"
-                className="group inline-flex items-center gap-3 px-10 py-5 text-xl font-bold text-black bg-neon-pink rounded-full hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-[0_0_30px_rgba(255,27,141,0.5)] hover:shadow-[0_0_50px_rgba(255,27,141,0.8)]"
+                className="group inline-flex items-center gap-3 px-10 py-5 text-xl font-bold text-black bg-neon-pink rounded-full hover:bg-white transition-all duration-all duration-300 transform hover:scale-105 shadow-[0_0_30px_rgba(255,27,141,0.5)] hover:shadow-[0_0_50px_rgba(255,27,141,0.8)]"
               >
                 Get VENUED
                 <Rocket className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -127,6 +127,30 @@ export default function Home() {
             >
               Start Fresh
             </Link>
+          </div>
+
+          {/* SUPERNova AI Button */}
+          <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-electric-purple/20 to-neon-pink/20 border border-neon-pink/30 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-left">
+                <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-pink to-electric-purple mb-2">
+                  Meet SUPERNova AI
+                </h3>
+                <p className="text-gray-300 font-semibold">
+                  Your bold, direct, anti-BS coaching assistant for Body, Brain & Business
+                </p>
+              </div>
+              <a
+                href="http://localhost:3001"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-neon-pink to-electric-purple rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,27,141,0.5)] hover:shadow-[0_0_40px_rgba(255,27,141,0.8)]"
+              >
+                <Zap className="w-5 h-5 animate-pulse" />
+                Launch SUPERNova
+                <Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
           </div>
 
           {/* Secondary text */}
