@@ -13,85 +13,85 @@ import { colors, gradients } from '../theme/colors';
 import { Phase, Task } from '../types';
 import AddPhaseModal from '../components/AddPhaseModal';
 import AddTaskModal from '../components/AddTaskModal';
+import { getPhases, savePhases } from '../lib/storage';
 
 const SetlistScreen: React.FC = () => {
-  const [phases, setPhases] = useState<Phase[]>([
-    {
-      id: '1',
-      name: 'Planning',
-      description: 'Define and plan the project',
-      order: 0,
-      tasks: [],
-      color: colors.cyan,
-    },
-    {
-      id: '2',
-      name: 'Development',
-      description: 'Build and create',
-      order: 1,
-      tasks: [
-        {
-          id: 't1',
-          title: 'Set up project structure',
-          description: 'Initialize repository and basic setup',
-          phaseId: '2',
-          energyLevel: 'high',
-          estimatedHours: 2,
-          difficulty: 'medium',
-          isHyperfocus: true,
-          isQuickWin: false,
-          dependencies: [],
-          completed: false,
-          order: 0,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      color: colors.green,
-    },
-    {
-      id: '3',
-      name: 'Launch',
-      description: 'Go live and celebrate',
-      order: 2,
-      tasks: [],
-      color: colors.pink,
-    },
-  ]);
-
+  const [phases, setPhases] = useState<Phase[]>([]);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showPhaseModal, setShowPhaseModal] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
 
+  useEffect(() => {
+    loadPhases();
+  }, []);
+
+  const loadPhases = async () => {
+    const data = await getPhases();
+    if (data.length === 0) {
+      // Initialize with default phases if none exist
+      const defaultPhases: Phase[] = [
+        {
+          id: '1',
+          name: 'Planning',
+          description: 'Define and plan the project',
+          order: 0,
+          tasks: [],
+          color: colors.cyan,
+        },
+        {
+          id: '2',
+          name: 'Development',
+          description: 'Build and create',
+          order: 1,
+          tasks: [],
+          color: colors.green,
+        },
+        {
+          id: '3',
+          name: 'Launch',
+          description: 'Go live and celebrate',
+          order: 2,
+          tasks: [],
+          color: colors.pink,
+        },
+      ];
+      await savePhases(defaultPhases);
+      setPhases(defaultPhases);
+    } else {
+      setPhases(data);
+    }
+  };
+
   const addTask = (phaseId: string) => {
-    if (!phaseId) return;
     setSelectedPhase(phaseId);
     setShowTaskModal(true);
   };
 
-  const handleSaveTask = (taskData: Omit<Task, 'id' | 'phaseId' | 'order' | 'createdAt' | 'completed'>) => {
+  const handleSaveTask = async (taskData: Omit<Task, 'id' | 'phaseId' | 'order' | 'createdAt' | 'completed'>) => {
     if (!selectedPhase) return;
 
-    const targetPhase = phases.find(p => p?.id === selectedPhase);
     const newTask: Task = {
       ...taskData,
       id: `task-${Date.now()}`,
       phaseId: selectedPhase,
-      order: targetPhase?.tasks?.length || 0,
+      order: phases.find(p => p.id === selectedPhase)?.tasks?.length || 0,
       completed: false,
       createdAt: new Date().toISOString(),
     };
 
-    setPhases(phases.map(phase =>
-      phase?.id === selectedPhase
+    const updatedPhases = phases.map(phase =>
+      phase.id === selectedPhase
         ? { ...phase, tasks: [...(phase.tasks || []), newTask] }
         : phase
-    ));
+    );
 
+    await savePhases(updatedPhases);
+    setPhases(updatedPhases);
     setShowTaskModal(false);
     setSelectedPhase(null);
   };
 
-  const handleSavePhase = (phaseData: Omit<Phase, 'id' | 'order' | 'tasks'>) => {
+  const handleSavePhase = async (phaseData: Omit<Phase, 'id' | 'order' | 'tasks'>) => {
     const newPhase: Phase = {
       ...phaseData,
       id: `phase-${Date.now()}`,
@@ -99,7 +99,9 @@ const SetlistScreen: React.FC = () => {
       tasks: [],
     };
 
-    setPhases([...phases, newPhase]);
+    const updatedPhases = [...phases, newPhase];
+    await savePhases(updatedPhases);
+    setPhases(updatedPhases);
     setShowPhaseModal(false);
   };
 
@@ -121,7 +123,7 @@ const SetlistScreen: React.FC = () => {
 
       {/* Phases */}
       <ScrollView style={styles.phasesContainer}>
-        {(phases || []).filter(phase => phase != null).map((phase) => (
+        {phases.map((phase) => (
           <View key={phase.id} style={styles.phaseCard}>
             <View style={styles.phaseHeader}>
               <View style={[styles.phaseColorBar, { backgroundColor: phase?.color || colors.pink }]} />
@@ -133,7 +135,7 @@ const SetlistScreen: React.FC = () => {
             </View>
 
             {/* Tasks */}
-            {(phase?.tasks || []).filter(task => task != null).map((task) => (
+            {(phase?.tasks || []).map((task) => (
               <View key={task.id} style={styles.taskCard}>
                 <View style={styles.taskHeader}>
                   <Text style={styles.taskTitle}>{task?.title || 'Untitled Task'}</Text>
@@ -156,7 +158,7 @@ const SetlistScreen: React.FC = () => {
             {/* Add Task Button */}
             <TouchableOpacity
               style={styles.addTaskButton}
-              onPress={() => phase?.id && addTask(phase.id)}
+              onPress={() => addTask(phase.id)}
             >
               <Text style={styles.addTaskText}>+ Add Task</Text>
             </TouchableOpacity>

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StatusBar,
   TextInput,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, gradients } from '../theme/colors';
@@ -61,6 +62,14 @@ const EntourageScreen: React.FC = () => {
     { icon: '👥', name: 'Body Doubling', subtitle: 'Virtual work companion' },
     { icon: '📊', name: 'Pattern Insights', subtitle: 'Personalized recommendations' },
   ];
+
+  const handleToolPress = (toolName: string) => {
+    Alert.alert(
+      toolName,
+      'This feature is coming soon! 🚀\n\nWe\'re building specialized ADHD support tools to help you work with your brain, not against it.',
+      [{ text: 'Got it!' }]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,7 +131,11 @@ const EntourageScreen: React.FC = () => {
           </Text>
 
           {adhdTools.map((tool, index) => (
-            <TouchableOpacity key={index} style={styles.toolCard}>
+            <TouchableOpacity
+              key={index}
+              style={styles.toolCard}
+              onPress={() => handleToolPress(tool.name)}
+            >
               <Text style={styles.toolIcon}>{tool.icon}</Text>
               <View style={styles.toolContent}>
                 <Text style={styles.toolName}>{tool.name}</Text>

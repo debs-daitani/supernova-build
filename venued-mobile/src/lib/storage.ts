@@ -6,6 +6,8 @@ const KEYS = {
   CREW_TASKS: 'venued_crew_tasks',
   ADHD_DATA: 'venued_adhd_data',
   DEMO_LOADED: 'demo_data_loaded',
+  PHASES: 'venued_phases',
+  CREW_STATS: 'venued_crew_stats',
 };
 
 // Projects
@@ -125,6 +127,70 @@ export const markDemoDataLoaded = async (): Promise<void> => {
   }
 };
 
+// Phases
+export const getPhases = async (): Promise<any[]> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.PHASES);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading phases:', error);
+    return [];
+  }
+};
+
+export const savePhases = async (phases: any[]): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(KEYS.PHASES, JSON.stringify(phases));
+  } catch (error) {
+    console.error('Error saving phases:', error);
+  }
+};
+
+// Crew Stats
+export const getCrewStats = async (): Promise<any> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.CREW_STATS);
+    return data ? JSON.parse(data) : {
+      totalPoints: 0,
+      level: 1,
+      tasksCompleted: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      tasksByRole: {
+        roadie: 0,
+        sound_engineer: 0,
+        stage_manager: 0,
+        lighting_tech: 0,
+        tour_manager: 0,
+      },
+    };
+  } catch (error) {
+    console.error('Error loading crew stats:', error);
+    return {
+      totalPoints: 0,
+      level: 1,
+      tasksCompleted: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      tasksByRole: {
+        roadie: 0,
+        sound_engineer: 0,
+        stage_manager: 0,
+        lighting_tech: 0,
+        tour_manager: 0,
+      },
+    };
+  }
+};
+
+export const saveCrewStats = async (stats: any): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(KEYS.CREW_STATS, JSON.stringify(stats));
+  } catch (error) {
+    console.error('Error saving crew stats:', error);
+  }
+};
+
 // Clear all data
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -133,6 +199,8 @@ export const clearAllData = async (): Promise<void> => {
       KEYS.CREW_TASKS,
       KEYS.ADHD_DATA,
       KEYS.DEMO_LOADED,
+      KEYS.PHASES,
+      KEYS.CREW_STATS,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);
