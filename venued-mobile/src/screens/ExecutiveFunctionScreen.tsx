@@ -42,6 +42,7 @@ const ExecutiveFunctionScreen: React.FC<NavigationProps> = ({ navigation }) => {
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newStepText, setNewStepText] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -55,6 +56,120 @@ const ExecutiveFunctionScreen: React.FC<NavigationProps> = ({ navigation }) => {
   const saveTasks = async (updatedTasks: ExecutiveTask[]) => {
     await saveExecutiveFunctionTasks(updatedTasks);
     setTasks(updatedTasks);
+  };
+
+  const generateAISteps = (taskTitle: string, taskDescription: string): string[] => {
+    const title = taskTitle.toLowerCase();
+    const desc = taskDescription.toLowerCase();
+
+    // Kitchen cleaning
+    if (title.includes('kitchen') || title.includes('clean kitchen')) {
+      return [
+        'Put one dirty dish in the dishwasher',
+        'Wipe down one section of the counter',
+        'Take out the trash if it\'s full',
+        'Put away one item that doesn\'t belong',
+        'Wipe the sink',
+      ];
+    }
+
+    // Email/inbox
+    if (title.includes('email') || title.includes('inbox')) {
+      return [
+        'Open email app',
+        'Delete 5 obvious spam emails',
+        'Reply to one urgent email',
+        'Mark 3 emails as read',
+        'Archive old emails from last month',
+      ];
+    }
+
+    // Laundry
+    if (title.includes('laundry') || title.includes('clothes')) {
+      return [
+        'Pick up clothes from one spot',
+        'Sort into one pile (darks/lights)',
+        'Put one load in the washer',
+        'Set a timer for when it\'s done',
+        'Move to dryer when timer goes off',
+      ];
+    }
+
+    // Paperwork/admin
+    if (title.includes('paperwork') || title.includes('bills') || title.includes('admin')) {
+      return [
+        'Gather all papers in one pile',
+        'Sort into 2 categories: urgent vs later',
+        'Deal with the first urgent item',
+        'File or discard 5 old papers',
+        'Take a photo of important documents',
+      ];
+    }
+
+    // Exercise/workout
+    if (title.includes('exercise') || title.includes('workout') || title.includes('gym')) {
+      return [
+        'Put on workout clothes',
+        'Fill water bottle',
+        'Do 5 minutes of stretching',
+        'Start with one simple exercise',
+        'Celebrate that you started!',
+      ];
+    }
+
+    // Studying/learning
+    if (title.includes('study') || title.includes('learn') || title.includes('read')) {
+      return [
+        'Find the materials you need',
+        'Set a 15-minute timer',
+        'Read one page or section',
+        'Write down one key point',
+        'Take a 5-minute break',
+      ];
+    }
+
+    // Generic task breakdown
+    return [
+      'Gather everything you need for this task',
+      'Do the absolute tiniest first step',
+      'Take a 2-minute break',
+      'Do one more small step',
+      'Reward yourself for starting!',
+    ];
+  };
+
+  const handleAISuggest = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    setIsGenerating(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Simulate AI thinking
+    setTimeout(() => {
+      const suggestedSteps = generateAISteps(task.title, task.description);
+
+      const updatedTasks = tasks.map(t => {
+        if (t.id === taskId) {
+          const newSteps: MicroStep[] = suggestedSteps.map((text, index) => ({
+            id: `step-${Date.now()}-${index}`,
+            text,
+            completed: false,
+            order: t.microSteps.length + index,
+          }));
+
+          return {
+            ...t,
+            microSteps: [...t.microSteps, ...newSteps],
+          };
+        }
+        return t;
+      });
+
+      saveTasks(updatedTasks);
+      setIsGenerating(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }, 1500);
   };
 
   const createTask = () => {
@@ -179,15 +294,18 @@ const ExecutiveFunctionScreen: React.FC<NavigationProps> = ({ navigation }) => {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <LinearGradient colors={gradients.primary} style={styles.headerGradient}>
-          <Text style={styles.headerTitle}>🧩 Executive Function Helper</Text>
-          <Text style={styles.headerSubtitle}>Break Through Task Paralysis</Text>
-        </LinearGradient>
-      </View>
+      <LinearGradient colors={gradients.primary} style={styles.headerGradient}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>✕ Close</Text>
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>🧩 Executive Function Helper</Text>
+            <Text style={styles.headerSubtitle}>Break Through Task Paralysis</Text>
+          </View>
+          <View style={styles.headerSpacer} />
+        </View>
+      </LinearGradient>
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
@@ -288,12 +406,31 @@ const ExecutiveFunctionScreen: React.FC<NavigationProps> = ({ navigation }) => {
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity
-                  style={styles.addStepButton}
-                  onPress={() => setEditingTaskId(task.id)}
-                >
-                  <Text style={styles.addStepText}>+ Add micro-step</Text>
-                </TouchableOpacity>
+                <View>
+                  <TouchableOpacity
+                    style={styles.addStepButton}
+                    onPress={() => setEditingTaskId(task.id)}
+                  >
+                    <Text style={styles.addStepText}>+ Add micro-step manually</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.aiSuggestButton}
+                    onPress={() => handleAISuggest(task.id)}
+                    disabled={isGenerating}
+                  >
+                    <LinearGradient
+                      colors={isGenerating ? [colors.textMuted, colors.textMuted] : ['#9D4EDD', '#FF1B8D']}
+                      style={styles.aiSuggestGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    >
+                      <Text style={styles.aiSuggestText}>
+                        {isGenerating ? '✨ Generating...' : '✨ AI Suggest Steps'}
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
               )}
 
               {isComplete && (
@@ -387,34 +524,42 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    position: 'relative',
+  headerGradient: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 16,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   backButton: {
-    position: 'absolute',
-    top: 10,
-    left: 16,
-    zIndex: 10,
     padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
   },
   backButtonText: {
-    color: colors.pink,
+    color: colors.text,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  headerGradient: {
-    padding: 20,
-    paddingTop: 40,
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerSpacer: {
+    width: 70,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '900',
     color: colors.text,
     marginBottom: 4,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
     opacity: 0.8,
     textAlign: 'center',
@@ -548,6 +693,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.pink,
+  },
+  aiSuggestButton: {
+    marginTop: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  aiSuggestGradient: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  aiSuggestText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
   },
   addStepForm: {
     borderTopWidth: 1,
