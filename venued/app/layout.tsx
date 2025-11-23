@@ -4,6 +4,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import PWAInstall from "@/components/PWAInstall";
 import OnboardingFlow from "@/components/OnboardingFlow";
+import NotificationManager from "@/components/NotificationManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,6 +66,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <OnboardingFlow />
+        <NotificationManager />
         <Navigation />
         <main className="min-h-screen">
           {children}
