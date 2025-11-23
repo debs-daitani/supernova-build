@@ -7,11 +7,10 @@ import { Music, Users, ListChecks, Calendar, Sparkles, Settings, Menu, X, Trendi
 
 const navItems = [
   { name: 'Backstage', href: '/backstage', icon: Music },
-  { name: 'Setlist', href: '/setlist', icon: ListChecks },
   { name: 'Crew', href: '/crew', icon: Users },
-  { name: 'Tour', href: '/tour', icon: Calendar },
-  { name: 'Entourage', href: '/entourage', icon: Sparkles },
+  { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Analytics', href: '/analytics', icon: TrendingUp },
+  { name: 'Entourage', href: '/entourage', icon: Sparkles },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
