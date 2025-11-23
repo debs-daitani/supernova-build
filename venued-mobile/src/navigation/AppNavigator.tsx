@@ -13,6 +13,8 @@ import TourScreen from '../screens/TourScreen';
 import CrewScreen from '../screens/CrewScreen';
 import EntourageScreen from '../screens/EntourageScreen';
 import ExecutiveFunctionScreen from '../screens/ExecutiveFunctionScreen';
+import FocusTimerScreen from '../screens/FocusTimerScreen';
+import TimeBlindnessScreen from '../screens/TimeBlindnessScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -101,6 +103,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen name="ExecutiveFunction" component={ExecutiveFunctionScreen} />
+        <Stack.Screen name="FocusTimer" component={FocusTimerScreen} />
+        <Stack.Screen name="TimeBlindness" component={TimeBlindnessScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
