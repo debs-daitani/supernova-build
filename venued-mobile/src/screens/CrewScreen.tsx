@@ -13,7 +13,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, gradients } from '../theme/colors';
 import { CrewTask, CrewStats } from '../types';
-import { getCrewTasks, updateCrewTask } from '../lib/storage';
+import { getCrewTasks, updateCrewTask, getCrewStats, saveCrewStats } from '../lib/storage';
+import { calculateTaskPoints, getLevelFromPoints } from '../lib/crew';
 import ConfettiCelebration from '../components/ConfettiCelebration';
 
 const CrewScreen: React.FC = () => {
@@ -21,9 +22,11 @@ const CrewScreen: React.FC = () => {
   const [filter, setFilter] = useState<'today' | 'tomorrow' | 'week'>('today');
   const [energyFilter, setEnergyFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [crewStats, setCrewStats] = useState<CrewStats | null>(null);
 
   useEffect(() => {
     loadTasks();
+    loadStats();
   }, []);
 
   const loadTasks = async () => {
@@ -31,10 +34,15 @@ const CrewScreen: React.FC = () => {
     setTasks(data);
   };
 
+  const loadStats = async () => {
+    const stats = await getCrewStats();
+    setCrewStats(stats);
+  };
+
   const toggleTaskComplete = async (taskId: string) => {
     if (!taskId) return;
     const task = tasks.find(t => t?.id === taskId);
-    if (task) {
+    if (task && crewStats) {
       const isCompleting = !task.completed;
 
       // Trigger haptic feedback
@@ -42,8 +50,48 @@ const CrewScreen: React.FC = () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 3000);
+
+        // Calculate and award points
+        const points = calculateTaskPoints({
+          isQuickWin: task.isQuickWin || false,
+          isHyperfocus: task.isHyperfocus || false,
+          difficulty: task.difficulty || 'medium',
+        });
+
+        const newTotalPoints = crewStats.totalPoints + points;
+        const newLevel = getLevelFromPoints(newTotalPoints);
+
+        const updatedStats: CrewStats = {
+          ...crewStats,
+          totalPoints: newTotalPoints,
+          level: newLevel,
+          tasksCompleted: crewStats.tasksCompleted + 1,
+        };
+
+        await saveCrewStats(updatedStats);
+        setCrewStats(updatedStats);
       } else {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        // Remove points when uncompleting
+        const points = calculateTaskPoints({
+          isQuickWin: task.isQuickWin || false,
+          isHyperfocus: task.isHyperfocus || false,
+          difficulty: task.difficulty || 'medium',
+        });
+
+        const newTotalPoints = Math.max(0, crewStats.totalPoints - points);
+        const newLevel = getLevelFromPoints(newTotalPoints);
+
+        const updatedStats: CrewStats = {
+          ...crewStats,
+          totalPoints: newTotalPoints,
+          level: newLevel,
+          tasksCompleted: Math.max(0, crewStats.tasksCompleted - 1),
+        };
+
+        await saveCrewStats(updatedStats);
+        setCrewStats(updatedStats);
       }
 
       await updateCrewTask(taskId, {
@@ -65,29 +113,21 @@ const CrewScreen: React.FC = () => {
     return true; // week shows all
   });
 
-  const completedTasks = tasks.filter(t => t.completed);
+  const todayCompleted = tasks.filter(t =>
+    t?.completed && t?.scheduledDate === new Date().toISOString().split('T')[0]
+  ).length;
+  const todayTotal = tasks.filter(t =>
+    t?.scheduledDate === new Date().toISOString().split('T')[0]
+  ).length;
+  const focusMinutes = tasks.reduce((sum, t) => sum + (t?.timeSpent || 0), 0);
 
-  const stats: CrewStats = {
-    todayCompleted: tasks.filter(t =>
-      t.completed && t.scheduledDate === new Date().toISOString().split('T')[0]
-    ).length,
-    todayTotal: tasks.filter(t =>
-      t.scheduledDate === new Date().toISOString().split('T')[0]
-    ).length,
-    focusMinutes: tasks.reduce((sum, t) => sum + t.timeSpent, 0),
-    currentEnergy: 'medium',
-    totalPoints: completedTasks.length * 10,
-    level: Math.min(10, Math.floor(completedTasks.length / 5) + 1),
-    tasksCompleted: completedTasks.length,
-    currentStreak: 0,
-    longestStreak: 0,
-    tasksByRole: {
-      roadie: 0,
-      sound_engineer: 0,
-      stage_manager: 0,
-      lighting_tech: 0,
-      tour_manager: 0,
-    },
+  const displayStats = {
+    todayCompleted,
+    todayTotal,
+    focusMinutes,
+    currentEnergy: 'medium' as const,
+    totalPoints: crewStats?.totalPoints || 0,
+    level: crewStats?.level || 1,
   };
 
   return (
@@ -103,16 +143,16 @@ const CrewScreen: React.FC = () => {
       {/* Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.todayCompleted}/{stats.todayTotal}</Text>
+          <Text style={styles.statValue}>{displayStats.todayCompleted}/{displayStats.todayTotal}</Text>
           <Text style={styles.statLabel}>Today</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.focusMinutes}</Text>
-          <Text style={styles.statLabel}>Minutes</Text>
+          <Text style={styles.statValue}>{displayStats.totalPoints}</Text>
+          <Text style={styles.statLabel}>Points</Text>
         </View>
         <View style={styles.statCard}>
-          <View style={[styles.energyIndicator, { backgroundColor: getEnergyColor(stats.currentEnergy) }]} />
-          <Text style={styles.statLabel}>Energy</Text>
+          <Text style={styles.statValue}>Lv {displayStats.level}</Text>
+          <Text style={styles.statLabel}>Level</Text>
         </View>
       </View>
 
