@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix Android boolean casting errors by converting shorthand props to explicit syntax\n\nFixed \"java.lang.String cannot be cast to java.lang.Boolean\" errors on Android by converting all shorthand boolean props (transparent, autoFocus, multiline) to explicit syntax with curly braces: {true}.\n\nChanges:\n- AddPhaseModal.tsx: transparent={true}, autoFocus={true}, multiline={true}\n- AddTaskModal.tsx: transparent={true}, autoFocus={true}, multiline={true}  \n- EntourageScreen.tsx: multiline={true}\n- AppNavigator.tsx: Added type guard for focused prop\n\nThese shorthand boolean props work on iOS but cause casting errors on Android. All boolean props now use explicit {true} syntax for cross-platform compatibility.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
