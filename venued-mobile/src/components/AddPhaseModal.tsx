@@ -26,9 +26,9 @@ const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   onSave,
   editingPhase,
 }) => {
-  const [name, setName] = useState(editingPhase?.name || '');
-  const [description, setDescription] = useState(editingPhase?.description || '');
-  const [selectedColor, setSelectedColor] = useState(editingPhase?.color || colors.pink);
+  const [name, setName] = useState((editingPhase && editingPhase.name) || '');
+  const [description, setDescription] = useState((editingPhase && editingPhase.description) || '');
+  const [selectedColor, setSelectedColor] = useState((editingPhase && editingPhase.color) || colors.pink);
 
   const phaseColors = [
     colors.pink,

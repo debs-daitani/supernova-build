@@ -32,7 +32,8 @@ const CrewScreen: React.FC = () => {
   };
 
   const toggleTaskComplete = async (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
+    if (!taskId) return;
+    const task = tasks.find(t => t?.id === taskId);
     if (task) {
       const isCompleting = !task.completed;
 
@@ -178,24 +179,24 @@ const CrewScreen: React.FC = () => {
 
               <View style={styles.taskContent}>
                 <View style={styles.taskHeader}>
-                  <Text style={[styles.taskTitle, task.completed && styles.taskTitleCompleted]}>
-                    {task.title}
+                  <Text style={[styles.taskTitle, task?.completed && styles.taskTitleCompleted]}>
+                    {task?.title || 'Untitled Task'}
                   </Text>
-                  <View style={[styles.energyBadge, { backgroundColor: getEnergyColor(task.energyLevel) }]}>
-                    <Text style={styles.energyText}>{task.energyLevel.toUpperCase()}</Text>
+                  <View style={[styles.energyBadge, { backgroundColor: getEnergyColor(task?.energyLevel || 'medium') }]}>
+                    <Text style={styles.energyText}>{(task?.energyLevel || 'medium').toUpperCase()}</Text>
                   </View>
                 </View>
 
                 <Text style={styles.taskDescription} numberOfLines={2}>
-                  {task.description}
+                  {task?.description || ''}
                 </Text>
 
                 <View style={styles.taskFooter}>
-                  {task.scheduledTime && (
+                  {task?.scheduledTime && (
                     <Text style={styles.taskTime}>🕐 {task.scheduledTime}</Text>
                   )}
-                  <Text style={styles.taskMeta}>⏱️ {task.estimatedHours}h</Text>
-                  {task.isQuickWin && <Text style={styles.taskMeta}>⚡ Quick Win</Text>}
+                  <Text style={styles.taskMeta}>⏱️ {task?.estimatedHours || 0}h</Text>
+                  {task?.isQuickWin && <Text style={styles.taskMeta}>⚡ Quick Win</Text>}
                 </View>
               </View>
             </TouchableOpacity>
