@@ -122,30 +122,30 @@ const SetlistScreen: React.FC = () => {
         {phases.map((phase) => (
           <View key={phase.id} style={styles.phaseCard}>
             <View style={styles.phaseHeader}>
-              <View style={[styles.phaseColorBar, { backgroundColor: phase.color }]} />
+              <View style={[styles.phaseColorBar, { backgroundColor: phase?.color || colors.pink }]} />
               <View style={styles.phaseHeaderContent}>
-                <Text style={styles.phaseName}>{phase.name}</Text>
-                <Text style={styles.phaseDescription}>{phase.description}</Text>
+                <Text style={styles.phaseName}>{phase?.name || 'Untitled Phase'}</Text>
+                <Text style={styles.phaseDescription}>{phase?.description || ''}</Text>
               </View>
-              <Text style={styles.phaseTaskCount}>{phase.tasks.length}</Text>
+              <Text style={styles.phaseTaskCount}>{phase?.tasks?.length || 0}</Text>
             </View>
 
             {/* Tasks */}
-            {phase.tasks.map((task) => (
+            {(phase?.tasks || []).map((task) => (
               <View key={task.id} style={styles.taskCard}>
                 <View style={styles.taskHeader}>
-                  <Text style={styles.taskTitle}>{task.title}</Text>
-                  <View style={[styles.energyBadge, { backgroundColor: getEnergyColor(task.energyLevel) }]}>
-                    <Text style={styles.energyText}>{task.energyLevel.toUpperCase()}</Text>
+                  <Text style={styles.taskTitle}>{task?.title || 'Untitled Task'}</Text>
+                  <View style={[styles.energyBadge, { backgroundColor: getEnergyColor(task?.energyLevel || 'medium') }]}>
+                    <Text style={styles.energyText}>{(task?.energyLevel || 'medium').toUpperCase()}</Text>
                   </View>
                 </View>
                 <Text style={styles.taskDescription} numberOfLines={2}>
-                  {task.description}
+                  {task?.description || ''}
                 </Text>
                 <View style={styles.taskFooter}>
-                  <Text style={styles.taskMeta}>⏱️ {task.estimatedHours}h</Text>
+                  <Text style={styles.taskMeta}>⏱️ {task?.estimatedHours || 0}h</Text>
                   <Text style={styles.taskMeta}>
-                    {task.isHyperfocus ? '🎯 Hyperfocus' : task.isQuickWin ? '⚡ Quick Win' : ''}
+                    {task?.isHyperfocus ? '🎯 Hyperfocus' : task?.isQuickWin ? '⚡ Quick Win' : ''}
                   </Text>
                 </View>
               </View>

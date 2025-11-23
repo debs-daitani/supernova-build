@@ -27,13 +27,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   onSave,
   editingTask,
 }) => {
-  const [title, setTitle] = useState(editingTask?.title || '');
-  const [description, setDescription] = useState(editingTask?.description || '');
-  const [energyLevel, setEnergyLevel] = useState<EnergyLevel>(editingTask?.energyLevel || 'medium');
-  const [difficulty, setDifficulty] = useState<TaskDifficulty>(editingTask?.difficulty || 'medium');
-  const [estimatedHours, setEstimatedHours] = useState(editingTask?.estimatedHours.toString() || '1');
-  const [isHyperfocus, setIsHyperfocus] = useState(editingTask?.isHyperfocus || false);
-  const [isQuickWin, setIsQuickWin] = useState(editingTask?.isQuickWin || false);
+  const [title, setTitle] = useState((editingTask && editingTask.title) || '');
+  const [description, setDescription] = useState((editingTask && editingTask.description) || '');
+  const [energyLevel, setEnergyLevel] = useState<EnergyLevel>((editingTask && editingTask.energyLevel) || 'medium');
+  const [difficulty, setDifficulty] = useState<TaskDifficulty>((editingTask && editingTask.difficulty) || 'medium');
+  const [estimatedHours, setEstimatedHours] = useState((editingTask && editingTask.estimatedHours?.toString()) || '1');
+  const [isHyperfocus, setIsHyperfocus] = useState((editingTask && editingTask.isHyperfocus) || false);
+  const [isQuickWin, setIsQuickWin] = useState((editingTask && editingTask.isQuickWin) || false);
 
   const handleSave = () => {
     if (!title.trim()) return;
