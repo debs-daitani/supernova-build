@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { prisma } from '@/lib/prisma'
-import { getPersonalityContext, type CoachingMode } from '@/lib/personalities'
+import { prisma } from '../../../lib/prisma'
+import { getPersonalityContext, type CoachingMode } from '../../../lib/personalities'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
