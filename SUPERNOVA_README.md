@@ -43,12 +43,11 @@ SUPERNova AI is the intelligent coaching assistant for The dAItaniverse - your b
 ### 2. Installation
 
 ```bash
-# Install dependencies
-cd venued
+# Install root dependencies (Prisma)
 npm install
 
-# Install root dependencies (Prisma)
-cd ..
+# Install SUPERNova dependencies
+cd supernova
 npm install
 ```
 
@@ -79,11 +78,11 @@ npm run seed
 ### 5. Start the App
 
 ```bash
-cd venued
+cd supernova
 npm run dev
 ```
 
-Visit **http://localhost:3000/supernova** to start chatting!
+Visit **http://localhost:3001** to start chatting!
 
 ## 📊 Database Schema
 
