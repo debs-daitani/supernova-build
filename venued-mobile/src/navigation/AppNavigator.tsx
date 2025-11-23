@@ -12,6 +12,7 @@ import SetlistScreen from '../screens/SetlistScreen';
 import TourScreen from '../screens/TourScreen';
 import CrewScreen from '../screens/CrewScreen';
 import EntourageScreen from '../screens/EntourageScreen';
+import ExecutiveFunctionScreen from '../screens/ExecutiveFunctionScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -99,6 +100,7 @@ const AppNavigator = () => {
       >
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="ExecutiveFunction" component={ExecutiveFunctionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

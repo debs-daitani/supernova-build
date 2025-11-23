@@ -8,6 +8,7 @@ const KEYS = {
   DEMO_LOADED: 'demo_data_loaded',
   PHASES: 'venued_phases',
   CREW_STATS: 'venued_crew_stats',
+  EXECUTIVE_FUNCTION: 'venued_executive_function',
 };
 
 // Projects
@@ -191,6 +192,25 @@ export const saveCrewStats = async (stats: any): Promise<void> => {
   }
 };
 
+// Executive Function Tasks
+export const getExecutiveFunctionTasks = async (): Promise<any[]> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.EXECUTIVE_FUNCTION);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading executive function tasks:', error);
+    return [];
+  }
+};
+
+export const saveExecutiveFunctionTasks = async (tasks: any[]): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(KEYS.EXECUTIVE_FUNCTION, JSON.stringify(tasks));
+  } catch (error) {
+    console.error('Error saving executive function tasks:', error);
+  }
+};
+
 // Clear all data
 export const clearAllData = async (): Promise<void> => {
   try {
@@ -201,6 +221,7 @@ export const clearAllData = async (): Promise<void> => {
       KEYS.DEMO_LOADED,
       KEYS.PHASES,
       KEYS.CREW_STATS,
+      KEYS.EXECUTIVE_FUNCTION,
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);
