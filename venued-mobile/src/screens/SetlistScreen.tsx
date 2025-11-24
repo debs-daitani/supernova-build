@@ -153,20 +153,8 @@ const SetlistScreen: React.FC = () => {
   };
 
   return (
-return (
-  <SafeAreaView style={styles.container}>
-    {/* TEMPORARY: Clear Storage Button */}
-    <TouchableOpacity 
-      style={{position: 'absolute', top: 100, right: 20, backgroundColor: 'red', padding: 10, zIndex: 999}}
-      onPress={async () => {
-        await AsyncStorage.clear();
-        Alert.alert('Storage Cleared', 'Please restart the app');
-      }}
-    >
-      <Text style={{color: 'white'}}>Clear Data</Text>
-    </TouchableOpacity>
-    
-    <StatusBar barStyle="light-content" />      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
       {/* Header */}
       <LinearGradient colors={gradients.primary} style={styles.header}>
