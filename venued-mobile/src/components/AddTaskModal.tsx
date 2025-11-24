@@ -188,10 +188,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-  style={[styles.saveButton, !name.trim() && styles.disabledButton]}
-  onPress={!name.trim() ? undefined : handleSave}
-  activeOpacity={!name.trim() ? 1 : 0.7}
->
+              style={[styles.saveButton, !title.trim() && styles.saveButtonDisabled]}
+              onPress={!title.trim() ? undefined : handleSave}
+              activeOpacity={!title.trim() ? 1 : 0.7}
+            >
               <LinearGradient colors={gradients.primary} style={styles.saveButtonGradient}>
                 <Text style={styles.saveButtonText}>Save Task</Text>
               </LinearGradient>
