@@ -31,50 +31,50 @@ const SetlistScreen: React.FC = () => {
 
       // Validate data structure
       const validPhases = data.filter(phase =>
-  phase &&
-  typeof phase === 'object' &&
-  phase.id &&
-  phase.name &&
-  typeof phase.name === 'string'
-).map(phase => ({
-  ...phase,
-  tasks: Array.isArray(phase.tasks) ? phase.tasks.filter(t => t && t.id) : []
-}));
+        phase &&
+        typeof phase === 'object' &&
+        phase.id &&
+        phase.name &&
+        typeof phase.name === 'string'
+      ).map(phase => ({
+        ...phase,
+        tasks: Array.isArray(phase.tasks) ? phase.tasks.filter(t => t && t.id) : []
+      }));
 
-if (validPhases.length === 0 || data.length !== validPhases.length) {
-
-      if (validPhases.length === 0) {
-        // Initialize with default phases if none exist or data is corrupted
-        const defaultPhases: Phase[] = [
-          {
-            id: '1',
-            name: 'Planning',
-            description: 'Define and plan the project',
-            order: 0,
-            tasks: [],
-            color: colors.cyan,
-          },
-          {
-            id: '2',
-            name: 'Development',
-            description: 'Build and create',
-            order: 1,
-            tasks: [],
-            color: colors.green,
-          },
-          {
-            id: '3',
-            name: 'Launch',
-            description: 'Go live and celebrate',
-            order: 2,
-            tasks: [],
-            color: colors.pink,
-          },
-        ];
-        await savePhases(defaultPhases);
-        setPhases(defaultPhases);
-      } else {
-        setPhases(validPhases);
+      if (validPhases.length === 0 || data.length !== validPhases.length) {
+        if (validPhases.length === 0) {
+          // Initialize with default phases if none exist or data is corrupted
+          const defaultPhases: Phase[] = [
+            {
+              id: '1',
+              name: 'Planning',
+              description: 'Define and plan the project',
+              order: 0,
+              tasks: [],
+              color: colors.cyan,
+            },
+            {
+              id: '2',
+              name: 'Development',
+              description: 'Build and create',
+              order: 1,
+              tasks: [],
+              color: colors.green,
+            },
+            {
+              id: '3',
+              name: 'Launch',
+              description: 'Go live and celebrate',
+              order: 2,
+              tasks: [],
+              color: colors.pink,
+            },
+          ];
+          await savePhases(defaultPhases);
+          setPhases(defaultPhases);
+        } else {
+          setPhases(validPhases);
+        }
       }
     } catch (error) {
       console.error('Error loading phases:', error);
