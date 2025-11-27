@@ -1,0 +1,228 @@
+
+// ==========================================
+// VENUED PROJECT MANAGEMENT SYSTEM
+// ==========================================
+
+enum VenuedProjectStatus {
+  BACKSTAGE    // Planning phase
+  SETLIST      // Active project with phases
+  CREW         // Daily task management
+  TOUR         // Milestone/goal tracking
+  ENTOURAGE    // ADHD tools active
+}
+
+enum VenuedTaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum VenuedTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum VenuedAchievementType {
+  TASK_COMPLETED
+  STREAK
+  POINTS_MILESTONE
+  PHASE_COMPLETED
+  PROJECT_COMPLETED
+}
+
+enum VenuedEntourageToolType {
+  TIME_TRACKER
+  HYPERFOCUS_TIMER
+  ENERGY_TRACKER
+  BRAIN_DUMP
+  QUICK_WIN
+  DOPAMINE_HIT
+  BODY_DOUBLE
+}
+
+// User's VENUED projects
+model VenuedProject {
+  id              String                @id @default(cuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Project details
+  title           String
+  description     String?               @db.Text
+  emoji           String?               @default("🎸")
+  status          VenuedProjectStatus   @default(BACKSTAGE)
+  color           String                @default("#FF008E") // Hot Pink default
+
+  // Organization
+  archived        Boolean               @default(false)
+
+  // Relationships
+  phases          VenuedPhase[]
+  tasks           VenuedTask[]
+  goals           VenuedGoal[]
+  entourageLogs   VenuedEntourageLog[]
+
+  // Timestamps
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([userId, archived])
+  @@index([status])
+}
+
+// Project phases (for Setlist view)
+model VenuedPhase {
+  id              String          @id @default(cuid())
+  projectId       String
+  project         VenuedProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Phase details
+  name            String
+  order           Int             // Display order
+  color           String          @default("#00F0E9") // Light Teal default
+
+  // Timeline
+  startDate       DateTime?
+  endDate         DateTime?
+
+  // Relationships
+  tasks           VenuedTask[]
+
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([order])
+}
+
+// Daily tasks (The Crew)
+model VenuedTask {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         VenuedProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phaseId         String?
+  phase           VenuedPhase?        @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+
+  // Task details
+  title           String
+  description     String?             @db.Text
+  status          VenuedTaskStatus    @default(TODO)
+  priority        VenuedTaskPriority  @default(MEDIUM)
+
+  // Timeline
+  dueDate         DateTime?
+  completedAt     DateTime?
+
+  // Gamification
+  points          Int                 @default(10) // Points for completing
+  tags            String[]            // User-defined tags
+
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([phaseId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+// Milestones/goals (The Tour)
+model VenuedGoal {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         VenuedProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Goal details
+  title           String
+  description     String?         @db.Text
+  targetDate      DateTime?
+  completedAt     DateTime?
+
+  // Progress tracking
+  progress        Int             @default(0) // 0-100
+
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([targetDate])
+}
+
+// User achievements (gamification)
+model VenuedAchievement {
+  id              String                    @id @default(cuid())
+  userId          String
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Achievement details
+  type            VenuedAchievementType
+  name            String
+  description     String?                   @db.Text
+  icon            String                    @default("🏆")
+
+  // Timestamps
+  earnedAt        DateTime                  @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+// User stats and gamification tracking
+model VenuedStats {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Points and levels
+  totalPoints     Int             @default(0)
+  level           Int             @default(1)
+
+  // Task tracking
+  tasksCompleted  Int             @default(0)
+  currentStreak   Int             @default(0)
+  longestStreak   Int             @default(0)
+
+  // Achievement data (JSON for flexibility)
+  achievements    Json?           // { badges: [], milestones: [] }
+
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lastTaskDate    DateTime?       // Last task completed date (for streak tracking)
+
+  @@index([totalPoints])
+  @@index([level])
+}
+
+// ADHD tool usage logs (Entourage)
+model VenuedEntourageLog {
+  id              String                    @id @default(cuid())
+  userId          String
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         VenuedProject?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Tool details
+  toolType        VenuedEntourageToolType
+  data            Json                      // Flexible data storage for each tool
+
+  // Timestamps
+  createdAt       DateTime                  @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([toolType])
+  @@index([createdAt])
+}

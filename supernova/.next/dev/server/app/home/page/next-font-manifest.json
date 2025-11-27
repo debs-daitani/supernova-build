@@ -1,0 +1,11 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/supernova/app/home/page": [
+      "static/media/Supernova _ Personal Used-s.p.4102bd9b.ttf",
+      "static/media/ARPDisplay_240-s.p.95a02f22.ttf"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

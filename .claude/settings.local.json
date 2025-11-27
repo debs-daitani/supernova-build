@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx prisma migrate reset:*)",
+      "Bash(npm run seed:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nBuild SUPERNova AI - Intelligent Coaching Assistant (Phase 2C MVP Complete)\n\nFEATURES IMPLEMENTED:\n✅ Three coaching modes: BODY, BRAIN, BUSINESS (+ GENERAL)\n✅ Conversation memory system with Prisma + PostgreSQL\n✅ Streaming chat interface with Claude AI integration\n✅ Bold, direct, anti-BS personality system\n✅ Full conversation history and persistence\n✅ Mode-specific expertise and coaching approaches\n✅ User memory tracking (facts, preferences, goals, context)\n\nTECHNICAL STACK:\n- Next.js 16 with App Router\n- Prisma 5 + PostgreSQL database\n- Anthropic Claude API (Sonnet 3.5)\n- TypeScript, Tailwind CSS\n- Server-Sent Events for streaming\n- Real-time conversation updates\n\nDATABASE SCHEMA:\n- User (auth + profile)\n- Conversation (chat sessions with modes)\n- Message (user/assistant messages)\n- UserMemory (personalized context storage)\n- Folder (conversation organization)\n- Program (future content library)\n\nNEW FILES:\n- prisma/schema.prisma - Database schema\n- prisma/seed.ts - Demo data seeder\n- venued/app/api/chat/route.ts - Streaming chat API\n- venued/app/supernova/page.tsx - Chat UI\n- venued/lib/prisma.ts - Prisma client\n- venued/lib/personalities.ts - Personality system\n- SUPERNOVA_README.md - Complete documentation\n\nPERSONALITY TRAITS:\n- Bold and direct (no sugarcoating)\n- Anti-BS (calls out excuses)\n- Authentic (real talk, zero corporate speak)\n- Rock-and-roll energy (passionate but caring)\n- Compassionate challenger (pushes because believes)\n\nREADY FOR:\n- Live testing with real conversations\n- User authentication integration\n- Program recommendation engine\n- Knowledge base upload\n\n🚀 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(taskkill:*)",
+      "Bash(git rm:*)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(ls:*)",
+      "Bash(NUL)",
+      "Bash(netstat:*)",
+      "Bash(npx tsx:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(psql:*)",
+      "Bash(where:*)",
+      "Bash(node scripts/enable-pgvector.js:*)",
+      "Bash(nul)",
+      "Bash(\"c:\\Users\\debsw\\OneDrive - Debs Daitani Ltd\\Documents\\Daitani\\SN Build\\GitHub\\supernova-build\\prisma\\schema.prisma\")",
+      "Bash(notepad:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

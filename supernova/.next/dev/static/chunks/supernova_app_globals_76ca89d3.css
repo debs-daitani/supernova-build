@@ -1,0 +1,57 @@
+/* [project]/supernova/app/globals.css [app-client] (css) */
+:root {
+  --background: #000;
+  --foreground: #fff;
+  --neon-pink: #ff1b8d;
+  --electric-purple: #9d4edd;
+  --neon-green: #39ff14;
+}
+
+@theme inline {
+  --color-background: var(--background) ; --color-foreground: var(--foreground) ; --color-neon-pink: var(--neon-pink) ; --color-electric-purple: var(--electric-purple) ; --color-neon-green: var(--neon-green) ; --font-sans: var(--font-geist-sans) ; --font-mono: var(--font-geist-mono) ;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: .5s ease-out forwards fade-in;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px #ff1b8d80;
+  }
+
+  50% {
+    box-shadow: 0 0 40px #ff1b8dcc;
+  }
+}
+
+.animate-pulse-glow {
+  animation: 2s ease-in-out infinite pulse-glow;
+}
+
+/*# sourceMappingURL=supernova_app_globals_76ca89d3.css.map*/

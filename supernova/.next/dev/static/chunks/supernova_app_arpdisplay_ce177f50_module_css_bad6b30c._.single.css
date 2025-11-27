@@ -1,0 +1,25 @@
+/* [project]/supernova/app/arpdisplay_ce177f50.module.css [app-client] (css) */
+@font-face {
+  font-family: arpDisplay;
+  src: url("../media/ARPDisplay_240-s.p.95a02f22.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: arpDisplay Fallback;
+  src: local(Arial);
+  ascent-override: 1314.58%;
+  descent-override: 330.17%;
+  line-gap-override: 250.22%;
+  size-adjust: 8.0%;
+}
+
+.arpdisplay_ce177f50-module__6JwoeG__className {
+  font-family: arpDisplay, arpDisplay Fallback;
+}
+
+.arpdisplay_ce177f50-module__6JwoeG__variable {
+  --font-arp-display: "arpDisplay", "arpDisplay Fallback";
+}
+
+/*# sourceMappingURL=supernova_app_arpdisplay_ce177f50_module_css_bad6b30c._.single.css.map*/

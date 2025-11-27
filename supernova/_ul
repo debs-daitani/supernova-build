@@ -1,0 +1,5 @@
+dir: cannot access '/s': No such file or directory
+dir: cannot access '/b': No such file or directory
+dir: cannot access 'schema.prisma': No such file or directory
+dir: cannot access '.env': No such file or directory
+dir: cannot access '.env.local': No such file or directory

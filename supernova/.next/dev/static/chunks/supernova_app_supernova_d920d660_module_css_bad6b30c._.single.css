@@ -1,0 +1,25 @@
+/* [project]/supernova/app/supernova_d920d660.module.css [app-client] (css) */
+@font-face {
+  font-family: supernova;
+  src: url("../media/Supernova _ Personal Used-s.p.4102bd9b.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: supernova Fallback;
+  src: local(Arial);
+  ascent-override: 67.36%;
+  descent-override: 16.74%;
+  line-gap-override: 0.0%;
+  size-adjust: 119.51%;
+}
+
+.supernova_d920d660-module__1fq9da__className {
+  font-family: supernova, supernova Fallback;
+}
+
+.supernova_d920d660-module__1fq9da__variable {
+  --font-supernova: "supernova", "supernova Fallback";
+}
+
+/*# sourceMappingURL=supernova_app_supernova_d920d660_module_css_bad6b30c._.single.css.map*/
