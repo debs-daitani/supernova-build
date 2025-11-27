@@ -1,0 +1,24 @@
+apiVersion: v2
+name: supernova
+description: A Helm chart for SUPERNova AI Memory System
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - ai
+  - chatbot
+  - memory-system
+  - conversational-ai
+
+home: https://github.com/debs-daitani/supernova-build
+sources:
+  - https://github.com/debs-daitani/supernova-build
+
+maintainers:
+  - name: SUPERNova AI Team
+    email: support@supernova-ai.com
+
+icon: https://raw.githubusercontent.com/debs-daitani/supernova-build/main/docs/logo.png
+
+dependencies: []

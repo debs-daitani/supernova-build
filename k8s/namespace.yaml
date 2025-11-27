@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: supernova
+  labels:
+    name: supernova
+    app: supernova-ai
+    environment: production

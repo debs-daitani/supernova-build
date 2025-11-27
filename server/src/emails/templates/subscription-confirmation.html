@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Full Membership!</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 32px; }
+    .content { padding: 40px 30px; }
+    .content h2 { color: #667eea; margin-top: 0; }
+    .benefits { margin: 30px 0; }
+    .benefit { display: flex; align-items: flex-start; margin: 15px 0; }
+    .benefit span { font-size: 24px; margin-right: 12px; }
+    .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .cta { text-align: center; margin: 30px 0; }
+    .cta a { display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 5px; }
+    .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 14px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Welcome to Full Membership! 🚀</h1>
+    </div>
+    <div class="content">
+      <h2>You're ALL IN, {{name}}! 💜</h2>
+      <p>This is where the magic happens. You now have access to EVERYTHING:</p>
+
+      <div class="benefits">
+        <div class="benefit">
+          <span>🤖</span>
+          <div><strong>Premium SUPERNova Coaching</strong><br>Deep-dive conversations, custom learning paths, and personalised support</div>
+        </div>
+        <div class="benefit">
+          <span>📚</span>
+          <div><strong>Complete Content Library</strong><br>Videos, worksheets, templates, and coaching programs across all three pillars</div>
+        </div>
+        <div class="benefit">
+          <span>🛍️</span>
+          <div><strong>Marketplace Access</strong><br>Buy and sell business ideas, assets, and more</div>
+        </div>
+        <div class="benefit">
+          <span>👥</span>
+          <div><strong>Community Forum</strong><br>Connect with other badass midlife women building their dreams</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Your {{plan}} Membership</strong><br>
+        Next billing date: {{nextBillingDate}}<br>
+        You can manage your subscription anytime from your dashboard.
+      </div>
+
+      <div class="cta">
+        <a href="{{contentUrl}}">Explore Content</a>
+        <a href="{{communityUrl}}">Join the Community</a>
+      </div>
+
+      <p>Let's make this the year everything changes.</p>
+      <p>See you on the inside! 🌟<br><strong>Debs & SUPERNova</strong></p>
+    </div>
+    <div class="footer">
+      The dAItaniverse | Body • Brain • Business
+    </div>
+  </div>
+</body>
+</html>

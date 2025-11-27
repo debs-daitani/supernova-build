@@ -1,0 +1,106 @@
+/**
+ * Brand Kit Management Schema
+ * Store and manage brand assets, colors, fonts, logos, and guidelines
+ */
+
+model BrandKit {
+  id          String          @id @default(cuid())
+  userId      String
+  name        String
+  isPrimary   Boolean         @default(false)
+  colors      Json?           // Array of color objects: { name, hex, rgb, usage }
+  fonts       Json?           // Array of font objects: { name, family, weights, usage, source }
+  logos       Json?           // Array of logo objects: { name, type, urls, usage }
+  guidelines  Json?           // Brand guidelines: { story, values, voice, imagery }
+  settings    Json?           // Additional settings
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  assets      BrandAsset[]
+  guidelineSections BrandGuideline[]
+
+  @@index([userId])
+  @@index([userId, isPrimary])
+}
+
+model BrandAsset {
+  id           String   @id @default(cuid())
+  brandKitId   String
+  name         String
+  type         AssetType
+  fileUrl      String
+  thumbnailUrl String?
+  fileSize     Int?     // in bytes
+  dimensions   String?  // "width x height"
+  category     String?
+  tags         String[] @default([])
+  metadata     Json?    // Additional metadata
+  uploadedAt   DateTime @default(now())
+
+  brandKit     BrandKit @relation(fields: [brandKitId], references: [id], onDelete: Cascade)
+
+  @@index([brandKitId])
+  @@index([brandKitId, type])
+  @@index([brandKitId, category])
+}
+
+model BrandGuideline {
+  id           String   @id @default(cuid())
+  brandKitId   String
+  section      GuidelineSection
+  title        String
+  content      String   @db.Text
+  examples     Json?    // Array of example image URLs
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  brandKit     BrandKit @relation(fields: [brandKitId], references: [id], onDelete: Cascade)
+
+  @@index([brandKitId])
+  @@index([brandKitId, section])
+}
+
+model BrandShare {
+  id           String   @id @default(cuid())
+  brandKitId   String
+  token        String   @unique
+  permissions  SharePermission @default(VIEW)
+  password     String?
+  expiresAt    DateTime?
+  createdBy    String
+  accessCount  Int      @default(0)
+  lastAccessAt DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([brandKitId])
+  @@index([token])
+}
+
+enum AssetType {
+  LOGO
+  ICON
+  IMAGE
+  PATTERN
+  TEMPLATE
+  GRAPHIC
+  FONT
+  OTHER
+}
+
+enum GuidelineSection {
+  BRAND_STORY
+  BRAND_VALUES
+  BRAND_VOICE
+  LOGO_USAGE
+  COLOR_USAGE
+  TYPOGRAPHY
+  IMAGERY
+  DOS_AND_DONTS
+  OTHER
+}
+
+enum SharePermission {
+  VIEW
+  EDIT
+}

@@ -1,0 +1,248 @@
+---
+# ServiceMonitor for Prometheus Operator
+# Requires Prometheus Operator to be installed
+# Install: kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: supernova-app-monitor
+  namespace: supernova
+  labels:
+    app: supernova-ai
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: supernova-ai
+      component: application
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: supernova-alerts
+  namespace: supernova
+  labels:
+    app: supernova-ai
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: supernova-app
+    interval: 30s
+    rules:
+    # High error rate
+    - alert: HighErrorRate
+      expr: |
+        rate(http_requests_total{status=~"5..",namespace="supernova"}[5m]) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+        component: application
+      annotations:
+        summary: "High error rate detected"
+        description: "Error rate is {{ $value }}% for {{ $labels.pod }}"
+
+    # High memory usage
+    - alert: HighMemoryUsage
+      expr: |
+        container_memory_usage_bytes{namespace="supernova",pod=~"supernova-app-.*"} /
+        container_spec_memory_limit_bytes{namespace="supernova",pod=~"supernova-app-.*"} > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "High memory usage detected"
+        description: "Memory usage is {{ $value }}% for {{ $labels.pod }}"
+
+    # High CPU usage
+    - alert: HighCPUUsage
+      expr: |
+        rate(container_cpu_usage_seconds_total{namespace="supernova",pod=~"supernova-app-.*"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "High CPU usage detected"
+        description: "CPU usage is {{ $value }}% for {{ $labels.pod }}"
+
+    # Pod restarts
+    - alert: PodRestarts
+      expr: |
+        rate(kube_pod_container_status_restarts_total{namespace="supernova"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "Pod is restarting frequently"
+        description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+    # Database connection issues
+    - alert: DatabaseConnectionFailure
+      expr: |
+        up{job="postgres",namespace="supernova"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: database
+      annotations:
+        summary: "Database connection failure"
+        description: "Cannot connect to PostgreSQL database"
+
+    # Redis connection issues
+    - alert: RedisConnectionFailure
+      expr: |
+        up{job="redis",namespace="supernova"} == 0
+      for: 2m
+      labels:
+        severity: warning
+        component: cache
+      annotations:
+        summary: "Redis connection failure"
+        description: "Cannot connect to Redis cache"
+
+    # Low replica count
+    - alert: LowReplicaCount
+      expr: |
+        kube_deployment_status_replicas_available{namespace="supernova",deployment="supernova-app"} < 2
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "Low number of available replicas"
+        description: "Only {{ $value }} replicas are available"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supernova-dashboard
+  namespace: supernova
+  labels:
+    app: supernova-ai
+    grafana_dashboard: "1"
+data:
+  supernova-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "SUPERNova AI Metrics",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{namespace=\"supernova\"}[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{namespace=\"supernova\",status=~\"5..\"}[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Pod CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{namespace=\"supernova\"}[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Pod Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{namespace=\"supernova\"}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: supernova-network-policy
+  namespace: supernova
+  labels:
+    app: supernova-ai
+spec:
+  podSelector:
+    matchLabels:
+      app: supernova-ai
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+
+  # Allow traffic from same namespace
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 3000
+
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+
+  # Allow traffic to PostgreSQL
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+
+  # Allow traffic to Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+  # Allow external HTTPS (for AI APIs)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443

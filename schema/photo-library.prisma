@@ -1,0 +1,293 @@
+/**
+ * Photo Library & RAW Editor Schema
+ * Lightroom alternative for photo management and editing
+ */
+
+// Add to your main User model:
+model User {
+  // ... existing fields
+
+  // Photo library relations
+  photos            Photo[]
+  photoAlbums       PhotoAlbum[]
+  editPresets       EditPreset[]
+}
+
+// Photo (main photo record)
+model Photo {
+  id                String            @id @default(cuid())
+
+  // User info
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // File info
+  fileName          String            // Stored filename
+  originalFileName  String            // Original upload name
+  fileUrl           String            // URL to original file in cloud storage
+  thumbnailUrl      String?           // URL to thumbnail
+  fileSize          Int               // Bytes
+  fileType          PhotoFileType     // jpg, png, raw_cr2, etc.
+  width             Int
+  height            Int
+
+  // EXIF data
+  captureDate       DateTime?         // When photo was taken
+  camera            String?           // Camera model
+  lens              String?           // Lens model
+  iso               Int?              // ISO value
+  aperture          Float?            // f-stop (e.g., 2.8)
+  shutterSpeed      String?           // e.g., "1/1000"
+  focalLength       Float?            // mm
+  metadata          Json?             // Full EXIF data
+
+  // Organization
+  rating            Int               @default(0) // 0-5 stars
+  flagStatus        FlagStatus        @default(NONE)
+  colorLabel        ColorLabel        @default(NONE)
+  tags              String[]          // Keywords/tags
+
+  // Editing
+  editHistory       Json?             // Array of all edits
+  currentEdit       Json?             // Latest edit settings
+
+  // Metadata
+  title             String?
+  caption           String?           @db.Text
+  copyright         String?
+  gpsLatitude       Float?
+  gpsLongitude      Float?
+
+  // Timestamps
+  uploadedAt        DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  albumItems        PhotoAlbumItem[]
+  edits             PhotoEdit[]
+
+  @@index([userId])
+  @@index([captureDate])
+  @@index([rating])
+  @@index([flagStatus])
+  @@index([colorLabel])
+  @@index([camera])
+}
+
+enum PhotoFileType {
+  JPG
+  JPEG
+  PNG
+  TIFF
+  WEBP
+  RAW_CR2      // Canon
+  RAW_NEF      // Nikon
+  RAW_ARW      // Sony
+  RAW_DNG      // Adobe Digital Negative
+  RAW_RAF      // Fujifilm
+  RAW_ORF      // Olympus
+  RAW_RW2      // Panasonic
+  RAW_PEF      // Pentax
+  RAW_SR2      // Sony
+  RAW_X3F      // Sigma
+}
+
+enum FlagStatus {
+  NONE
+  PICK         // Green flag
+  REJECT       // Red X
+}
+
+enum ColorLabel {
+  NONE
+  RED
+  YELLOW
+  GREEN
+  BLUE
+  PURPLE
+}
+
+// Photo Album
+model PhotoAlbum {
+  id                String            @id @default(cuid())
+
+  // User info
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Album details
+  name              String
+  description       String?           @db.Text
+  coverPhotoId      String?           // Photo to use as cover
+  photoCount        Int               @default(0)
+
+  // Smart album (auto-populate based on criteria)
+  isSmartAlbum      Boolean           @default(false)
+  smartCriteria     Json?             // Filter criteria for smart albums
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  photos            PhotoAlbumItem[]
+
+  @@index([userId])
+}
+
+// Junction table for many-to-many relationship
+model PhotoAlbumItem {
+  id                String            @id @default(cuid())
+
+  // Relations
+  albumId           String
+  album             PhotoAlbum        @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  photoId           String
+  photo             Photo             @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  addedAt           DateTime          @default(now())
+
+  @@unique([albumId, photoId])
+  @@index([albumId])
+  @@index([photoId])
+}
+
+// Edit Preset (saved editing recipe)
+model EditPreset {
+  id                String            @id @default(cuid())
+
+  // User info
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Preset details
+  name              String
+  description       String?           @db.Text
+  isPublic          Boolean           @default(false) // Shareable presets
+
+  // Settings (JSON of all editing parameters)
+  settings          Json              // { exposure: 0.5, contrast: 15, ... }
+
+  // Preview
+  thumbnailUrl      String?           // Example of preset applied
+
+  // Usage tracking
+  usageCount        Int               @default(0)
+  lastUsedAt        DateTime?
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  appliedEdits      PhotoEdit[]
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+// Photo Edit (edit history)
+model PhotoEdit {
+  id                String            @id @default(cuid())
+
+  // Relations
+  photoId           String
+  photo             Photo             @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  presetId          String?           // If applied from preset
+  preset            EditPreset?       @relation(fields: [presetId], references: [id], onDelete: SetNull)
+
+  // Edit data
+  adjustments       Json              // All editing parameters
+
+  // Status
+  isCurrent         Boolean           @default(true) // Latest version
+  appliedAt         DateTime          @default(now())
+
+  @@index([photoId])
+  @@index([isCurrent])
+}
+
+// Export Template (saved export settings)
+model ExportTemplate {
+  id                String            @id @default(cuid())
+
+  // User info
+  userId            String
+
+  // Template details
+  name              String
+  description       String?
+
+  // Export settings
+  format            ExportFormat      @default(JPEG)
+  quality           Int               @default(90) // 1-100
+  resize            Boolean           @default(false)
+  resizeWidth       Int?
+  resizeHeight      Int?
+  resizeMode        ResizeMode        @default(FIT)
+
+  // Options
+  includeMetadata   Boolean           @default(true)
+  stripGPS          Boolean           @default(false)
+  applyWatermark    Boolean           @default(false)
+  watermarkText     String?
+  sharpenOutput     Boolean           @default(false)
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([userId])
+}
+
+enum ExportFormat {
+  JPEG
+  PNG
+  TIFF
+  WEBP
+  DNG
+}
+
+enum ResizeMode {
+  FIT           // Fit within dimensions
+  FILL          // Fill dimensions (crop if needed)
+  EXACT         // Exact dimensions (may distort)
+  WIDTH         // Match width, auto height
+  HEIGHT        // Match height, auto width
+}
+
+// Photo Collection (for sharing/publishing)
+model PhotoCollection {
+  id                String            @id @default(cuid())
+
+  // User info
+  userId            String
+
+  // Collection details
+  name              String
+  description       String?           @db.Text
+  slug              String            @unique
+  coverPhotoId      String?
+
+  // Visibility
+  isPublic          Boolean           @default(false)
+  password          String?           // Optional password protection
+
+  // Photos (array of photo IDs)
+  photoIds          String[]
+
+  // Stats
+  viewCount         Int               @default(0)
+  likeCount         Int               @default(0)
+
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([slug])
+  @@index([isPublic])
+}

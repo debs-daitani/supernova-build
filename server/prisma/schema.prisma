@@ -1,0 +1,477 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User roles enum
+enum UserRole {
+  FREE
+  UPGRADE
+  MEMBER
+  ADMIN
+}
+
+// Subscription tier enum
+enum SubscriptionTier {
+  NONE
+  UPGRADE_ONE_TIME
+  MONTHLY
+  ANNUAL
+}
+
+// Subscription status enum
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+// Pillar types enum
+enum Pillar {
+  BODY
+  BRAIN
+  BUSINESS
+  GENERAL
+}
+
+// Content type enum
+enum ContentType {
+  VIDEO
+  TEXT
+  AUDIO
+  TEMPLATE
+  PDF
+}
+
+// Marketplace listing status enum
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  SOLD
+}
+
+// Payment type enum
+enum PaymentType {
+  UPGRADE
+  MONTHLY
+  ANNUAL
+  MARKETPLACE
+}
+
+// Payment status enum
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  DISPUTED
+  REFUNDED
+}
+
+// Memory type enum
+enum MemoryType {
+  FACT
+  PREFERENCE
+  GOAL
+  CONTEXT
+}
+
+// ============================================
+// USERS & AUTHENTICATION
+// ============================================
+
+model User {
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  password          String
+  name                  String?
+  role                  UserRole            @default(FREE)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  emailVerified         Boolean             @default(false)
+  lastLogin             DateTime?
+
+  // Subscription fields
+  subscriptionStatus    SubscriptionStatus  @default(PENDING)
+  subscriptionTier      SubscriptionTier    @default(NONE)
+  subscriptionEndDate   DateTime?
+  stripeCustomerId      String?             @unique
+
+  // Quiz results (stored as JSON)
+  quizResults           Json?
+
+  // Profile fields
+  bio                   String?
+  location              String?
+  niche                 String?
+  skills                String[]
+  socialLinks           Json?
+  avatar                String?
+
+  // Relations
+  conversations         Conversation[]
+  messages              Message[]
+  userMemories          UserMemory[]
+  payments              Payment[]
+  contentProgress       ContentProgress[]
+
+  // Marketplace
+  marketplaceListings   MarketplaceListing[] @relation("SellerListings")
+  marketplaceMessages   MarketplaceMessage[] @relation("MessageSender")
+  marketplacePurchases  MarketplaceTransaction[] @relation("Buyer")
+  marketplaceSales      MarketplaceTransaction[] @relation("Seller")
+  marketplaceReviews    MarketplaceReview[] @relation("Reviewer")
+
+  // Community
+  communityPosts        CommunityPost[]
+  communityComments     CommunityComment[]
+  communityLikes        CommunityLike[]
+  directMessages        DirectMessage[] @relation("DMSender")
+
+  @@index([email])
+  @@index([role])
+  @@index([subscriptionStatus])
+}
+
+// ============================================
+// SUPERNOVA AI - CONVERSATIONS & MESSAGES
+// ============================================
+
+model Conversation {
+  id                String      @id @default(cuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title             String      @default("New Conversation")
+  pillar            Pillar?
+  archived          Boolean     @default(false)
+  folderId          String?
+  folder            Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastMessageAt     DateTime    @default(now())
+
+  // Relations
+  messages          Message[]
+  userMemories      UserMemory[]
+
+  @@index([userId])
+  @@index([userId, archived])
+  @@index([userId, lastMessageAt])
+  @@index([folderId])
+}
+
+model Message {
+  id                String        @id @default(cuid())
+  conversationId    String
+  conversation      Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role              String        // 'user' or 'assistant'
+  content           String        @db.Text
+
+  createdAt         DateTime      @default(now())
+  tokensUsed        Int?
+  modelUsed         String?
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Folder {
+  id                String          @id @default(cuid())
+  userId            String
+  name              String
+  color             String?
+  order             Int             @default(0)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  conversations     Conversation[]
+
+  @@index([userId])
+}
+
+// ============================================
+// SUPERNOVA AI - USER MEMORY
+// ============================================
+
+model UserMemory {
+  id                    String        @id @default(cuid())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  memoryType            MemoryType
+  content               String        @db.Text
+
+  sourceConversationId  String?
+  sourceConversation    Conversation? @relation(fields: [sourceConversationId], references: [id], onDelete: SetNull)
+
+  importanceScore       Float         @default(0.5)
+  pillarTags            Pillar[]
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, memoryType])
+  @@index([importanceScore])
+}
+
+// ============================================
+// CONTENT LIBRARY
+// ============================================
+
+model ContentLibrary {
+  id                String          @id @default(cuid())
+  title             String
+  description       String?         @db.Text
+  contentType       ContentType
+  pillar            Pillar
+  tags              String[]
+  fileUrl           String?
+
+  accessLevel       UserRole        @default(MEMBER)
+  orderIndex        Int             @default(0)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  progress          ContentProgress[]
+
+  @@index([pillar])
+  @@index([accessLevel])
+  @@index([orderIndex])
+}
+
+model ContentProgress {
+  id                String          @id @default(cuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contentId         String
+  content           ContentLibrary  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  completed         Boolean         @default(false)
+  progress          Float           @default(0)
+  lastAccessedAt    DateTime        @default(now())
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([contentId])
+}
+
+// ============================================
+// i•DEA MARKETPLACE
+// ============================================
+
+model MarketplaceListing {
+  id                String              @id @default(cuid())
+  sellerId          String
+  seller            User                @relation("SellerListings", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  title             String
+  description       String              @db.Text
+  niche             String
+
+  whatsIncluded     Json                // Array of items (domain, social, email list, etc.)
+  whatsNeeded       String?             @db.Text
+
+  progress          Float               @default(0)
+  price             Float
+
+  images            String[]
+  status            ListingStatus       @default(DRAFT)
+
+  viewsCount        Int                 @default(0)
+  featured          Boolean             @default(false)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  messages          MarketplaceMessage[]
+  transactions      MarketplaceTransaction[]
+  reviews           MarketplaceReview[]
+
+  @@index([sellerId])
+  @@index([status])
+  @@index([featured])
+  @@index([niche])
+  @@index([price])
+}
+
+model MarketplaceMessage {
+  id                String              @id @default(cuid())
+  ideaId            String
+  idea              MarketplaceListing  @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  senderId          String
+  sender            User                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId        String
+  message           String              @db.Text
+
+  read              Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+
+  @@index([ideaId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([read])
+}
+
+model MarketplaceTransaction {
+  id                String              @id @default(cuid())
+  ideaId            String
+  idea              MarketplaceListing  @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  buyerId           String
+  buyer             User                @relation("Buyer", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  sellerId          String
+  seller            User                @relation("Seller", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  amount            Float
+  commission        Float               // 6% platform commission
+
+  stripePaymentId   String?
+  status            PaymentStatus       @default(PENDING)
+
+  createdAt         DateTime            @default(now())
+  completedAt       DateTime?
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+model MarketplaceReview {
+  id                String              @id @default(cuid())
+  ideaId            String
+  idea              MarketplaceListing  @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  reviewerId        String
+  reviewer          User                @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  rating            Int                 // 1-5 stars
+  reviewText        String?             @db.Text
+
+  createdAt         DateTime            @default(now())
+
+  @@index([ideaId])
+  @@index([reviewerId])
+}
+
+// ============================================
+// COMMUNITY / THE VENUE
+// ============================================
+
+model CommunityPost {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pillar            Pillar              @default(GENERAL)
+  title             String
+  content           String              @db.Text
+
+  likesCount        Int                 @default(0)
+  commentsCount     Int                 @default(0)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  comments          CommunityComment[]
+  likes             CommunityLike[]
+
+  @@index([userId])
+  @@index([pillar])
+  @@index([createdAt])
+}
+
+model CommunityComment {
+  id                String              @id @default(cuid())
+  postId            String
+  post              CommunityPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content           String              @db.Text
+  parentCommentId   String?
+
+  createdAt         DateTime            @default(now())
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model CommunityLike {
+  id                String              @id @default(cuid())
+  postId            String
+  post              CommunityPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime            @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model DirectMessage {
+  id                String              @id @default(cuid())
+  senderId          String
+  sender            User                @relation("DMSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId        String
+  content           String              @db.Text
+
+  read              Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([read])
+}
+
+// ============================================
+// PAYMENTS
+// ============================================
+
+model Payment {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount            Float
+  type              PaymentType
+
+  stripePaymentId   String?
+  status            PaymentStatus       @default(PENDING)
+
+  createdAt         DateTime            @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+}
