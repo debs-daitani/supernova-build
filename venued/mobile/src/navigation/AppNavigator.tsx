@@ -8,13 +8,14 @@ import { colors } from '../theme/colors';
 // Screens
 import LandingScreen from '../screens/LandingScreen';
 import BackstageScreen from '../screens/BackstageScreen';
-import SetlistScreen from '../screens/SetlistScreen';
+import CrewScreenNew from '../screens/CrewScreenNew';
 import TourScreen from '../screens/TourScreen';
-import CrewScreen from '../screens/CrewScreen';
+import HypeStationScreen from '../screens/HypeStationScreen';
 import EntourageScreen from '../screens/EntourageScreen';
 import ExecutiveFunctionScreen from '../screens/ExecutiveFunctionScreen';
 import FocusTimerScreen from '../screens/FocusTimerScreen';
 import TimeBlindnessScreen from '../screens/TimeBlindnessScreen';
+import ResetProtocolsScreen from '../screens/ResetProtocolsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,8 +26,7 @@ const TabIcon = ({ label, focused }: { label: string; focused: boolean | string 
   return (
     <Text style={{
       color: isFocused ? colors.pink : colors.textMuted,
-      fontSize: 10,
-      fontWeight: isFocused ? '700' : '400',
+      fontSize: 18,
     }}>
       {label}
     </Text>
@@ -42,46 +42,59 @@ const MainTabs = () => {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: 65,
+          paddingBottom: 10,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.pink,
         tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
       }}
     >
+      {/* Tab 1: Backstage - Dashboard (keep as-is) */}
       <Tab.Screen
         name="Backstage"
         component={BackstageScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="🎭" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon label="🎤" focused={focused} />,
           tabBarLabel: 'Backstage',
         }}
       />
-      <Tab.Screen
-        name="Setlist"
-        component={SetlistScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="⭐" focused={focused} />,
-          tabBarLabel: 'Setlist',
-        }}
-      />
+
+      {/* Tab 2: Crew - Merged tasks (old Setlist + old Crew + FUCK IT DO IT) */}
       <Tab.Screen
         name="Crew"
-        component={CrewScreen}
+        component={CrewScreenNew}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon label="👥" focused={focused} />,
           tabBarLabel: 'Crew',
         }}
       />
+
+      {/* Tab 3: Tour - Calendar (keep as-is) */}
       <Tab.Screen
         name="Tour"
         component={TourScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="📅" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon label="🗓️" focused={focused} />,
           tabBarLabel: 'Tour',
         }}
       />
+
+      {/* Tab 4: Setlist - NEW Hype Station */}
+      <Tab.Screen
+        name="Setlist"
+        component={HypeStationScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon label="🎵" focused={focused} />,
+          tabBarLabel: 'Setlist',
+        }}
+      />
+
+      {/* Tab 5: Entourage - 9 ADHD tools */}
       <Tab.Screen
         name="Entourage"
         component={EntourageScreen}
@@ -108,6 +121,7 @@ const AppNavigator = () => {
         <Stack.Screen name="ExecutiveFunction" component={ExecutiveFunctionScreen} />
         <Stack.Screen name="FocusTimer" component={FocusTimerScreen} />
         <Stack.Screen name="TimeBlindness" component={TimeBlindnessScreen} />
+        <Stack.Screen name="ResetProtocols" component={ResetProtocolsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

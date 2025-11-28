@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,74 +7,113 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, gradients } from '../theme/colors';
-import { ADHDData, BrainDump } from '../types';
-import { getADHDData, saveADHDData } from '../lib/storage';
 
 interface NavigationProps {
   navigation: any;
 }
 
+// The 9 Entourage Tools
+const ENTOURAGE_TOOLS = [
+  {
+    id: 'focused',
+    icon: '🎯',
+    name: 'FOCUSED A/F',
+    subtitle: 'Timer + Hyperfocus + Time Perception',
+    color: colors.pink,
+    route: 'FocusTimer',
+  },
+  {
+    id: 'demo-tapes',
+    icon: '🎸',
+    name: 'Demo Tapes',
+    subtitle: 'Brain Dump + Ideas + Pivots',
+    color: colors.purple,
+    route: 'DemoTapes',
+  },
+  {
+    id: 'executive',
+    icon: '🧠',
+    name: 'Executive Function',
+    subtitle: 'Micro-steps + Decision Help',
+    color: colors.cyan,
+    route: 'ExecutiveFunction',
+  },
+  {
+    id: 'achievements',
+    icon: '🏆',
+    name: 'Achievements',
+    subtitle: 'Points, Levels, Badges',
+    color: colors.green,
+    route: 'Achievements',
+  },
+  {
+    id: 'patterns',
+    icon: '📊',
+    name: 'Pattern Insights',
+    subtitle: 'AI observations about you',
+    color: colors.cyan,
+    route: 'PatternInsights',
+  },
+  {
+    id: 'reset',
+    icon: '🔄',
+    name: 'Reset Protocols',
+    subtitle: '5 quick interventions',
+    color: colors.pink,
+    route: 'ResetProtocols',
+  },
+  {
+    id: 'revenue',
+    icon: '💰',
+    name: 'Revenue Reality',
+    subtitle: 'Goals to daily actions',
+    color: colors.green,
+    route: 'RevenueReality',
+  },
+  {
+    id: 'body-double',
+    icon: '👥',
+    name: 'Body Double',
+    subtitle: 'Find buddy / Virtual mode',
+    color: colors.purple,
+    route: 'BodyDouble',
+  },
+  {
+    id: 'reframe',
+    icon: '🪞',
+    name: 'Reframe Tool',
+    subtitle: 'Turn rejection into fuel',
+    color: colors.pink,
+    route: 'ReframeTool',
+  },
+];
+
+const { width } = Dimensions.get('window');
+const GRID_PADDING = 16;
+const GRID_GAP = 12;
+const CARD_SIZE = (width - (GRID_PADDING * 2) - (GRID_GAP * 2)) / 3;
+
 const EntourageScreen: React.FC<NavigationProps> = ({ navigation }) => {
-  const [adhdData, setADHDData] = useState<ADHDData>({
-    brainDumps: [],
-    energyLogs: [],
-    hyperfocusSessions: [],
-  });
-  const [newDump, setNewDump] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const handleToolPress = (tool: typeof ENTOURAGE_TOOLS[0]) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-  const loadData = async () => {
-    const data = await getADHDData();
-    setADHDData(data);
-  };
+    // Tools that are implemented
+    const implementedRoutes = ['FocusTimer', 'ExecutiveFunction', 'ResetProtocols'];
 
-  const addBrainDump = async () => {
-    if (!newDump.trim()) return;
-
-    const dump: BrainDump = {
-      id: Date.now().toString(),
-      content: newDump,
-      timestamp: new Date().toISOString(),
-      converted: false,
-      archived: false,
-    };
-
-    const updatedData = {
-      ...adhdData,
-      brainDumps: [dump, ...adhdData.brainDumps],
-    };
-
-    await saveADHDData(updatedData);
-    setADHDData(updatedData);
-    setNewDump('');
-  };
-
-  const adhdTools = [
-    { icon: '⏰', name: 'Time Blindness Tracker', subtitle: 'Track estimates vs reality', route: 'TimeBlindness' },
-    { icon: '🎯', name: 'Hyperfocus Logger', subtitle: 'Log your flow states', route: null },
-    { icon: '⚡', name: 'Energy Tracker', subtitle: 'Map your energy patterns', route: null },
-    { icon: '🧩', name: 'Executive Function Helper', subtitle: 'Break through paralysis', route: 'ExecutiveFunction' },
-    { icon: '🎁', name: 'Dopamine Menu', subtitle: 'Reward system', route: null },
-    { icon: '👥', name: 'Body Doubling', subtitle: 'Virtual work companion', route: null },
-    { icon: '📊', name: 'Pattern Insights', subtitle: 'Personalized recommendations', route: null },
-  ];
-
-  const handleToolPress = (tool: { name: string; route: string | null }) => {
-    if (tool.route) {
+    if (implementedRoutes.includes(tool.route)) {
       navigation.navigate(tool.route);
     } else {
       Alert.alert(
-        tool.name,
-        'This feature is coming soon! 🚀\n\nWe\'re building specialized ADHD support tools to help you work with your brain, not against it.',
-        [{ text: 'Got it!' }]
+        `${tool.icon} ${tool.name}`,
+        `${tool.subtitle}\n\nComing soon! This tool is being built to help you work with your ADHD brain, not against it.`,
+        [{ text: 'Got it! 🤘' }]
       );
     }
   };
@@ -86,101 +125,50 @@ const EntourageScreen: React.FC<NavigationProps> = ({ navigation }) => {
       {/* Header */}
       <LinearGradient colors={gradients.primary} style={styles.header}>
         <Text style={styles.headerTitle}>🧠 THE ENTOURAGE</Text>
-        <Text style={styles.headerSubtitle}>ADHD Support Tools</Text>
+        <Text style={styles.headerSubtitle}>Your ADHD Power Tools</Text>
       </LinearGradient>
 
-      <ScrollView style={styles.content}>
-        {/* Brain Dump Space */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🧠 Brain Dump Space</Text>
-          <Text style={styles.sectionSubtitle}>
-            Capture everything, organize later
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Intro Text */}
+        <View style={styles.introSection}>
+          <Text style={styles.introText}>
+            9 tools designed for ADHD brains. Tap any card to dive in.
           </Text>
-
-          <View style={styles.dumpInput}>
-            <TextInput
-              style={styles.input}
-              placeholder="What's on your mind?"
-              placeholderTextColor={colors.textMuted}
-              value={newDump}
-              onChangeText={setNewDump}
-              multiline={true}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={addBrainDump}>
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Brain Dumps List */}
-          {adhdData.brainDumps.slice(0, 3).map((dump) => (
-            <View key={dump.id} style={styles.dumpCard}>
-              <Text style={styles.dumpContent}>{dump.content}</Text>
-              <Text style={styles.dumpTime}>
-                {new Date(dump.timestamp).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
-            </View>
-          ))}
-
-          {adhdData.brainDumps.length > 3 && (
-            <Text style={styles.moreText}>
-              +{adhdData.brainDumps.length - 3} more dumps
-            </Text>
-          )}
         </View>
 
-        {/* ADHD Tools */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🛠️ ADHD Support Tools</Text>
-          <Text style={styles.sectionSubtitle}>
-            Specialized tools for your ADHD brain
-          </Text>
-
-          {adhdTools.map((tool, index) => (
+        {/* 3x3 Grid */}
+        <View style={styles.grid}>
+          {ENTOURAGE_TOOLS.map((tool) => (
             <TouchableOpacity
-              key={index}
+              key={tool.id}
               style={styles.toolCard}
               onPress={() => handleToolPress(tool)}
+              activeOpacity={0.7}
             >
-              <Text style={styles.toolIcon}>{tool.icon}</Text>
-              <View style={styles.toolContent}>
-                <Text style={styles.toolName}>{tool.name}</Text>
-                <Text style={styles.toolSubtitle}>{tool.subtitle}</Text>
+              <View style={[styles.toolIconContainer, { backgroundColor: tool.color + '20' }]}>
+                <Text style={styles.toolIcon}>{tool.icon}</Text>
               </View>
-              <Text style={styles.toolArrow}>→</Text>
+              <Text style={styles.toolName} numberOfLines={1}>{tool.name}</Text>
+              <Text style={styles.toolSubtitle} numberOfLines={2}>{tool.subtitle}</Text>
+              <View style={[styles.toolIndicator, { backgroundColor: tool.color }]} />
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Stats Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Your ADHD Insights</Text>
-
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{adhdData.brainDumps.length}</Text>
-              <Text style={styles.statLabel}>Brain Dumps</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{adhdData.energyLogs.length}</Text>
-              <Text style={styles.statLabel}>Energy Logs</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{adhdData.hyperfocusSessions.length}</Text>
-              <Text style={styles.statLabel}>Focus Sessions</Text>
-            </View>
-          </View>
         </View>
 
         {/* About */}
         <View style={styles.aboutSection}>
           <Text style={styles.aboutText}>
-            Built for ADHD brains, by ADHD brains. Because your brain works differently,
-            and that's not a bug—it's a feature.
+            Built for ADHD brains, by ADHD brains.{'\n'}
+            Your brain works differently—that's not a bug, it's a feature.
           </Text>
         </View>
+
+        {/* Bottom spacing */}
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -193,7 +181,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingTop: 10,
+    paddingTop: 12,
   },
   headerTitle: {
     fontSize: 28,
@@ -209,131 +197,68 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  section: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  contentContainer: {
+    padding: GRID_PADDING,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
+  introSection: {
+    marginBottom: 16,
   },
-  sectionSubtitle: {
-    fontSize: 13,
+  introText: {
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  dumpInput: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 12,
-    color: colors.text,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  addButton: {
-    backgroundColor: colors.pink,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  dumpCard: {
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  dumpContent: {
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: 6,
-  },
-  dumpTime: {
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  moreText: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 8,
-    fontStyle: 'italic',
     textAlign: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GRID_GAP,
   },
   toolCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: CARD_SIZE,
     backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  toolIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   toolIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  toolContent: {
-    flex: 1,
+    fontSize: 26,
   },
   toolName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '800',
     color: colors.text,
-    marginBottom: 2,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   toolSubtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  toolArrow: {
-    fontSize: 20,
-    color: colors.pink,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.pink,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 4,
+    fontSize: 9,
+    color: colors.textMuted,
     textAlign: 'center',
+    lineHeight: 12,
+    minHeight: 24,
+  },
+  toolIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
   },
   aboutSection: {
-    padding: 24,
+    marginTop: 24,
+    padding: 16,
     alignItems: 'center',
   },
   aboutText: {
