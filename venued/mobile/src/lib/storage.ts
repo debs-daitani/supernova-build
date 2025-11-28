@@ -11,6 +11,9 @@ const KEYS = {
   EXECUTIVE_FUNCTION: 'venued_executive_function',
   FOCUS_SESSIONS: 'venued_focus_sessions',
   TIME_TRACKING: 'venued_time_tracking',
+  POWER_MESSAGE_LAST_SHOWN: 'venued_power_message_last_shown',
+  POWER_MESSAGE_FAVOURITES: 'venued_power_message_favourites',
+  POWER_MESSAGE_DISABLED: 'venued_power_message_disabled',
 };
 
 // Projects
@@ -269,5 +272,113 @@ export const clearAllData = async (): Promise<void> => {
     ]);
   } catch (error) {
     console.error('Error clearing data:', error);
+  }
+};
+
+// Power Message Functions
+
+// Get the date string for today (YYYY-MM-DD format)
+const getTodayString = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+// Check if we should show the daily power message
+export const shouldShowPowerMessage = async (): Promise<boolean> => {
+  try {
+    // Check if disabled
+    const disabled = await AsyncStorage.getItem(KEYS.POWER_MESSAGE_DISABLED);
+    if (disabled === 'true') return false;
+
+    // Check last shown date
+    const lastShown = await AsyncStorage.getItem(KEYS.POWER_MESSAGE_LAST_SHOWN);
+    const today = getTodayString();
+
+    return lastShown !== today;
+  } catch (error) {
+    console.error('Error checking power message:', error);
+    return true; // Default to showing if error
+  }
+};
+
+// Mark power message as shown today
+export const markPowerMessageShown = async (): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(KEYS.POWER_MESSAGE_LAST_SHOWN, getTodayString());
+  } catch (error) {
+    console.error('Error marking power message shown:', error);
+  }
+};
+
+// Get favourite message IDs
+export const getFavouriteMessages = async (): Promise<string[]> => {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.POWER_MESSAGE_FAVOURITES);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error getting favourite messages:', error);
+    return [];
+  }
+};
+
+// Add a message to favourites
+export const addFavouriteMessage = async (messageId: string): Promise<void> => {
+  try {
+    const favourites = await getFavouriteMessages();
+    if (!favourites.includes(messageId)) {
+      favourites.push(messageId);
+      await AsyncStorage.setItem(KEYS.POWER_MESSAGE_FAVOURITES, JSON.stringify(favourites));
+    }
+  } catch (error) {
+    console.error('Error adding favourite message:', error);
+  }
+};
+
+// Remove a message from favourites
+export const removeFavouriteMessage = async (messageId: string): Promise<void> => {
+  try {
+    const favourites = await getFavouriteMessages();
+    const filtered = favourites.filter(id => id !== messageId);
+    await AsyncStorage.setItem(KEYS.POWER_MESSAGE_FAVOURITES, JSON.stringify(filtered));
+  } catch (error) {
+    console.error('Error removing favourite message:', error);
+  }
+};
+
+// Toggle favourite status
+export const toggleFavouriteMessage = async (messageId: string): Promise<boolean> => {
+  try {
+    const favourites = await getFavouriteMessages();
+    const isFavourite = favourites.includes(messageId);
+
+    if (isFavourite) {
+      await removeFavouriteMessage(messageId);
+      return false;
+    } else {
+      await addFavouriteMessage(messageId);
+      return true;
+    }
+  } catch (error) {
+    console.error('Error toggling favourite message:', error);
+    return false;
+  }
+};
+
+// Check if power messages are disabled
+export const isPowerMessageDisabled = async (): Promise<boolean> => {
+  try {
+    const disabled = await AsyncStorage.getItem(KEYS.POWER_MESSAGE_DISABLED);
+    return disabled === 'true';
+  } catch (error) {
+    return false;
+  }
+};
+
+// Set power message disabled state
+export const setPowerMessageDisabled = async (disabled: boolean): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(KEYS.POWER_MESSAGE_DISABLED, disabled ? 'true' : 'false');
+  } catch (error) {
+    console.error('Error setting power message disabled:', error);
   }
 };

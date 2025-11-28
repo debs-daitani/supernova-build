@@ -241,6 +241,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
+  disabledButton: {
+    opacity: 0.5,
+  },
   saveButtonDisabled: {
     opacity: 0.5,
   },
