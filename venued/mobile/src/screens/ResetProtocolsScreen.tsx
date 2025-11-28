@@ -245,15 +245,17 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingTop: 12,
+    paddingTop: 16,
   },
   backButton: {
-    marginBottom: 8,
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   backText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
-    opacity: 0.8,
   },
   headerTitle: {
     fontSize: 24,

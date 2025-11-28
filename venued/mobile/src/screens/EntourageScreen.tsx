@@ -105,7 +105,7 @@ const EntourageScreen: React.FC<NavigationProps> = ({ navigation }) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Tools that are implemented
-    const implementedRoutes = ['FocusTimer', 'ExecutiveFunction', 'ResetProtocols'];
+    const implementedRoutes = ['FocusTimer', 'ExecutiveFunction', 'ResetProtocols', 'DemoTapes'];
 
     if (implementedRoutes.includes(tool.route)) {
       navigation.navigate(tool.route);

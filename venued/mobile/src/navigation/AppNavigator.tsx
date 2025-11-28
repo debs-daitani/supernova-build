@@ -16,6 +16,7 @@ import ExecutiveFunctionScreen from '../screens/ExecutiveFunctionScreen';
 import FocusTimerScreen from '../screens/FocusTimerScreen';
 import TimeBlindnessScreen from '../screens/TimeBlindnessScreen';
 import ResetProtocolsScreen from '../screens/ResetProtocolsScreen';
+import DemoTapesScreen from '../screens/DemoTapesScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -122,6 +123,7 @@ const AppNavigator = () => {
         <Stack.Screen name="FocusTimer" component={FocusTimerScreen} />
         <Stack.Screen name="TimeBlindness" component={TimeBlindnessScreen} />
         <Stack.Screen name="ResetProtocols" component={ResetProtocolsScreen} />
+        <Stack.Screen name="DemoTapes" component={DemoTapesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
