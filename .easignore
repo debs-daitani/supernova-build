@@ -1,5 +1,5 @@
 # EAS Build - Monorepo Configuration
-# Exclude everything except venued-mobile
+# Exclude everything except venuedmob
 
 # Exclude all root directories
 client/
@@ -17,6 +17,7 @@ server/
 src/
 supernova/
 venued/
+venued-mobile/
 venued-mobile-backup/
 .github/
 .next/
@@ -28,12 +29,12 @@ node_modules/
 
 # Exclude root-level files
 *.md
-!venued-mobile/**/*.md
+!venuedmob/**/*.md
 package.json
-!venued-mobile/package.json
+!venuedmob/package.json
 package-lock.json
 tsconfig.json
-!venued-mobile/tsconfig.json
+!venuedmob/tsconfig.json
 next.config.js
 tailwind.config.ts
 postcss.config.js
@@ -50,8 +51,8 @@ npx
 .gitattributes
 supernova-build.code-workspace
 
-# Exclude venued-mobile local stuff (also in venued-mobile/.easignore)
-venued-mobile/node_modules/
-venued-mobile/.expo/
-venued-mobile/.next/
-venued-mobile/.claude/
+# Exclude venuedmob local stuff (also in venuedmob/.easignore)
+venuedmob/node_modules/
+venuedmob/.expo/
+venuedmob/.next/
+venuedmob/.claude/
