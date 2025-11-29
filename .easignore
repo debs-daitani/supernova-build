@@ -1,0 +1,44 @@
+# EAS Build - Monorepo Configuration
+# Exclude everything except venued-mobile
+
+# Exclude all root-level directories (not venued-mobile)
+/client
+/data
+/docs
+/examples
+/helm
+/idea
+/infrastructure
+/k8s
+/node_modules
+/prisma
+/schema
+/scripts
+/server
+/src
+/supernova
+/venued
+/venued-mobile-backup
+/.github
+/.next
+/.vscode
+/.claude
+
+# Exclude root-level files
+/*.md
+/*.json
+/*.ts
+/*.js
+/*.yml
+/*.bat
+/.env*
+/.git*
+/.docker*
+/Dockerfile
+/Procfile
+/_UL
+/npx
+
+# Include venued-mobile (negate exclusions)
+!/venued-mobile
+!/venued-mobile/**
