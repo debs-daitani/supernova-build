@@ -1,57 +1,12 @@
 # EAS Build - Monorepo Configuration
-# Exclude everything except venuedmob
+# Exclude EVERYTHING first, then include only venuedmob
+*
 
-# Exclude all root directories
-client/
-data/
-docs/
-examples/
-helm/
-idea/
-infrastructure/
-k8s/
-prisma/
-schema/
-scripts/
-server/
-src/
-supernova/
-venued/
-venued-mobile/
-venued-mobile-backup/
-.github/
-.next/
-.vscode/
-.claude/
+# Include venuedmob and all its contents
+!venuedmob/
+!venuedmob/**
 
-# Exclude root node_modules
-node_modules/
-
-# Exclude root-level files
-*.md
-!venuedmob/**/*.md
-package.json
-!venuedmob/package.json
-package-lock.json
-tsconfig.json
-!venuedmob/tsconfig.json
-next.config.js
-tailwind.config.ts
-postcss.config.js
-docker-compose.yml
-Dockerfile
-Procfile
-railway.json
-*.bat
-_UL
-npx
-.env
-.env.*
-.dockerignore
-.gitattributes
-supernova-build.code-workspace
-
-# Exclude venuedmob local stuff (also in venuedmob/.easignore)
+# But exclude venuedmob's local build artifacts
 venuedmob/node_modules/
 venuedmob/.expo/
 venuedmob/.next/
