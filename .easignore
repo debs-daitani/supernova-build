@@ -1,13 +1,50 @@
-# EAS Build - Monorepo Configuration
-# Exclude EVERYTHING first, then include only venuedmob
-*
+# EAS Build - Monorepo Configuration for venuedmob
+# Exclude all parent directories explicitly
+client
+data
+docs
+examples
+helm
+idea
+infrastructure
+k8s
+prisma
+schema
+scripts
+server
+src
+supernova
+venued
+venued-mobile
+venued-mobile-backup
+.github
+.next
+.vscode
+.claude
+node_modules
 
-# Include venuedmob and all its contents
-!venuedmob/
-!venuedmob/**
+# Exclude root files by pattern
+*.md
+*.json
+!venuedmob/**/*.json
+*.ts
+!venuedmob/**/*.ts
+*.js
+!venuedmob/**/*.js
+*.yml
+*.bat
+*.workspace
+.env*
+.docker*
+.git*
+!.gitignore
+Dockerfile
+Procfile
+_UL
+npx
 
-# But exclude venuedmob's local build artifacts
-venuedmob/node_modules/
-venuedmob/.expo/
-venuedmob/.next/
-venuedmob/.claude/
+# Exclude venuedmob build artifacts
+venuedmob/node_modules
+venuedmob/.expo
+venuedmob/.next
+venuedmob/.claude
