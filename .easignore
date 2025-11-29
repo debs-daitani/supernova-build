@@ -1,44 +1,57 @@
 # EAS Build - Monorepo Configuration
 # Exclude everything except venued-mobile
 
-# Exclude all root-level directories (not venued-mobile)
-/client
-/data
-/docs
-/examples
-/helm
-/idea
-/infrastructure
-/k8s
-/node_modules
-/prisma
-/schema
-/scripts
-/server
-/src
-/supernova
-/venued
-/venued-mobile-backup
-/.github
-/.next
-/.vscode
-/.claude
+# Exclude all root directories
+client/
+data/
+docs/
+examples/
+helm/
+idea/
+infrastructure/
+k8s/
+prisma/
+schema/
+scripts/
+server/
+src/
+supernova/
+venued/
+venued-mobile-backup/
+.github/
+.next/
+.vscode/
+.claude/
+
+# Exclude root node_modules
+node_modules/
 
 # Exclude root-level files
-/*.md
-/*.json
-/*.ts
-/*.js
-/*.yml
-/*.bat
-/.env*
-/.git*
-/.docker*
-/Dockerfile
-/Procfile
-/_UL
-/npx
+*.md
+!venued-mobile/**/*.md
+package.json
+!venued-mobile/package.json
+package-lock.json
+tsconfig.json
+!venued-mobile/tsconfig.json
+next.config.js
+tailwind.config.ts
+postcss.config.js
+docker-compose.yml
+Dockerfile
+Procfile
+railway.json
+*.bat
+_UL
+npx
+.env
+.env.*
+.dockerignore
+.gitattributes
+supernova-build.code-workspace
 
-# Include venued-mobile (negate exclusions)
-!/venued-mobile
-!/venued-mobile/**
+# Exclude venued-mobile local stuff (also in venued-mobile/.easignore)
+venued-mobile/node_modules/
+venued-mobile/.expo/
+venued-mobile/.next/
+venued-mobile/.claude/
