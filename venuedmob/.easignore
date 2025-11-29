@@ -1,4 +1,50 @@
-# venued-mobile local excludes
+# Exclude parent monorepo directories (paths relative to git root)
+../client/
+../data/
+../docs/
+../examples/
+../helm/
+../idea/
+../infrastructure/
+../k8s/
+../prisma/
+../schema/
+../scripts/
+../server/
+../src/
+../supernova/
+../venued/
+../venued-mobile/
+../venued-mobile-backup/
+../.github/
+../.next/
+../.vscode/
+../.claude/
+../node_modules/
+
+# Exclude parent root files
+../*.md
+../package.json
+../package-lock.json
+../tsconfig.json
+../next.config.js
+../tailwind.config.ts
+../postcss.config.js
+../docker-compose.yml
+../Dockerfile
+../Procfile
+../railway.json
+../*.bat
+../_UL
+../npx
+../.env
+../.env.*
+../.dockerignore
+../.gitattributes
+../supernova-build.code-workspace
+../.easignore
+
+# Local excludes
 .git
 .expo
 node_modules
