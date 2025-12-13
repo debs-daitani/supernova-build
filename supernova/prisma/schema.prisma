@@ -1,5 +1,3 @@
-// This is your Prisma schema file for SUPERNova AI
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,9 +7,515 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// USER MANAGEMENT
-// ==========================================
+model User {
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  password           String
+  name               String?
+  role               UserRole           @default(USER)
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  subscriptionTier   SubscriptionTier   @default(FREE)
+  bio                String?
+  location           String?
+  niche              String?
+  skills             String[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  lastLogin          DateTime?
+  commitments        Commitment[]
+  conversations      Conversation[]
+  decisions          Decision[]
+  energyLogs         EnergyLog[]
+  extractedEntities  ExtractedEntity[]
+  folders            Folder[]
+  loopDetections     LoopDetection[]
+  messages           Message[]
+  memories           UserMemory[]
+  userPatterns       UserPattern[]
+  voiceMemos         VoiceMemo[]
+
+  @@index([email])
+}
+
+model Conversation {
+  id                  String               @id @default(cuid())
+  userId              String
+  title               String               @default("New Conversation")
+  mode                CoachingMode         @default(GENERAL)
+  archived            Boolean              @default(false)
+  folderId            String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  lastMessageAt       DateTime             @default(now())
+  folder              Folder?              @relation(fields: [folderId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationSummary ConversationSummary?
+  energyLogs          EnergyLog[]
+  loopDetections      LoopDetection[]
+  messages            Message[]
+  memories            UserMemory[]
+
+  @@index([userId])
+  @@index([userId, archived])
+  @@index([userId, lastMessageAt])
+  @@index([folderId])
+  @@index([mode])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  role           String
+  content        String
+  tokensUsed     Int?
+  modelUsed      String?      @default("claude-3-5-sonnet-20241022")
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model UserMemory {
+  id                   String        @id @default(cuid())
+  userId               String
+  memoryType           MemoryType
+  content              String
+  sourceConversationId String?
+  importanceScore      Float         @default(5.0)
+  pillarTags           String[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  sourceConversation   Conversation? @relation(fields: [sourceConversationId], references: [id])
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, memoryType])
+  @@index([importanceScore])
+}
+
+model EnergyLog {
+  id             String       @id @default(cuid())
+  userId         String
+  conversationId String
+  energyLevel    String
+  timeOfDay      String
+  dayOfWeek      Int
+  messageLength  Int
+  timestamp      DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, timestamp])
+}
+
+model Commitment {
+  id             String    @id @default(cuid())
+  userId         String
+  description    String
+  deadline       DateTime?
+  pillar         String?
+  status         String    @default("active")
+  createdAt      DateTime  @default(now())
+  commitmentType String
+  currentStreak  Int       @default(0)
+  lastCheckIn    DateTime?
+  longestStreak  Int       @default(0)
+  updatedAt      DateTime  @updatedAt
+  checkIns       CheckIn[]
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model CheckIn {
+  id           String     @id @default(cuid())
+  commitmentId String
+  createdAt    DateTime   @default(now())
+  note         String?
+  status       String
+  commitment   Commitment @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
+
+  @@index([commitmentId])
+}
+
+model Decision {
+  id             String    @id @default(cuid())
+  userId         String
+  conversationId String?
+  question       String
+  options        String[]
+  chosenOption   String?
+  timesAsked     Int       @default(1)
+  createdAt      DateTime  @default(now())
+  decidedAt      DateTime?
+  status         String    @default("pending")
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model LoopDetection {
+  id              String       @id @default(cuid())
+  userId          String
+  loopType        String
+  conversationId  String
+  createdAt       DateTime     @default(now())
+  isActive        Boolean      @default(true)
+  lastTriggered   DateTime     @default(now())
+  messages        String[]
+  occurrenceCount Int          @default(1)
+  updatedAt       DateTime     @updatedAt
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model DopamineMenuItem {
+  id            String   @id @default(cuid())
+  userId        String?
+  title         String
+  description   String
+  pillar        String?
+  timesOffered  Int      @default(0)
+  createdAt     DateTime @default(now())
+  category      String
+  duration      String
+  isGlobal      Boolean  @default(false)
+  timesAccepted Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isGlobal])
+}
+
+model VoiceMemo {
+  id         String   @id @default(cuid())
+  userId     String
+  audioUrl   String?
+  duration   Int?
+  summary    String?
+  createdAt  DateTime @default(now())
+  status     String   @default("pending")
+  transcript String?
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model ExtractedEntity {
+  id         String   @id @default(cuid())
+  userId     String
+  entityType String
+  name       String
+  context    String?
+  createdAt  DateTime @default(now())
+  mentions   Int      @default(1)
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, entityType])
+}
+
+model UserPattern {
+  id          String   @id @default(cuid())
+  userId      String
+  patternType String
+  description String
+  createdAt   DateTime @default(now())
+  occurrences Int      @default(1)
+  strength    Float    @default(0.5)
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ConversationSummary {
+  id             String       @id @default(cuid())
+  conversationId String       @unique
+  summary        String
+  keyTopics      String[]
+  actionItems    String[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  mood           String?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Folder {
+  id            String         @id @default(cuid())
+  userId        String
+  name          String
+  color         String?        @default("#8B5CF6")
+  order         Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Album {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  order       Int          @default(0)
+  isPublic    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  coverImage  String?
+  mode        CoachingMode
+  tracks      Track[]
+
+  @@index([mode])
+  @@index([isPublic])
+}
+
+model Track {
+  id        String   @id @default(cuid())
+  albumId   String
+  title     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  sections  Json?
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@index([albumId])
+}
+
+model ContentChunk {
+  id         String   @id @default(cuid())
+  content    String
+  pillar     String?
+  createdAt  DateTime @default(now())
+  embedding  Float[]
+  keywords   String[]
+  sourceId   String?
+  sourceName String?
+  sourceType String
+  updatedAt  DateTime @updatedAt
+
+  @@index([pillar])
+  @@index([sourceType])
+}
+
+model Program {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  programType ProgramType
+  mode        CoachingMode
+  content     String
+  objectives  String[]
+  outcomes    String[]
+  duration    String?
+  level       String?
+  tags        String[]
+  isPublic    Boolean      @default(false)
+  price       Float?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([mode])
+  @@index([programType])
+  @@index([isPublic])
+}
+
+model KnowledgeProgram {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  pillar      String
+  updatedAt   DateTime @updatedAt
+  content     String
+  createdAt   DateTime @default(now())
+
+  @@index([pillar])
+}
+
+model Quiz {
+  id              String                  @id @default(cuid())
+  userId          String?
+  title           String
+  description     String?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  avgScore        Float?
+  isPublic        Boolean                 @default(false)
+  pillar          String?
+  totalResponses  Int                     @default(0)
+  recommendations ProgramRecommendation[]
+  questions       Question[]
+  analytics       QuizAnalytics?
+  resultTiers     ResultTier[]
+
+  @@index([isPublic])
+  @@index([pillar])
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  quizId    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  options   Json
+  text      String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model ResultTier {
+  id          String   @id @default(cuid())
+  quizId      String
+  name        String
+  description String
+  minScore    Float
+  maxScore    Float
+  createdAt   DateTime @default(now())
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model ProgramRecommendation {
+  id          String   @id @default(cuid())
+  quizId      String
+  programId   String
+  createdAt   DateTime @default(now())
+  maxScore    Float
+  minScore    Float
+  programName String
+  reason      String?
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model QuizAnalytics {
+  id                String   @id @default(cuid())
+  quizId            String   @unique
+  createdAt         DateTime @default(now())
+  avgCompletionTime Float?
+  highScoreCount    Int      @default(0)
+  lowScoreCount     Int      @default(0)
+  mediumScoreCount  Int      @default(0)
+  totalCompletions  Int      @default(0)
+  totalStarts       Int      @default(0)
+  updatedAt         DateTime @updatedAt
+  quiz              Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model EmailSubscriber {
+  id        String       @id @default(cuid())
+  email     String       @unique
+  tags      String[]
+  updatedAt DateTime     @updatedAt
+  createdAt DateTime     @default(now())
+  name      String?
+  status    String       @default("active")
+  source    String?
+  events    EmailEvent[]
+
+  @@index([email])
+  @@index([status])
+}
+
+model EmailCampaign {
+  id          String       @id @default(cuid())
+  name        String
+  subject     String
+  sentCount   Int          @default(0)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  clickCount  Int          @default(0)
+  content     String
+  openCount   Int          @default(0)
+  status      String       @default("draft")
+  events      EmailEvent[]
+
+  @@index([status])
+}
+
+model EmailEvent {
+  id           String          @id @default(cuid())
+  campaignId   String?
+  subscriberId String
+  createdAt    DateTime        @default(now())
+  eventType    String
+  metadata     Json?
+  campaign     EmailCampaign?  @relation(fields: [campaignId], references: [id])
+  subscriber   EmailSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId])
+  @@index([campaignId])
+  @@index([eventType])
+}
+
+model Contact {
+  id          String    @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  tags        String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastContact DateTime?
+  notes       String?
+  userId      String
+  source      String?
+  status      String    @default("lead")
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model StripeCustomer {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  stripeCustomerId String   @unique
+  email            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([stripeCustomerId])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String
+  stripeSubscriptionId String    @unique
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  canceledAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  priceId              String
+  status               String
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
 
 enum UserRole {
   USER
@@ -33,450 +537,22 @@ enum SubscriptionTier {
   ENTERPRISE
 }
 
-model User {
-  id                 String             @id @default(cuid())
-  email              String             @unique
-  password           String
-  name               String?
-  role               UserRole           @default(USER)
-  subscriptionStatus SubscriptionStatus @default(TRIAL)
-  subscriptionTier   SubscriptionTier   @default(FREE)
-
-  // Profile info
-  bio      String?
-  location String?
-  niche    String?
-  skills   String[]
-
-  // Relationships
-  conversations Conversation[]
-  messages      Message[]
-  memories      UserMemory[]
-  folders       Folder[]
-  energyLogs    EnergyLog[]
-  commitments   Commitment[]
-  decisions     Decision[]
-  loopDetections LoopDetection[]
-  voiceMemos    VoiceMemo[]
-  extractedEntities ExtractedEntity[]
-  userPatterns  UserPattern[]
-
-  // Timestamps
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  lastLogin DateTime?
-
-  @@index([email])
-}
-
-// ==========================================
-// CONVERSATION SYSTEM
-// ==========================================
-
 enum CoachingMode {
-  BODY     // Health, wellness, fitness
-  BRAIN    // ADHD, mindset, mental health
-  BUSINESS // Strategy, growth, entrepreneurship
-  GENERAL  // Mixed or unspecified
+  BODY
+  BRAIN
+  BUSINESS
+  GENERAL
 }
-
-model Conversation {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title String       @default("New Conversation")
-  mode  CoachingMode @default(GENERAL)
-
-  // Organization
-  archived Boolean @default(false)
-  folderId String?
-  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
-
-  // Related data
-  messages Message[]
-  memories UserMemory[]
-  energyLogs EnergyLog[]
-  loopDetections LoopDetection[]
-  conversationSummary ConversationSummary?
-
-  // Timestamps
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  lastMessageAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([userId, archived])
-  @@index([userId, lastMessageAt])
-  @@index([folderId])
-  @@index([mode])
-}
-
-model Message {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role    String // 'user' or 'assistant'
-  content String @db.Text
-
-  // Metadata
-  tokensUsed Int?
-  modelUsed  String? @default("claude-3-5-sonnet-20241022")
-
-  // Timestamps
-  createdAt DateTime @default(now())
-
-  @@index([conversationId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// ==========================================
-// MEMORY SYSTEM
-// ==========================================
 
 enum MemoryType {
-  FACT       // User stated facts (name, job, etc.)
-  PREFERENCE // User preferences and likes
-  GOAL       // User goals and objectives
-  CONTEXT    // Important context from conversations
-  INSIGHT    // AI-discovered patterns/insights
-  STRUGGLE   // User struggles/challenges
-  STRENGTH   // User strengths
+  FACT
+  PREFERENCE
+  GOAL
+  CONTEXT
+  STRUGGLE
+  STRENGTH
+  INSIGHT
 }
-
-model UserMemory {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  memoryType MemoryType
-  content    String     @db.Text
-
-  // Source tracking
-  sourceConversationId String?
-  sourceConversation   Conversation? @relation(fields: [sourceConversationId], references: [id], onDelete: SetNull)
-
-  // Importance and categorization
-  importanceScore Float    @default(5.0) // 0-10 scale
-  pillarTags      String[] // BODY, BRAIN, BUSINESS tags
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, memoryType])
-  @@index([importanceScore])
-}
-
-// ==========================================
-// ENERGY TRACKING
-// ==========================================
-
-model EnergyLog {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  energyLevel   String // 'high', 'medium', 'low'
-  timeOfDay     String // 'morning', 'afternoon', 'evening', 'night'
-  dayOfWeek     Int    // 0 = Sunday, 6 = Saturday
-  messageLength Int
-  timestamp     DateTime @default(now())
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([userId, timestamp])
-}
-
-// ==========================================
-// ACCOUNTABILITY & COMMITMENTS
-// ==========================================
-
-model Commitment {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  description String @db.Text
-  commitmentType String // 'one-time', 'daily', 'weekly'
-  pillar      String? // BODY, BRAIN, BUSINESS
-
-  deadline    DateTime?
-  status      String @default("active") // 'active', 'completed', 'failed', 'paused'
-
-  // Tracking
-  checkIns    CheckIn[]
-  currentStreak Int @default(0)
-  longestStreak Int @default(0)
-  lastCheckIn   DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, status])
-}
-
-model CheckIn {
-  id           String     @id @default(cuid())
-  commitmentId String
-  commitment   Commitment @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
-
-  status  String // 'completed', 'missed', 'skipped'
-  note    String? @db.Text
-
-  createdAt DateTime @default(now())
-
-  @@index([commitmentId])
-}
-
-// ==========================================
-// DECISION TRACKING
-// ==========================================
-
-model Decision {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversationId String?
-
-  question String @db.Text
-  options  String[] // Array of options
-
-  timesAsked Int @default(1)
-  status     String @default("pending") // 'pending', 'decided', 'abandoned'
-  chosenOption String?
-  decidedAt    DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, status])
-}
-
-// ==========================================
-// PATTERN/LOOP DETECTION
-// ==========================================
-
-model LoopDetection {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  loopType        String // Type of loop detected
-  occurrenceCount Int @default(1)
-  isActive        Boolean @default(true)
-  lastTriggered   DateTime @default(now())
-  messages        String[] // Sample messages that triggered
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, isActive])
-}
-
-// ==========================================
-// DOPAMINE MENU
-// ==========================================
-
-model DopamineMenuItem {
-  id     String @id @default(cuid())
-  userId String?
-
-  title       String
-  description String @db.Text
-  duration    String // e.g., "5 min", "15 min"
-  category    String // 'quick_win', 'dopamine_hit', 'recharge'
-  pillar      String? // BODY, BRAIN, BUSINESS
-
-  timesOffered  Int @default(0)
-  timesAccepted Int @default(0)
-
-  isGlobal Boolean @default(false) // Available to all users
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([isGlobal])
-}
-
-// ==========================================
-// VOICE MEMOS
-// ==========================================
-
-model VoiceMemo {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  audioUrl     String?
-  transcript   String? @db.Text
-  summary      String? @db.Text
-  duration     Int? // seconds
-
-  status String @default("pending") // 'pending', 'transcribed', 'processed', 'error'
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, createdAt])
-}
-
-// ==========================================
-// EXTRACTED ENTITIES & PATTERNS
-// ==========================================
-
-model ExtractedEntity {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  entityType String // 'person', 'place', 'project', 'goal', etc.
-  name       String
-  context    String? @db.Text
-  mentions   Int @default(1)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, entityType])
-}
-
-model UserPattern {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  patternType String
-  description String @db.Text
-  strength    Float @default(0.5) // 0-1 confidence
-  occurrences Int @default(1)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-}
-
-model ConversationSummary {
-  id             String       @id @default(cuid())
-  conversationId String       @unique
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  summary     String @db.Text
-  keyTopics   String[]
-  actionItems String[]
-  mood        String? // Overall conversation mood
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ==========================================
-// ORGANIZATION
-// ==========================================
-
-model Folder {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  name  String
-  color String? @default("#8B5CF6")
-  order Int     @default(0)
-
-  conversations Conversation[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-}
-
-// ==========================================
-// CONTENT LIBRARY (Albums/Tracks)
-// ==========================================
-
-model Album {
-  id String @id @default(cuid())
-
-  title       String
-  description String? @db.Text
-  mode        CoachingMode
-  coverImage  String?
-
-  tracks Track[]
-
-  order     Int @default(0)
-  isPublic  Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([mode])
-  @@index([isPublic])
-}
-
-model Track {
-  id      String @id @default(cuid())
-  albumId String
-  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade)
-
-  title    String
-  content  String @db.Text
-  sections Json? // Structured sections
-
-  order Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([albumId])
-}
-
-// ==========================================
-// KNOWLEDGE BASE (Chunked Content)
-// ==========================================
-
-model ContentChunk {
-  id String @id @default(cuid())
-
-  content   String @db.Text
-  embedding Float[] // Vector embedding
-
-  sourceType String // 'album', 'document', 'upload'
-  sourceId   String?
-  sourceName String?
-
-  pillar    String? // BODY, BRAIN, BUSINESS
-  keywords  String[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([pillar])
-  @@index([sourceType])
-}
-
-// ==========================================
-// PROGRAM/COURSE CONTENT
-// ==========================================
 
 enum ProgramType {
   COURSE
@@ -484,268 +560,4 @@ enum ProgramType {
   COACHING_PROGRAM
   RESOURCE
   TEMPLATE
-}
-
-model Program {
-  id String @id @default(cuid())
-
-  title       String
-  description String       @db.Text
-  programType ProgramType
-  mode        CoachingMode // Which pillar it belongs to
-
-  // Content
-  content    String   @db.Text
-  objectives String[]
-  outcomes   String[]
-
-  // Metadata
-  duration String? // e.g., "6 weeks", "90 days"
-  level    String? // Beginner, Intermediate, Advanced
-  tags     String[]
-
-  // Availability
-  isPublic Boolean @default(false)
-  price    Float?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([mode])
-  @@index([programType])
-  @@index([isPublic])
-}
-
-model KnowledgeProgram {
-  id String @id @default(cuid())
-
-  title       String
-  description String @db.Text
-  pillar      String // BODY, BRAIN, BUSINESS
-
-  content String @db.Text
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([pillar])
-}
-
-// ==========================================
-// QUIZ SYSTEM
-// ==========================================
-
-model Quiz {
-  id     String @id @default(cuid())
-  userId String?
-
-  title       String
-  description String? @db.Text
-  pillar      String? // BODY, BRAIN, BUSINESS
-
-  questions Question[]
-  resultTiers ResultTier[]
-  recommendations ProgramRecommendation[]
-  analytics QuizAnalytics?
-
-  totalResponses Int @default(0)
-  avgScore       Float?
-
-  isPublic Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([isPublic])
-  @@index([pillar])
-}
-
-model Question {
-  id     String @id @default(cuid())
-  quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  text    String @db.Text
-  options Json // Array of {text, score}
-  order   Int @default(0)
-
-  createdAt DateTime @default(now())
-
-  @@index([quizId])
-}
-
-model ResultTier {
-  id     String @id @default(cuid())
-  quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  name        String
-  description String @db.Text
-  minScore    Float
-  maxScore    Float
-
-  createdAt DateTime @default(now())
-
-  @@index([quizId])
-}
-
-model ProgramRecommendation {
-  id     String @id @default(cuid())
-  quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  programId   String
-  programName String
-  minScore    Float
-  maxScore    Float
-  reason      String? @db.Text
-
-  createdAt DateTime @default(now())
-
-  @@index([quizId])
-}
-
-model QuizAnalytics {
-  id     String @id @default(cuid())
-  quizId String @unique
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  totalStarts      Int @default(0)
-  totalCompletions Int @default(0)
-  avgCompletionTime Float?
-
-  // Score distribution
-  lowScoreCount    Int @default(0)
-  mediumScoreCount Int @default(0)
-  highScoreCount   Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ==========================================
-// EMAIL MARKETING
-// ==========================================
-
-model EmailSubscriber {
-  id String @id @default(cuid())
-
-  email     String @unique
-  name      String?
-  status    String @default("active") // 'active', 'unsubscribed', 'bounced'
-
-  tags      String[]
-  source    String? // Where they signed up
-
-  events    EmailEvent[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([status])
-}
-
-model EmailCampaign {
-  id String @id @default(cuid())
-
-  name    String
-  subject String
-  content String @db.Text
-
-  status String @default("draft") // 'draft', 'scheduled', 'sent'
-
-  sentCount   Int @default(0)
-  openCount   Int @default(0)
-  clickCount  Int @default(0)
-
-  scheduledAt DateTime?
-  sentAt      DateTime?
-
-  events EmailEvent[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status])
-}
-
-model EmailEvent {
-  id           String         @id @default(cuid())
-  subscriberId String
-  subscriber   EmailSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
-  campaignId   String?
-  campaign     EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-
-  eventType String // 'sent', 'opened', 'clicked', 'bounced', 'unsubscribed'
-  metadata  Json?
-
-  createdAt DateTime @default(now())
-
-  @@index([subscriberId])
-  @@index([campaignId])
-  @@index([eventType])
-}
-
-// ==========================================
-// CRM / CONTACTS
-// ==========================================
-
-model Contact {
-  id     String @id @default(cuid())
-  userId String
-
-  name      String
-  email     String?
-  phone     String?
-  company   String?
-
-  status    String @default("lead") // 'lead', 'prospect', 'customer', 'inactive'
-  source    String?
-  tags      String[]
-  notes     String? @db.Text
-
-  lastContact DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, status])
-}
-
-// ==========================================
-// STRIPE / BILLING
-// ==========================================
-
-model StripeCustomer {
-  id     String @id @default(cuid())
-  userId String @unique
-
-  stripeCustomerId String @unique
-  email            String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([stripeCustomerId])
-}
-
-model Subscription {
-  id     String @id @default(cuid())
-  userId String
-
-  stripeSubscriptionId String @unique
-  status               String // 'active', 'canceled', 'past_due', etc.
-  priceId              String
-
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  canceledAt         DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([stripeSubscriptionId])
 }

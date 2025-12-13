@@ -93,11 +93,12 @@ export function extractCommitment(message: string): {
 
 /**
  * Create a commitment record
+ * Updated to match actual schema: uses commitmentType instead of frequency
  */
 export async function createCommitment(
   userId: string,
   description: string,
-  frequency: 'one-time' | 'daily' | 'weekly' = 'one-time',
+  commitmentType: 'one-time' | 'daily' | 'weekly' = 'one-time',
   deadline?: Date,
   pillar?: string
 ): Promise<string> {
@@ -105,7 +106,7 @@ export async function createCommitment(
     data: {
       userId,
       description,
-      frequency,
+      commitmentType, // Schema uses commitmentType, not frequency
       deadline,
       pillar: pillar || 'GENERAL',
       status: 'active',
@@ -117,6 +118,7 @@ export async function createCommitment(
 
 /**
  * Create a check-in for a commitment
+ * Updated to match actual schema: uses status and note instead of completed/userResponse/snResponse
  */
 export async function createCheckIn(
   commitmentId: string,
@@ -124,40 +126,39 @@ export async function createCheckIn(
   userResponse?: string,
   snResponse?: string
 ): Promise<void> {
+  // Schema uses 'status' (string) and 'note' instead of 'completed' (boolean)
   await prisma.checkIn.create({
     data: {
       commitmentId,
-      completed,
-      userResponse,
-      snResponse,
+      status: completed ? 'completed' : 'missed',
+      note: userResponse || snResponse || null,
     },
   })
 
-  // Update commitment counters
+  // Update commitment streak tracking
   const commitment = await prisma.commitment.findUnique({
     where: { id: commitmentId },
   })
 
   if (commitment) {
+    const newStreak = completed ? commitment.currentStreak + 1 : 0
+    const longestStreak = Math.max(commitment.longestStreak, newStreak)
+
     await prisma.commitment.update({
       where: { id: commitmentId },
       data: {
-        completionCount: completed
-          ? commitment.completionCount + 1
-          : commitment.completionCount,
-        missedCount: !completed
-          ? commitment.missedCount + 1
-          : commitment.missedCount,
+        currentStreak: newStreak,
+        longestStreak,
+        lastCheckIn: new Date(),
       },
     })
 
     // If one-time commitment is completed, mark it done
-    if (completed && commitment.frequency === 'one-time') {
+    if (completed && commitment.commitmentType === 'one-time') {
       await prisma.commitment.update({
         where: { id: commitmentId },
         data: {
           status: 'completed',
-          completedAt: new Date(),
         },
       })
     }
@@ -166,6 +167,7 @@ export async function createCheckIn(
 
 /**
  * Get active commitments for a user
+ * Updated to use createdAt instead of checkedAt for ordering
  */
 export async function getActiveCommitments(userId: string) {
   return await prisma.commitment.findMany({
@@ -175,7 +177,7 @@ export async function getActiveCommitments(userId: string) {
     },
     include: {
       checkIns: {
-        orderBy: { checkedAt: 'desc' },
+        orderBy: { createdAt: 'desc' }, // Schema uses createdAt, not checkedAt
         take: 3,
       },
     },
@@ -210,7 +212,7 @@ export async function getCommitmentsNeedingCheckIn(userId: string) {
     const lastCheckIn = c.checkIns[0]
     if (lastCheckIn) {
       const hoursSinceCheckIn =
-        (now.getTime() - lastCheckIn.checkedAt.getTime()) / (1000 * 60 * 60)
+        (now.getTime() - lastCheckIn.createdAt.getTime()) / (1000 * 60 * 60) // Use createdAt instead of checkedAt
       return hoursSinceCheckIn > 24
     }
 
@@ -222,26 +224,24 @@ export async function getCommitmentsNeedingCheckIn(userId: string) {
 
 /**
  * Generate accountability check-in prompt
+ * Updated to use currentStreak/longestStreak instead of completionCount/missedCount
  */
 export function generateCheckInPrompt(commitments: any[]): string {
   if (commitments.length === 0) return ''
 
   const commitmentList = commitments
     .map((c, i) => {
-      const missedCount = c.missedCount || 0
-      const completionRate =
-        c.completionCount + c.missedCount > 0
-          ? Math.round((c.completionCount / (c.completionCount + c.missedCount)) * 100)
-          : 0
+      const currentStreak = c.currentStreak || 0
+      const longestStreak = c.longestStreak || 0
 
       let status = ''
       if (c.deadline && c.deadline < new Date()) {
         status = ' (DEADLINE PASSED)'
-      } else if (missedCount > 2) {
-        status = ` (MISSED ${missedCount} TIMES)`
+      } else if (currentStreak === 0 && c.checkIns?.length > 0) {
+        status = ' (STREAK BROKEN)'
       }
 
-      return `${i + 1}. "${c.description}"${status}\n   - Completion rate: ${completionRate}%`
+      return `${i + 1}. "${c.description}"${status}\n   - Current streak: ${currentStreak} | Longest: ${longestStreak}`
     })
     .join('\n')
 
@@ -256,7 +256,7 @@ For EACH commitment:
 1. Ask: "Did you do it? Yes or no."
 2. If YES: Celebrate the win (genuinely, not generic praise)
 3. If NO: Ask what got in the way (no judgment, just facts)
-4. If missed 3+ times: Call out the pattern and ask if they want to ABANDON it (it's okay to quit things that aren't working)
+4. If streak broken multiple times: Call out the pattern and ask if they want to ABANDON it (it's okay to quit things that aren't working)
 
 IMPORTANT:
 - Don't lecture or guilt-trip
@@ -291,6 +291,7 @@ Don't overthink it. Just the first micro-action.
 
 /**
  * Calculate commitment success metrics
+ * Updated to use currentStreak/longestStreak and count check-ins by status
  */
 export async function getCommitmentMetrics(userId: string) {
   const allCommitments = await prisma.commitment.findMany({
@@ -308,14 +309,16 @@ export async function getCommitmentMetrics(userId: string) {
     (c) => c.status === 'abandoned'
   ).length
 
-  const totalCheckIns = allCommitments.reduce(
-    (sum, c) => sum + c.completionCount + c.missedCount,
-    0
-  )
-  const completedCheckIns = allCommitments.reduce(
-    (sum, c) => sum + c.completionCount,
-    0
-  )
+  // Count check-ins by status
+  let totalCheckIns = 0
+  let completedCheckIns = 0
+
+  for (const commitment of allCommitments) {
+    totalCheckIns += commitment.checkIns.length
+    completedCheckIns += commitment.checkIns.filter(
+      (checkIn) => checkIn.status === 'completed'
+    ).length
+  }
 
   const overallCompletionRate =
     totalCheckIns > 0 ? Math.round((completedCheckIns / totalCheckIns) * 100) : 0
