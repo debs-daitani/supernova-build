@@ -32,8 +32,8 @@ export default function LoginPage() {
         return
       }
 
-      // Redirect to dashboard on success
-      router.push('/dashboard')
+      // Redirect to home dashboard on success
+      router.push('/home')
     } catch (err) {
       setError('Something went wrong. Please try again.')
       setIsLoading(false)

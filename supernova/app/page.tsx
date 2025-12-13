@@ -12,8 +12,8 @@ export default function HomePage() {
       try {
         const response = await fetch('/api/auth/me')
         if (response.ok) {
-          // User is authenticated, redirect to dashboard
-          router.push('/dashboard')
+          // User is authenticated, redirect to home dashboard
+          router.push('/home')
         } else {
           // User is not authenticated, redirect to login
           router.push('/login')

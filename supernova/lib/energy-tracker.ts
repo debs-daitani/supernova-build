@@ -42,7 +42,7 @@ function detectEnergyLevel(message: string): EnergyLevel {
     'excited',
     'pumped',
     'ready',
-    'let\\'s go',
+    "let's go",
     'fuck yeah',
     'amazing',
     'awesome',
@@ -58,7 +58,7 @@ function detectEnergyLevel(message: string): EnergyLevel {
     'tired',
     'exhausted',
     'drained',
-    'can\\'t',
+    "can't",
     'stuck',
     'overwhelm',
     'burnout',
@@ -199,7 +199,7 @@ export async function getEnergyPatterns(userId: string, days: number = 30) {
 function analyzeTrend(recentLogs: any[]): 'improving' | 'declining' | 'stable' {
   if (recentLogs.length < 4) return 'stable'
 
-  const first Half = recentLogs.slice(0, Math.floor(recentLogs.length / 2))
+  const firstHalf = recentLogs.slice(0, Math.floor(recentLogs.length / 2))
   const secondHalf = recentLogs.slice(Math.floor(recentLogs.length / 2))
 
   const firstScore = firstHalf.reduce((sum, log) => {
@@ -280,7 +280,7 @@ export async function getTaskRecommendations(
     high: [
       'Tackle your biggest, scariest task first',
       'Make important business decisions',
-      'Create content (you\\'ll sound more confident)',
+      "Create content (you'll sound more confident)",
       'Have difficult conversations',
       'Brainstorm new ideas',
       'Work on strategy',
@@ -294,12 +294,12 @@ export async function getTaskRecommendations(
       'Client calls (not sales calls)',
     ],
     low: [
-      'Don\\'t force it - rest or do easy wins',
+      "Don't force it - rest or do easy wins",
       'Organize files/workspace',
       'Simple social media engagement',
       'Watch training videos (passive learning)',
       'Journal/reflect',
-      'Plan tomorrow when you\\'ll have more energy',
+      "Plan tomorrow when you'll have more energy",
     ],
   }
 

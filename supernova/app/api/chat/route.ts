@@ -469,8 +469,26 @@ DELIVERY GUIDELINES:
     })
   } catch (error) {
     console.error('Chat API error:', error)
+
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error'
+    let errorDetails = 'Unknown error'
+
+    if (error instanceof Error) {
+      errorDetails = error.message
+
+      // Check for common issues
+      if (error.message.includes('prisma') || error.message.includes('database') || error.message.includes('connect')) {
+        errorMessage = 'Database connection failed'
+      } else if (error.message.includes('ANTHROPIC') || error.message.includes('API key') || error.message.includes('authentication')) {
+        errorMessage = 'AI service configuration error'
+      } else if (error.message.includes('Could not find')) {
+        errorMessage = 'Missing dependency or import'
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: errorMessage, details: errorDetails },
       { status: 500 }
     )
   }
