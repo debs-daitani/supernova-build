@@ -468,7 +468,7 @@ DELIVERY GUIDELINES:
       },
     })
   } catch (error) {
-    console.error('Chat API error:', error)
+    console.error('Chat API error:', error instanceof Error ? error.message : error)
 
     // Provide more specific error messages
     let errorMessage = 'Internal server error'
@@ -484,6 +484,8 @@ DELIVERY GUIDELINES:
         errorMessage = 'AI service configuration error'
       } else if (error.message.includes('Could not find')) {
         errorMessage = 'Missing dependency or import'
+      } else if (error.message.includes('Foreign key')) {
+        errorMessage = 'User not found in database'
       }
     }
 
