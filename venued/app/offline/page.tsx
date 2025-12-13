@@ -1,8 +1,10 @@
+'use client';
+
 import { WifiOff, RefreshCw } from 'lucide-react';
 
 export default function Offline() {
   return (
-    <div className="min-h-screen bg-black pt-20 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-[#1a1a1a] pt-20 px-4 flex items-center justify-center">
       <div className="text-center max-w-md">
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-neon-pink/20 to-electric-purple/20 border-2 border-neon-pink/30 flex items-center justify-center mx-auto mb-8">
           <WifiOff className="w-12 h-12 text-neon-pink" />
@@ -20,7 +22,7 @@ export default function Offline() {
             <li>• View all your projects and tasks</li>
             <li>• Add new tasks and projects</li>
             <li>• Update task status</li>
-            <li>• Use all ADHD tools</li>
+            <li>• Use all VARIANT tools</li>
             <li>• Everything syncs when you're back online</li>
           </ul>
         </div>

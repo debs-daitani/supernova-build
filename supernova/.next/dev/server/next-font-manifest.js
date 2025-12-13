@@ -1,1 +1,0 @@
-self.__NEXT_FONT_MANIFEST="{\n  \"app\": {\n    \"[project]/supernova/app/dashboard/page\": [\n      \"static/media/Supernova _ Personal Used-s.p.4102bd9b.ttf\",\n      \"static/media/ARPDisplay_240-s.p.95a02f22.ttf\"\n    ]\n  },\n  \"appUsingSizeAdjust\": true,\n  \"pages\": {},\n  \"pagesUsingSizeAdjust\": false\n}"

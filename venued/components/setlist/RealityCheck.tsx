@@ -104,7 +104,7 @@ export default function RealityCheck({ phases, targetDate }: RealityCheckProps) 
         <div className="space-y-2">
           <div>
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-neon-pink">🔥 High</span>
+              <span className="text-neon-pink">🤘 High</span>
               <span className="text-white font-semibold">{energyDistribution.high}</span>
             </div>
             <div className="h-2 bg-gray-800 rounded-full overflow-hidden">

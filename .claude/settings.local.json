@@ -30,7 +30,13 @@
       "Bash(node scripts/enable-pgvector.js:*)",
       "Bash(nul)",
       "Bash(\"c:\\Users\\debsw\\OneDrive - Debs Daitani Ltd\\Documents\\Daitani\\SN Build\\GitHub\\supernova-build\\prisma\\schema.prisma\")",
-      "Bash(notepad:*)"
+      "Bash(notepad:*)",
+      "Bash(git push:*)",
+      "Bash(npx eas-cli build:*)",
+      "Bash(npx eas-cli:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git remote add:*)",
+      "Bash(npx expo install:*)"
     ],
     "deny": [],
     "ask": []

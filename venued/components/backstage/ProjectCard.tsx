@@ -130,7 +130,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
         )}
         {project.status === 'complete' && (
           <div className="text-right">
-            <span className="uppercase tracking-wider text-electric-purple">✓ Shipped</span>
+            <span className="uppercase tracking-wider text-vivid-yellow-green">✓ Completed</span>
           </div>
         )}
       </div>

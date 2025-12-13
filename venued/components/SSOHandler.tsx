@@ -26,7 +26,7 @@ export default function SSOHandler({
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <div className="inline-flex p-8 rounded-2xl bg-gradient-to-br from-neon-pink/20 to-electric-purple/20 border border-neon-pink/30 backdrop-blur-sm mb-6 animate-pulse">
             <Loader2 className="w-12 h-12 text-neon-pink animate-spin" />
@@ -43,7 +43,7 @@ export default function SSOHandler({
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="inline-flex p-8 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-700/20 border border-red-500/30 backdrop-blur-sm mb-6">
             <AlertCircle className="w-12 h-12 text-red-500" />
@@ -65,7 +65,7 @@ export default function SSOHandler({
   // Require auth but not authenticated
   if (requireAuth && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="inline-flex p-8 rounded-2xl bg-gradient-to-br from-neon-pink/20 to-electric-purple/20 border border-neon-pink/30 backdrop-blur-sm mb-6">
             <LogIn className="w-12 h-12 text-neon-pink" />

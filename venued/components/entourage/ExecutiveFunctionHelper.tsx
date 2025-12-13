@@ -128,7 +128,7 @@ export default function ExecutiveFunctionHelper() {
             placeholder="Enter overwhelming task..."
             value={breakdownInput}
             onChange={(e) => setBreakdownInput(e.target.value)}
-            className="w-full px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white focus:border-blue-500 focus:outline-none mb-4"
+            className="w-full px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-blue-500 focus:outline-none mb-4"
           />
           <button
             onClick={handleBreakdown}

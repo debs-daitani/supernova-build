@@ -1,12 +1,12 @@
 # VENUED 🎸
 
-**Strategic project planning for ADHD brains who build like rockstars**
+**Strategic project planning for VARIANT brains who build like rockstars**
 
 Get VENUED. Get it Done. Plan your projects like a tour. Execute like a headliner.
 
 ## What is VENUED?
 
-VENUED is a comprehensive project management and productivity app designed specifically for ADHD entrepreneurs and creatives. With a rockstar/tour aesthetic and ADHD-friendly features throughout, VENUED helps you:
+VENUED is a comprehensive project management and productivity app designed specifically for VARIANT entrepreneurs and creatives. With a rockstar/tour aesthetic and VARIANT-friendly features throughout, VENUED helps you:
 
 - Break down overwhelming projects into manageable phases
 - Match tasks to your energy levels
@@ -21,16 +21,16 @@ VENUED is a comprehensive project management and productivity app designed speci
 Your command center. View all projects at a glance, track progress, filter by status, and manage priorities.
 
 ### ⭐ THE SETLIST
-Project builder with drag-and-drop phases. Build your project like a setlist with templates, energy matching, and ADHD reality checks.
+Project builder with drag-and-drop phases. Build your project like a setlist with templates, energy matching, and VARIANT reality checks.
 
 ### 👥 THE CREW
 Daily task manager with energy matching, focus timer, date filtering, and confetti celebrations for completed tasks.
 
 ### 📅 THE TOUR
-Strategic timeline view with week navigation, workload analysis, ADHD time blindness compensation (1.8x multiplier), and burnout prevention.
+Strategic timeline view with week navigation, workload analysis, VARIANT time blindness compensation (1.8x multiplier), and burnout prevention.
 
 ### 🧠 THE ENTOURAGE
-8 specialized ADHD support tools:
+9 specialized VARIANT support tools:
 - **Time Blindness Tracker** - Log estimates vs reality, find your multiplier
 - **Hyperfocus Logger** - Track flow states and triggers
 - **Energy Tracker** - Map your energy patterns throughout the day
@@ -97,7 +97,7 @@ On first visit, click "Try Demo" to load sample projects and explore all feature
 
 ## Features in Detail
 
-### ADHD-Specific Design
+### VARIANT-Specific Design
 - Energy level matching (High/Medium/Low)
 - Time blindness tracking with reality multipliers
 - Hyperfocus session logging
@@ -135,7 +135,7 @@ MIT License - feel free to use and modify for your own needs.
 
 ## About
 
-Built for ADHD brains, by ADHD brains.
+Built for VARIANT brains, by VARIANT brains.
 
 Because sometimes you need a project planner that understands that:
 - You'll hyperfocus for 6 hours straight

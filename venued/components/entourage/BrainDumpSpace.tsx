@@ -98,7 +98,7 @@ export default function BrainDumpSpace() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="What's bouncing around in your brain? Write it all down..."
-          className="w-full h-40 px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white focus:border-electric-purple focus:outline-none resize-none"
+          className="w-full h-40 px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-electric-purple focus:outline-none resize-none"
         />
         <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-gray-500">{content.length} characters</span>

@@ -1,5 +1,5 @@
 @echo off
-cd "C:\Users\debsw\OneDrive - Debs Daitani Ltd\Documents\Daitani\SN Build\GitHub\daitaniverse-build"
+cd "C:\Users\debsw\OneDrive - Debs Daitani Ltd\Documents\Daitani\dAItaniverse Build\GitHub\daitaniverse-build"
 git add .
 git commit -m "Auto-backup"
 git push

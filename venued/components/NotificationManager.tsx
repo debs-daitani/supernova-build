@@ -97,7 +97,7 @@ export default function NotificationManager() {
               Enable Notifications?
             </h3>
             <p className="text-sm text-gray-300 mb-4">
-              Get helpful reminders for tasks, focus sessions, and ADHD check-ins. We'll only send notifications you actually need.
+              Get helpful reminders for tasks, focus sessions, and VARIANT check-ins. We'll only send notifications you actually need.
             </p>
 
             <div className="flex gap-3">

@@ -119,7 +119,7 @@ export default function DopamineMenu() {
             placeholder="Reward name"
             value={formData.reward}
             onChange={(e) => setFormData({ ...formData, reward: e.target.value })}
-            className="w-full px-4 py-2 bg-black border-2 border-white/10 rounded-lg text-white focus:border-yellow-400 focus:outline-none mb-4"
+            className="w-full px-4 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-yellow-400 focus:outline-none mb-4"
           />
           <div className="grid grid-cols-3 gap-2 mb-4">
             {categories.map(cat => (

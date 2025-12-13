@@ -89,7 +89,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="What needs to be done?"
-              className="w-full px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none"
+              className="w-full px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none"
             />
           </div>
 
@@ -103,7 +103,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Any details or notes..."
               rows={3}
-              className="w-full px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
+              className="w-full px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
             />
           </div>
 
@@ -116,9 +116,9 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
               <select
                 value={formData.energyLevel}
                 onChange={(e) => setFormData({ ...formData, energyLevel: e.target.value as EnergyLevel })}
-                className="w-full px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+                className="w-full px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
               >
-                <option value="high">🔥 High Energy</option>
+                <option value="high">🤘 High Energy</option>
                 <option value="medium">⚡ Medium Energy</option>
                 <option value="low">⭐ Low Energy</option>
               </select>
@@ -134,7 +134,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
                 step="0.5"
                 value={formData.estimatedHours}
                 onChange={(e) => setFormData({ ...formData, estimatedHours: parseFloat(e.target.value) })}
-                className="w-full px-4 py-3 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+                className="w-full px-4 py-3 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
                         : diff === 'medium'
                         ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
                         : 'border-red-500 bg-red-500/20 text-red-400'
-                      : 'border-white/10 bg-black text-gray-500 hover:border-white/20'
+                      : 'border-white/10 bg-[#3d3d3d]/80 text-gray-500 hover:border-white/20'
                     }
                   `}
                 >
@@ -168,14 +168,14 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
             </div>
           </div>
 
-          {/* ADHD Flags */}
+          {/* VARIANT Flags */}
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-white mb-2">
-              ADHD Flags
+              VARIANT Flags
             </label>
 
             {/* Hyperfocus */}
-            <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-white/10 cursor-pointer hover:border-blue-500/40 bg-black">
+            <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-white/10 cursor-pointer hover:border-blue-500/40 bg-[#3d3d3d]/80">
               <input
                 type="checkbox"
                 checked={formData.isHyperfocus}
@@ -189,7 +189,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, task, phaseId }
             </label>
 
             {/* Quick Win */}
-            <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-white/10 cursor-pointer hover:border-neon-green/40 bg-black">
+            <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-white/10 cursor-pointer hover:border-neon-green/40 bg-[#3d3d3d]/80">
               <input
                 type="checkbox"
                 checked={formData.isQuickWin}

@@ -79,7 +79,7 @@ export default function TimeBlindnessTracker() {
             <input
               type="number"
               placeholder="Estimate (min)"
-              className="flex-1 px-3 py-2 bg-black border-2 border-white/10 rounded-lg text-white text-sm focus:border-neon-pink focus:outline-none"
+              className="flex-1 px-3 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white text-sm focus:border-neon-pink focus:outline-none"
               onChange={(e) => {
                 const val = Number(e.target.value);
                 if (val > 0) {
@@ -126,12 +126,12 @@ export default function TimeBlindnessTracker() {
               placeholder="Task name"
               value={formData.taskName}
               onChange={(e) => setFormData({ ...formData, taskName: e.target.value })}
-              className="px-4 py-2 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+              className="px-4 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
             />
             <select
               value={formData.taskType}
               onChange={(e) => setFormData({ ...formData, taskType: e.target.value })}
-              className="px-4 py-2 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+              className="px-4 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
             >
               {taskTypes.map(type => (
                 <option key={type} value={type}>{type}</option>
@@ -143,7 +143,7 @@ export default function TimeBlindnessTracker() {
                 type="number"
                 value={formData.estimatedMinutes}
                 onChange={(e) => setFormData({ ...formData, estimatedMinutes: Number(e.target.value) })}
-                className="w-full px-4 py-2 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+                className="w-full px-4 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
               />
             </div>
             <div>
@@ -152,7 +152,7 @@ export default function TimeBlindnessTracker() {
                 type="number"
                 value={formData.actualMinutes}
                 onChange={(e) => setFormData({ ...formData, actualMinutes: Number(e.target.value) })}
-                className="w-full px-4 py-2 bg-black border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
+                className="w-full px-4 py-2 bg-[#3d3d3d]/80 border-2 border-white/10 rounded-lg text-white focus:border-neon-pink focus:outline-none"
               />
             </div>
           </div>

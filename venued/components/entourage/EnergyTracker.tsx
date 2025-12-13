@@ -28,7 +28,7 @@ export default function EnergyTracker() {
   };
 
   const energyConfig = {
-    high: { icon: Flame, color: 'text-neon-pink', bg: 'bg-neon-pink/20', border: 'border-neon-pink', emoji: '🔥' },
+    high: { icon: Flame, color: 'text-neon-pink', bg: 'bg-neon-pink/20', border: 'border-neon-pink', emoji: '🤘' },
     medium: { icon: Zap, color: 'text-yellow-400', bg: 'bg-yellow-400/20', border: 'border-yellow-400', emoji: '⚡' },
     low: { icon: Star, color: 'text-electric-purple', bg: 'bg-electric-purple/20', border: 'border-electric-purple', emoji: '⭐' },
   };

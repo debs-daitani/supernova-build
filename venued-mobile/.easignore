@@ -1,6 +1,0 @@
-# venued-mobile local excludes
-.git
-.expo
-node_modules
-.next
-.claude

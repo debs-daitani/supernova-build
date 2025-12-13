@@ -12,10 +12,13 @@ import {
   Calendar,
   Brain,
   Zap,
-  Target,
   Sparkles,
   Rocket,
   Check,
+  Sun,
+  Inbox,
+  Link2,
+  Moon,
 } from 'lucide-react';
 import { generateDemoData } from '@/lib/demoData';
 
@@ -30,77 +33,90 @@ interface OnboardingStep {
 const steps: OnboardingStep[] = [
   {
     title: 'Welcome to VENUED',
-    description: 'Strategic project planning for ADHD brains who build like rockstars',
+    description: 'Strategic project planning for VARIANT brains who build like rockstars',
     icon: Rocket,
     color: 'neon-pink',
     details: [
-      'Plan your projects like a tour',
-      'Execute like a headliner',
-      'Built specifically for ADHD brains',
+      'Plan your projects like a tour, execute like a headliner',
+      'Built specifically for VARIANT brains',
       'All data stays local—nothing sent to servers',
+      'Install as a PWA for offline access',
     ],
   },
   {
     title: 'BACKSTAGE',
-    description: 'Your command center. See all projects at a glance.',
-    icon: Music,
+    description: 'Your gig strategy hub - everything starts here',
+    icon: Star,
     color: 'neon-pink',
     details: [
-      'View all active projects',
-      'Track progress and priorities',
-      'Filter by status (Planning, Live, Complete)',
-      'Quick stats and overview',
-    ],
-  },
-  {
-    title: 'SETLIST',
-    description: 'Build your project like a setlist with drag-and-drop phases',
-    icon: Star,
-    color: 'electric-purple',
-    details: [
-      'Break projects into manageable phases',
-      'Add tasks with energy levels',
-      'Mark hyperfocus tasks',
-      'Create quick wins for momentum',
+      'Your Next Big Hit - smart suggestions based on energy and priorities',
+      'Quick Wins - 4 shortcuts: LFG, Quick Capture, Check Gig Vibe, End My Day',
+      'Inbox - process thoughts captured on the fly',
+      'Morning Launch Mode - Spotlight (simplified) vs Full Stage (complete) views',
+      'Active Tours and upcoming actions at a glance',
     ],
   },
   {
     title: 'CREW',
-    description: 'Your daily task manager with ADHD-friendly features',
+    description: 'Your action management hub - where the work gets done',
     icon: Users,
     color: 'neon-green',
     details: [
-      'Energy level matching',
-      'Built-in focus timer',
-      'Schedule tasks by date',
-      'Celebrate completions with confetti!',
+      'Tours (projects) organised by stage: Planning, Development, Launch',
+      'Actions (tasks) with gig vibes: Low, Medium, High energy',
+      'Loose Actions for standalone tasks without a tour',
+      'Attach links to Google Drive, Notion, or any URL',
+      'Unified LFG button to create tours or actions',
     ],
   },
   {
     title: 'TOUR',
-    description: 'Strategic timeline view with ADHD reality checks',
+    description: 'Your calendar view - schedule and visualise your week',
     icon: Calendar,
     color: 'blue-400',
     details: [
-      'See your week at a glance',
-      'Time blindness multiplier (1.8x by default)',
-      'Workload distribution',
-      'Prevent burnout with visual warnings',
+      'Weekly view with day-specific colours',
+      'Schedule actions by date',
+      'See what\'s coming up at a glance',
+      'Plan your gigs without overwhelm',
+    ],
+  },
+  {
+    title: 'SETLIST',
+    description: 'Your gig vibe tracker - match work to energy',
+    icon: Music,
+    color: 'electric-purple',
+    details: [
+      'Track your energy levels throughout the day',
+      'Focus playlists to get in the zone',
+      'Energy patterns over time',
+      'Match actions to your current vibe',
     ],
   },
   {
     title: 'ENTOURAGE',
-    description: '17 specialized ADHD support tools to optimize your brain',
+    description: '9 specialised support modules for VARIANT brains',
     icon: Brain,
     color: 'yellow-400',
     details: [
-      'Time Blindness Tracker - Learn your real multiplier',
-      'Hyperfocus Logger - Track flow states',
-      'Energy Tracker - Map your patterns',
-      'Brain Dump Space - Clear mental clutter',
-      'Dopamine Menu - Gamified rewards',
-      'Body Doubling Simulator - Virtual accountability',
-      'Pattern Insights - Personalized recommendations',
+      'Tune Up & Retune - Reset and refocus protocols',
+      'New Releases & Brain Dump - Capture and clear mental clutter',
+      'Reframe & Amplify - Shift perspective and boost confidence',
+      'Chill Mode & Reset - Wind down and recover',
+      'Gig Highlights & The Encore - Celebrate wins and reflect',
+    ],
+  },
+  {
+    title: 'New Features to Explore',
+    description: 'Power tools to supercharge your workflow',
+    icon: Zap,
+    color: 'neon-cyan',
+    details: [
+      'Quick Capture button - floating on every page, capture thoughts in 2 seconds',
+      'End My Day ritual - structured shutdown with 4 prompts + pyrotechnics',
+      'Morning Launch Mode - Spotlight for calm starts, Full Stage when ready',
+      'Link attachments - connect Google Drive, Notion docs to actions',
+      'Your Next Big Hit - AI-style smart task suggestions',
     ],
   },
   {
@@ -109,10 +125,10 @@ const steps: OnboardingStep[] = [
     icon: Sparkles,
     color: 'neon-pink',
     details: [
-      'Load demo data to explore features',
-      'Start fresh with your own projects',
+      'Rehearsal Studio - explore with sample data',
+      'Jam Session - start fresh with your own projects',
       'Your data is stored locally and private',
-      'Install as a PWA for offline access',
+      'Access the User Guide anytime via the ? icon in the nav',
     ],
   },
 ];
@@ -168,35 +184,33 @@ export default function OnboardingFlow() {
   const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-lg px-4">
-      <div className="relative w-full max-w-3xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-lg px-4 py-4 overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col">
         {/* Close button */}
         <button
           onClick={handleSkip}
-          className="absolute -top-12 right-0 text-gray-400 hover:text-white transition-colors"
+          className="absolute -top-10 right-0 text-gray-400 hover:text-white transition-colors z-10"
           aria-label="Skip onboarding"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* Main card */}
-        <div className="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border-2 border-white/20 overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border-2 border-white/20 overflow-hidden flex flex-col max-h-full">
           {/* Progress bar */}
-          <div className="h-2 bg-black/30">
+          <div className="h-2 bg-black/30 flex-shrink-0">
             <div
               className="h-full bg-gradient-to-r from-electric-purple to-neon-pink transition-all duration-500"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
 
-          {/* Content */}
-          <div className="p-8 sm:p-12">
-            {/* Icon */}
+          {/* Content - scrollable */}
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1">
+            {/* Icon - consistent magenta glow style */}
             <div className="flex justify-center mb-6">
-              <div
-                className={`w-20 h-20 rounded-full bg-gradient-to-br from-${step.color} to-${step.color}/50 flex items-center justify-center animate-pulse`}
-              >
-                <Icon className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 rounded-full bg-magenta/20 border-2 border-magenta/50 flex items-center justify-center shadow-[0_0_30px_rgba(255,0,142,0.4)]">
+                <Icon className="w-10 h-10 text-magenta drop-shadow-[0_0_8px_rgba(255,0,142,0.8)]" />
               </div>
             </div>
 
@@ -225,19 +239,20 @@ export default function OnboardingFlow() {
 
             {/* Final step actions */}
             {isLastStep && (
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <button
                   onClick={handleLoadDemo}
-                  className="flex-1 px-8 py-4 bg-gradient-to-r from-neon-pink to-electric-purple rounded-xl text-white font-bold hover:shadow-[0_0_30px_rgba(255,27,141,0.5)] transition-all text-center"
+                  className="flex-1 px-8 py-4 bg-white/10 border-2 border-white/20 rounded-xl text-white font-bold hover:bg-white/20 transition-all text-center"
                 >
                   <Sparkles className="w-5 h-5 inline-block mr-2" />
-                  Load Demo Data
+                  Rehearsal Studio: play with samples
                 </button>
                 <button
                   onClick={handleStartFresh}
-                  className="flex-1 px-8 py-4 bg-white/10 border-2 border-white/20 rounded-xl text-white font-bold hover:bg-white/20 transition-all text-center"
+                  className="flex-1 px-8 py-4 bg-magenta rounded-xl text-black font-bold hover:bg-neon-cyan transition-all text-center shadow-[0_0_20px_rgba(255,0,142,0.5)] hover:shadow-[0_0_30px_rgba(0,240,233,0.6)]"
                 >
-                  Start Fresh
+                  <Rocket className="w-5 h-5 inline-block mr-2" />
+                  Jam Session: your lyrics your way
                 </button>
               </div>
             )}
@@ -273,7 +288,7 @@ export default function OnboardingFlow() {
                 ))}
               </div>
 
-              {!isLastStep ? (
+              {!isLastStep && (
                 <button
                   onClick={handleNext}
                   className="flex items-center gap-2 px-6 py-3 rounded-lg bg-electric-purple text-white font-semibold hover:bg-neon-pink transition-all"
@@ -281,19 +296,12 @@ export default function OnboardingFlow() {
                   Next
                   <ChevronRight className="w-5 h-5" />
                 </button>
-              ) : (
-                <button
-                  onClick={handleStartFresh}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-neon-green text-black font-semibold hover:bg-white transition-all"
-                >
-                  Get Started
-                  <Rocket className="w-5 h-5" />
-                </button>
               )}
+              {isLastStep && <div />}
             </div>
 
             {/* Skip link */}
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <button
                 onClick={handleSkip}
                 className="text-sm text-gray-400 hover:text-white transition-colors"
@@ -302,13 +310,6 @@ export default function OnboardingFlow() {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Keyboard hints */}
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <span className="hidden sm:inline">
-            Use arrow keys or click buttons to navigate
-          </span>
         </div>
       </div>
     </div>

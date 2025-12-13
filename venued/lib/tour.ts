@@ -153,7 +153,7 @@ export const detectConflicts = (date: string): string[] => {
   // Check energy distribution
   const highEnergyTasks = workload.tasks.filter(t => t.energyLevel === 'high' && !t.completed);
   if (highEnergyTasks.length > 2) {
-    conflicts.push(`🔥 ${highEnergyTasks.length} high-energy tasks - Too draining`);
+    conflicts.push(`🤘 ${highEnergyTasks.length} high-energy tasks - Too draining`);
   }
 
   // Check for back-to-back hyperfocus tasks

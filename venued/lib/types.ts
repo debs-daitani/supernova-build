@@ -198,3 +198,42 @@ export interface EnergyStats {
   averageByHour: { [hour: number]: EnergyLevel };
   patterns: string[];
 }
+
+// Tour (Project) Types for Unified Creation Flow
+export type TourStage = 'planning' | 'development' | 'launch';
+export type GigVibe = 'high' | 'medium' | 'low';
+
+export interface Tour {
+  id: string;
+  name: string;
+  description: string; // "The Lyrics"
+  stage: TourStage;
+  createdAt: string;
+  updatedAt: string;
+  targetDate?: string;
+  actionIds: string[]; // References to actions in this tour
+  completedActionIds: string[];
+  isArchived: boolean;
+  links?: string[]; // Related URLs (Google Drive, Notion, etc.)
+}
+
+export interface Action {
+  id: string;
+  title: string;
+  description: string; // "The Lyrics"
+  tourId: string | null; // null = "Loose Action" (not linked to any tour)
+  gigVibe: GigVibe;
+  difficulty: 'easy' | 'medium' | 'hard';
+  estimatedHours: number;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  completed: boolean;
+  completedAt?: string;
+  timeSpent: number; // minutes
+  createdAt: string;
+  updatedAt: string;
+  isHyperfocus: boolean;
+  isQuickWin: boolean;
+  order: number;
+  links?: string[]; // Related URLs (Google Drive, Notion, etc.)
+}

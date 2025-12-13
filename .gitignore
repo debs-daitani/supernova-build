@@ -20,6 +20,8 @@ yarn.lock
 # OS
 .DS_Store
 Thumbs.db
+nul
+**/nul
 
 # Logs
 logs/

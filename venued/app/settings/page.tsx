@@ -153,7 +153,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#1a1a1a] pt-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto py-8">
         {/* Header */}
         <div className="mb-8">
@@ -223,7 +223,7 @@ export default function Settings() {
                     {profile.avatarEmoji}
                   </button>
                   {showAvatarPicker && (
-                    <div className="absolute top-28 left-0 w-80 p-4 rounded-xl bg-black border-2 border-white/20 grid grid-cols-8 gap-2 z-10">
+                    <div className="absolute top-28 left-0 w-80 p-4 rounded-xl bg-[#3d3d3d]/90 border-2 border-white/20 grid grid-cols-8 gap-2 z-10">
                       {AVATAR_EMOJIS.map(emoji => (
                         <button
                           key={emoji}
@@ -247,7 +247,7 @@ export default function Settings() {
                       type="text"
                       value={profile.displayName}
                       onChange={e => handleProfileChange('displayName', e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-black/50 border-2 border-white/10 text-white focus:border-electric-purple outline-none"
+                      className="w-full px-4 py-3 rounded-lg bg-[#3d3d3d]/80 border-2 border-white/10 text-white focus:border-electric-purple outline-none"
                       maxLength={30}
                     />
                   </div>
@@ -259,7 +259,7 @@ export default function Settings() {
                     <textarea
                       value={profile.bio}
                       onChange={e => handleProfileChange('bio', e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-black/50 border-2 border-white/10 text-white focus:border-electric-purple outline-none resize-none"
+                      className="w-full px-4 py-3 rounded-lg bg-[#3d3d3d]/80 border-2 border-white/10 text-white focus:border-electric-purple outline-none resize-none"
                       rows={3}
                       maxLength={150}
                     />
@@ -272,25 +272,25 @@ export default function Settings() {
 
               {/* Stats Grid */}
               <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-black/30 border border-white/10">
+                <div className="p-4 rounded-lg bg-[#3d3d3d]/60 border border-white/10">
                   <div className="text-3xl font-black text-neon-pink">
                     {stats.level}
                   </div>
                   <div className="text-sm text-gray-400">Level</div>
                 </div>
-                <div className="p-4 rounded-lg bg-black/30 border border-white/10">
+                <div className="p-4 rounded-lg bg-[#3d3d3d]/60 border border-white/10">
                   <div className="text-3xl font-black text-electric-purple">
                     {stats.xp}
                   </div>
                   <div className="text-sm text-gray-400">XP</div>
                 </div>
-                <div className="p-4 rounded-lg bg-black/30 border border-white/10">
+                <div className="p-4 rounded-lg bg-[#3d3d3d]/60 border border-white/10">
                   <div className="text-3xl font-black text-neon-green">
                     {stats.streak}
                   </div>
                   <div className="text-sm text-gray-400">Day Streak</div>
                 </div>
-                <div className="p-4 rounded-lg bg-black/30 border border-white/10">
+                <div className="p-4 rounded-lg bg-[#3d3d3d]/60 border border-white/10">
                   <div className="text-3xl font-black text-yellow-400">
                     {unlockedCount}/{achievements.length}
                   </div>
@@ -353,7 +353,7 @@ export default function Settings() {
               <div className="p-6 rounded-xl bg-white/5 border-2 border-white/10">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-yellow-400" />
-                  ADHD Tracking
+                  VARIANT Tracking
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -558,11 +558,11 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* ADHD Preferences */}
+            {/* VARIANT Preferences */}
             <div className="p-8 rounded-xl bg-white/5 border-2 border-white/10">
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <Zap className="w-6 h-6 text-neon-green" />
-                ADHD Preferences
+                VARIANT Preferences
               </h2>
               <div className="space-y-6">
                 <div>
@@ -607,7 +607,7 @@ export default function Settings() {
                     <span>3.0x (realistic)</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Multiplies time estimates to account for ADHD time blindness
+                    Multiplies time estimates to account for VARIANT time blindness
                   </p>
                 </div>
               </div>
@@ -701,7 +701,7 @@ export default function Settings() {
                 Export Data
               </h2>
               <p className="text-gray-400 mb-4">
-                Download all your projects, tasks, and ADHD tracking data as a JSON file for backup.
+                Download all your projects, tasks, and VARIANT tracking data as a JSON file for backup.
               </p>
               <button
                 onClick={handleExport}
@@ -803,7 +803,7 @@ export default function Settings() {
                   <strong>Version:</strong> 1.0.0
                 </p>
                 <p>
-                  <strong>Built for:</strong> ADHD brains, by ADHD brains
+                  <strong>Built for:</strong> VARIANT brains, by VARIANT brains
                 </p>
                 <p className="text-sm text-gray-500 mt-4">
                   All data is stored locally in your browser. Nothing is sent to any server. Install

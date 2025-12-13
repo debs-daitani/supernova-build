@@ -265,6 +265,12 @@ export const generateSampleCrewTasks = (): CrewTask[] => {
 };
 
 export const initializeSampleCrewTasks = (): void => {
+  if (typeof window === 'undefined') return;
+
+  // Don't auto-populate if user chose Jam Session (fresh start)
+  const isJamSession = localStorage.getItem('venued_jam_session') === 'true';
+  if (isJamSession) return;
+
   const existing = getCrewTasks();
 
   if (existing.length === 0) {
