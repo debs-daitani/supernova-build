@@ -115,7 +115,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       label: 'ANALYSE',
       items: [
-        { icon: <TrendingUp size={20} />, label: 'Analytics', href: '/analytics', working: true },
+        { icon: <TrendingUp size={20} />, label: 'Analytics', href: '/crm/analytics', working: true },
         { icon: <Zap size={20} />, label: 'Automations', href: '/automations', comingSoon: true },
       ],
     },
