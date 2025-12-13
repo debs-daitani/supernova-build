@@ -21,9 +21,9 @@ export default function EmailStatsWidget() {
         if (response.ok) {
           const data = await response.json()
           setStats({
-            subscribers: data.subscribers || 0,
-            openRate: data.openRate || 0,
-            clickRate: data.clickRate || 0,
+            subscribers: data.subscribers?.total || 0,
+            openRate: parseFloat(data.campaigns?.avgOpenRate) || 0,
+            clickRate: parseFloat(data.campaigns?.avgClickRate) || 0,
           })
         }
       } catch (error) {
