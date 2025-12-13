@@ -183,6 +183,7 @@ export function detectLoopPattern(message: string): LoopType | null {
 
 /**
  * Track loop occurrence and determine if interrupt should trigger
+ * Updated to match actual schema: isActive, lastTriggered, occurrenceCount, messages, conversationId
  */
 export async function trackLoopOccurrence(
   userId: string,
@@ -201,46 +202,40 @@ export async function trackLoopOccurrence(
     where: {
       userId,
       loopType,
-      wasResolved: false, // Only track unresolved loops
+      isActive: true, // Use isActive instead of wasResolved
     },
   })
 
   if (!loopRecord) {
-    // Create new loop record
+    // Create new loop record - conversationId is required
     loopRecord = await prisma.loopDetection.create({
       data: {
         userId,
+        conversationId,
         loopType,
-        description: message.substring(0, 500),
-        occurrences: [conversationId],
-        interruptCount: 0,
+        messages: [message.substring(0, 500)],
+        occurrenceCount: 1,
+        isActive: true,
+        lastTriggered: new Date(),
       },
     })
   } else {
     // Update existing record
-    const updatedOccurrences = [...loopRecord.occurrences, conversationId]
+    const updatedMessages = [...loopRecord.messages, message.substring(0, 500)]
     loopRecord = await prisma.loopDetection.update({
       where: { id: loopRecord.id },
       data: {
-        occurrences: updatedOccurrences,
-        lastDetected: new Date(),
+        messages: updatedMessages,
+        occurrenceCount: loopRecord.occurrenceCount + 1,
+        lastTriggered: new Date(),
       },
     })
   }
 
-  const occurrenceCount = loopRecord.occurrences.length
+  const occurrenceCount = loopRecord.occurrenceCount
 
   // Check if we should interrupt
   if (occurrenceCount >= pattern.threshold) {
-    // Update interrupt count
-    await prisma.loopDetection.update({
-      where: { id: loopRecord.id },
-      data: {
-        interruptCount: loopRecord.interruptCount + 1,
-        lastInterrupted: new Date(),
-      },
-    })
-
     const interruptMessage = pattern.interrupt.replace(
       '{{count}}',
       occurrenceCount.toString()
@@ -260,18 +255,17 @@ export async function trackLoopOccurrence(
 }
 
 /**
- * Mark a loop as resolved
+ * Mark a loop as resolved (inactive)
  */
 export async function resolveLoop(userId: string, loopType: LoopType) {
   await prisma.loopDetection.updateMany({
     where: {
       userId,
       loopType,
-      wasResolved: false,
+      isActive: true,
     },
     data: {
-      wasResolved: true,
-      resolvedAt: new Date(),
+      isActive: false,
     },
   })
 }
@@ -283,10 +277,10 @@ export async function getActiveLoops(userId: string) {
   return await prisma.loopDetection.findMany({
     where: {
       userId,
-      wasResolved: false,
+      isActive: true,
     },
     orderBy: {
-      lastDetected: 'desc',
+      lastTriggered: 'desc',
     },
   })
 }
@@ -305,9 +299,8 @@ The user has the following recurring patterns that may need interruption:
 ${loops
   .map(
     (loop) => `
-- **${loop.loopType}**: Mentioned ${loop.occurrences.length} times across ${loop.occurrences.length} conversations
-  Last detected: ${loop.lastDetected.toISOString().split('T')[0]}
-  Times interrupted: ${loop.interruptCount}
+- **${loop.loopType}**: Mentioned ${loop.occurrenceCount} times
+  Last detected: ${loop.lastTriggered.toISOString().split('T')[0]}
 `
   )
   .join('\n')}

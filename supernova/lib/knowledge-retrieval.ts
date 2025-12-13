@@ -4,11 +4,11 @@ import { generateEmbedding, cosineSimilarity } from './embedding-service'
 export interface RetrievedChunk {
   id: string
   content: string
-  chunkType: string
-  topics: string[]
+  sourceType: string
+  keywords: string[]
   similarity: number
-  programTitle: string
-  pillar: string
+  sourceName: string
+  pillar: string | null
 }
 
 /**
@@ -28,14 +28,6 @@ export async function searchKnowledge(
     // Fetch all chunks (with optional pillar filter)
     const chunks = await prisma.contentChunk.findMany({
       where: pillar ? { pillar } : undefined,
-      include: {
-        program: {
-          select: {
-            title: true,
-            pillar: true,
-          },
-        },
-      },
     })
 
     if (chunks.length === 0) {
@@ -45,8 +37,8 @@ export async function searchKnowledge(
     // Calculate similarities
     const results = chunks
       .map((chunk) => {
-        // Parse embedding from JSON
-        const embedding = JSON.parse(chunk.embeddingJson || '[]') as number[]
+        // Use the embedding array directly
+        const embedding = chunk.embedding || []
 
         if (embedding.length === 0) {
           return null
@@ -57,11 +49,11 @@ export async function searchKnowledge(
         return {
           id: chunk.id,
           content: chunk.content,
-          chunkType: chunk.chunkType,
-          topics: chunk.topics,
+          sourceType: chunk.sourceType,
+          keywords: chunk.keywords,
           similarity,
-          programTitle: chunk.program.title,
-          pillar: chunk.program.pillar,
+          sourceName: chunk.sourceName || 'Unknown',
+          pillar: chunk.pillar,
         }
       })
       .filter((result): result is RetrievedChunk => result !== null && result.similarity >= minSimilarity)
@@ -76,10 +68,10 @@ export async function searchKnowledge(
 }
 
 /**
- * Search by topics (keyword-based fallback)
+ * Search by keywords (keyword-based fallback)
  */
-export async function searchByTopics(
-  topics: string[],
+export async function searchByKeywords(
+  keywords: string[],
   pillar?: string,
   limit: number = 10
 ): Promise<RetrievedChunk[]> {
@@ -89,62 +81,43 @@ export async function searchByTopics(
         AND: [
           pillar ? { pillar } : {},
           {
-            topics: {
-              hasSome: topics,
+            keywords: {
+              hasSome: keywords,
             },
           },
         ],
       },
-      include: {
-        program: {
-          select: {
-            title: true,
-            pillar: true,
-          },
-        },
-      },
       take: limit,
-      orderBy: {
-        chunkIndex: 'asc',
-      },
     })
 
     return chunks.map((chunk) => ({
       id: chunk.id,
       content: chunk.content,
-      chunkType: chunk.chunkType,
-      topics: chunk.topics,
-      similarity: 0.8, // Estimate for topic matches
-      programTitle: chunk.program.title,
-      pillar: chunk.program.pillar,
+      sourceType: chunk.sourceType,
+      keywords: chunk.keywords,
+      similarity: 0.8, // Estimate for keyword matches
+      sourceName: chunk.sourceName || 'Unknown',
+      pillar: chunk.pillar,
     }))
   } catch (error) {
-    console.error('Topic search error:', error)
+    console.error('Keyword search error:', error)
     return []
   }
 }
 
 /**
- * Get chunks by chunk type (framework, exercise, example)
+ * Get chunks by source type
  */
 export async function getChunksByType(
-  chunkType: string,
+  sourceType: string,
   pillar?: string,
   limit: number = 5
 ): Promise<RetrievedChunk[]> {
   try {
     const chunks = await prisma.contentChunk.findMany({
       where: {
-        chunkType,
+        sourceType,
         ...(pillar ? { pillar } : {}),
-      },
-      include: {
-        program: {
-          select: {
-            title: true,
-            pillar: true,
-          },
-        },
       },
       take: limit,
     })
@@ -152,14 +125,14 @@ export async function getChunksByType(
     return chunks.map((chunk) => ({
       id: chunk.id,
       content: chunk.content,
-      chunkType: chunk.chunkType,
-      topics: chunk.topics,
+      sourceType: chunk.sourceType,
+      keywords: chunk.keywords,
       similarity: 0.75,
-      programTitle: chunk.program.title,
-      pillar: chunk.program.pillar,
+      sourceName: chunk.sourceName || 'Unknown',
+      pillar: chunk.pillar,
     }))
   } catch (error) {
-    console.error('Chunk type search error:', error)
+    console.error('Source type search error:', error)
     return []
   }
 }
@@ -172,11 +145,11 @@ export async function hybridSearch(
   pillar?: string,
   topN: number = 5
 ): Promise<RetrievedChunk[]> {
-  // Extract potential topics from query
+  // Extract potential keywords from query
   const queryLower = query.toLowerCase()
-  const topicMatches: string[] = []
+  const keywordMatches: string[] = []
 
-  const topicKeywords = {
+  const keywordMap = {
     pricing: ['pricing', 'price', 'charge', 'money'],
     branding: ['brand', 'identity', 'positioning'],
     marketing: ['market', 'launch', 'sell', 'promote'],
@@ -185,21 +158,21 @@ export async function hybridSearch(
     authenticity: ['authentic', 'real', 'genuine'],
   }
 
-  for (const [topic, keywords] of Object.entries(topicKeywords)) {
-    if (keywords.some((kw) => queryLower.includes(kw))) {
-      topicMatches.push(topic)
+  for (const [keyword, terms] of Object.entries(keywordMap)) {
+    if (terms.some((term) => queryLower.includes(term))) {
+      keywordMatches.push(keyword)
     }
   }
 
   // Get semantic results
   const semanticResults = await searchKnowledge(query, pillar, topN, 0.65)
 
-  // If we have topic matches, boost those results
-  if (topicMatches.length > 0) {
-    const topicResults = await searchByTopics(topicMatches, pillar, 3)
+  // If we have keyword matches, boost those results
+  if (keywordMatches.length > 0) {
+    const keywordResults = await searchByKeywords(keywordMatches, pillar, 3)
 
     // Merge and dedupe
-    const combined = [...semanticResults, ...topicResults]
+    const combined = [...semanticResults, ...keywordResults]
     const seen = new Set<string>()
     const deduped = combined.filter((chunk) => {
       if (seen.has(chunk.id)) return false
@@ -222,9 +195,9 @@ export function formatChunksForPrompt(chunks: RetrievedChunk[]): string {
   return chunks
     .map((chunk, i) => {
       return `
-## CHUNK ${i + 1}: ${chunk.chunkType.toUpperCase()}
-**From**: ${chunk.programTitle}
-**Topics**: ${chunk.topics.join(', ')}
+## CHUNK ${i + 1}: ${chunk.sourceType.toUpperCase()}
+**From**: ${chunk.sourceName}
+**Keywords**: ${chunk.keywords.join(', ')}
 **Relevance**: ${(chunk.similarity * 100).toFixed(0)}%
 
 ${chunk.content}
