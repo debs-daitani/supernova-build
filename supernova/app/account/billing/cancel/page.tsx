@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'use react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertCircle, XCircle, CheckCircle2 } from 'lucide-react'
 
