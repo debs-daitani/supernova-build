@@ -65,8 +65,7 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
               const data = JSON.parse(line.slice(6))
               if (data.text) {
                 fullResponse += data.text
-                // Truncate for widget display
-                setResponse(fullResponse.slice(0, 200) + (fullResponse.length > 200 ? '...' : ''))
+                setResponse(fullResponse)
               }
             } catch {
               // Skip invalid JSON
@@ -128,8 +127,8 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
 
       {/* Response Area */}
       {response && (
-        <div className="mb-4 p-3 bg-[#0a0a0a] rounded-lg">
-          <p className="text-white text-sm">{response}</p>
+        <div className="mb-4 p-3 bg-[#0a0a0a] rounded-lg max-h-[200px] overflow-y-auto">
+          <p className="text-white text-sm whitespace-pre-wrap">{response}</p>
         </div>
       )}
 
