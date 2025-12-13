@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Send, LogOut, User, MessageSquare, Plus } from 'lucide-react'
 import VoiceRecorder from '../../components/VoiceRecorder'
 
@@ -22,6 +22,7 @@ interface UserData {
 
 export default function Dashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<UserData | null>(null)
   const [isLoadingAuth, setIsLoadingAuth] = useState(true)
   const [mode, setMode] = useState<CoachingMode>('GENERAL')
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
+  const [isLoadingConversation, setIsLoadingConversation] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -36,6 +38,38 @@ export default function Dashboard() {
   useEffect(() => {
     checkAuth()
   }, [])
+
+  // Load conversation from URL param after auth is complete
+  useEffect(() => {
+    const conversationParam = searchParams.get('conversation')
+    if (conversationParam && user && !isLoadingAuth) {
+      loadConversation(conversationParam)
+    }
+  }, [searchParams, user, isLoadingAuth])
+
+  const loadConversation = async (convId: string) => {
+    setIsLoadingConversation(true)
+    try {
+      const response = await fetch(`/api/conversations/${convId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setConversationId(convId)
+        setMode(data.mode || 'GENERAL')
+        // Convert database messages to local format
+        const loadedMessages: Message[] = data.messages.map((msg: { id: string; role: string; content: string; createdAt: string }) => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: new Date(msg.createdAt),
+        }))
+        setMessages(loadedMessages)
+      }
+    } catch (error) {
+      console.error('Failed to load conversation:', error)
+    } finally {
+      setIsLoadingConversation(false)
+    }
+  }
 
   const checkAuth = async () => {
     try {
@@ -269,14 +303,16 @@ export default function Dashboard() {
     }
   }
 
-  if (isLoadingAuth) {
+  if (isLoadingAuth || isLoadingConversation) {
     return (
       <div className="h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="inline-flex p-6 rounded-2xl bg-gradient-to-br from-hot-pink to-light-teal shadow-[0_0_40px_rgba(255,0,142,0.6)] mb-4 animate-pulse">
             <span className="text-4xl font-supernova text-white">SN</span>
           </div>
-          <p className="text-gray-400 font-josefin font-semibold">Loading...</p>
+          <p className="text-gray-400 font-josefin font-semibold">
+            {isLoadingConversation ? 'Loading conversation...' : 'Loading...'}
+          </p>
         </div>
       </div>
     )

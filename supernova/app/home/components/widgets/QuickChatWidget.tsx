@@ -15,6 +15,8 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
   const [input, setInput] = useState('')
   const [response, setResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [conversationId, setConversationId] = useState<string | null>(null)
+  const [userMessage, setUserMessage] = useState('')
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -27,6 +29,7 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
 
     setIsLoading(true)
     setResponse('')
+    setUserMessage(input.trim()) // Save the user's message for display
 
     try {
       const res = await fetch('/api/chat', {
@@ -66,6 +69,10 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
               if (data.text) {
                 fullResponse += data.text
                 setResponse(fullResponse)
+              }
+              // Capture the conversationId when streaming is done
+              if (data.done && data.conversationId) {
+                setConversationId(data.conversationId)
               }
             } catch {
               // Skip invalid JSON
@@ -163,7 +170,7 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
 
       {/* Footer */}
       <Link
-        href="/dashboard"
+        href={conversationId ? `/dashboard?conversation=${conversationId}` : '/dashboard'}
         className="text-[#00F0E9] text-sm hover:underline"
       >
         Open Full Chat →
