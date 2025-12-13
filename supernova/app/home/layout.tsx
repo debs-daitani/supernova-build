@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 
+const loadingMessages = [
+  "The dAItaniverse is soundchecking...",
+  "The dAItaniverse is getting ready to rock...",
+  "The dAItaniverse is getting its shit together...",
+  "The dAItaniverse is preparing your stage...",
+]
+
 interface UserData {
   id: string
   email: string
@@ -20,6 +27,9 @@ export default function HomeLayout({
   const [user, setUser] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [loadingMessage] = useState(
+    loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
+  )
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,19 +53,34 @@ export default function HomeLayout({
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex p-6 rounded-2xl bg-gradient-to-br from-[#FF008E] to-[#00F0E9] shadow-[0_0_40px_rgba(255,0,142,0.6)] mb-4 animate-pulse">
-            <span className="text-4xl font-supernova text-white">SN</span>
-          </div>
-          <p className="text-gray-400 font-josefin font-semibold">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+        <img
+          src="/images/logo-full-400.png"
+          alt="The dAItaniverse"
+          className="max-w-[400px] w-full mb-8 animate-pulse"
+        />
+        <p className="text-[#888888] text-lg font-josefin">
+          {loadingMessage}
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen relative">
+      {/* Background */}
+      <div
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/images/dAitaniverse%20Stage.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
+
       {/* Header */}
       <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
 
@@ -63,7 +88,7 @@ export default function HomeLayout({
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="lg:ml-60 pt-16 min-h-screen">
+      <main className="lg:ml-60 pt-16 min-h-screen relative z-10">
         <div className="p-6">
           {children}
         </div>

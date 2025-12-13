@@ -203,11 +203,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
 
         {/* Logo */}
-        <div className="p-6 border-b border-[#3d3d3d]">
+        <div className="p-4 border-b border-[#3d3d3d] flex justify-center">
           <Link href="/home" className="block">
-            <h1 className="font-supernova text-2xl text-transparent bg-clip-text bg-gradient-to-r from-[#FF008E] via-[#00F0E9] to-[#D3FF2C]">
-              SUPERNova
-            </h1>
+            <img
+              src="/images/logo-icon-40.png"
+              alt="dAItaniverse"
+              className="w-10 h-10"
+            />
           </Link>
         </div>
 

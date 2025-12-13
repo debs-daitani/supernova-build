@@ -16,8 +16,12 @@ const arpDisplay = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'SUPERNova AI - Intelligent Coaching Assistant',
+  title: 'The dAItaniverse - Authentic Impactful AI',
   description: 'Your bold, direct, anti-BS coach for Body, Brain, and Business',
+  icons: {
+    icon: '/images/logo-icon-40.png',
+    apple: '/images/logo-icon-180.png',
+  },
 }
 
 export default function RootLayout({

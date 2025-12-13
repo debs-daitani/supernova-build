@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Zap, Mail, Lock, AlertCircle } from 'lucide-react'
+import { Mail, Lock, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -41,14 +41,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen relative flex items-center justify-center px-4">
+      {/* Background */}
+      <div
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/images/dAitaniverse%20Stage.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-neon-pink to-electric-purple shadow-[0_0_30px_rgba(255,27,141,0.6)] mb-4">
-            <Zap className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-electric-purple to-neon-pink mb-2">
+        <div className="flex flex-col items-center mb-8">
+          <img
+            src="/images/logo-full-400.png"
+            alt="The dAItaniverse - Authentic Impactful AI"
+            className="max-w-[300px] w-full mb-6"
+          />
+          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#FF008E] via-[#00F0E9] to-[#D3FF2C] mb-2">
             Welcome Back
           </h1>
           <p className="text-gray-400 font-semibold">

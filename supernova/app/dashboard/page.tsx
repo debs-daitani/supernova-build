@@ -305,15 +305,15 @@ export default function Dashboard() {
 
   if (isLoadingAuth || isLoadingConversation) {
     return (
-      <div className="h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex p-6 rounded-2xl bg-gradient-to-br from-hot-pink to-light-teal shadow-[0_0_40px_rgba(255,0,142,0.6)] mb-4 animate-pulse">
-            <span className="text-4xl font-supernova text-white">SN</span>
-          </div>
-          <p className="text-gray-400 font-josefin font-semibold">
-            {isLoadingConversation ? 'Loading conversation...' : 'Loading...'}
-          </p>
-        </div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+        <img
+          src="/images/logo-full-400.png"
+          alt="The dAItaniverse"
+          className="max-w-[400px] w-full mb-8 animate-pulse"
+        />
+        <p className="text-[#888888] text-lg font-josefin">
+          {isLoadingConversation ? 'Loading conversation...' : 'The dAItaniverse is preparing your stage...'}
+        </p>
       </div>
     )
   }

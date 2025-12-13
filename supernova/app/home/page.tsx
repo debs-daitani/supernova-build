@@ -64,7 +64,12 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Welcome Header */}
-      <div className="mb-8">
+      <div className="flex flex-col items-center mb-8">
+        <img
+          src="/images/logo-full-400.png"
+          alt="The dAItaniverse - Authentic Impactful AI"
+          className="max-w-[400px] w-full mb-6"
+        />
         <h1 className="font-arp-display text-3xl md:text-4xl font-bold text-white mb-2">
           {getGreeting()}, {getFirstName()}! 🤘
         </h1>
