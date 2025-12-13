@@ -1,14 +1,21 @@
-import Stripe from 'stripe'
+// Dynamic import to avoid build errors when stripe isn't configured
+let stripe: any = null
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined in environment variables')
+async function getStripe() {
+  if (!stripe) {
+    const Stripe = (await import('stripe')).default
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not defined in environment variables')
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-11-20.acacia',
+      typescript: true,
+    })
+  }
+  return stripe
 }
 
-// Initialize Stripe SDK
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
-  typescript: true,
-})
+export { getStripe, stripe }
 
 // Stripe configuration
 export const STRIPE_CONFIG = {
@@ -52,6 +59,7 @@ export async function getOrCreateStripeCustomer(
   email: string,
   name?: string
 ): Promise<string> {
+  const stripeClient = await getStripe()
   const { PrismaClient } = await import('@prisma/client');
   const prisma = new PrismaClient();
 
@@ -66,7 +74,7 @@ export async function getOrCreateStripeCustomer(
     }
 
     // Create new Stripe customer
-    const customer = await stripe.customers.create({
+    const customer = await stripeClient.customers.create({
       email,
       name: name || undefined,
       metadata: {
@@ -80,7 +88,6 @@ export async function getOrCreateStripeCustomer(
         userId,
         stripeCustomerId: customer.id,
         email,
-        name: name || null,
       },
     });
 
@@ -112,10 +119,11 @@ export function calculateMRR(subscriptions: any[]): number {
 }
 
 // Helper function to verify webhook signature
-export function verifyWebhookSignature(
+export async function verifyWebhookSignature(
   payload: string | Buffer,
   signature: string,
   secret: string
-): Stripe.Event {
-  return stripe.webhooks.constructEvent(payload, signature, secret);
+): Promise<any> {
+  const stripeClient = await getStripe()
+  return stripeClient.webhooks.constructEvent(payload, signature, secret);
 }
