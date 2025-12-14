@@ -93,7 +93,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       label: 'LEARN',
       items: [
-        { icon: <BookOpen size={20} />, label: 'Content Library', href: '/learn', comingSoon: true },
+        { icon: <BookOpen size={20} />, label: 'Guides', href: '/guides', working: true },
         { icon: <GraduationCap size={20} />, label: 'Programs', href: '/programs', comingSoon: true },
       ],
     },
