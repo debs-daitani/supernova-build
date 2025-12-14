@@ -2,16 +2,99 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-
-// Import react-quill dynamically to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import { Bold, Italic, List, ListOrdered, Undo, Redo } from 'lucide-react';
 
 interface EmailList {
   id: string;
   name: string;
   activeSubscriberCount: number;
+}
+
+// Rich Text Editor Component
+function RichTextEditor({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: 'Write your email content here...',
+      }),
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-invert max-w-none min-h-[300px] p-4 focus:outline-none',
+      },
+    },
+  });
+
+  if (!editor) return null;
+
+  return (
+    <div className="bg-white/10 border border-white/20 rounded-lg overflow-hidden">
+      {/* Toolbar */}
+      <div className="flex gap-1 p-2 border-b border-white/20 bg-white/5">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bold') ? 'bg-white/20' : ''}`}
+        >
+          <Bold size={18} className="text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('italic') ? 'bg-white/20' : ''}`}
+        >
+          <Italic size={18} className="text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bulletList') ? 'bg-white/20' : ''}`}
+        >
+          <List size={18} className="text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('orderedList') ? 'bg-white/20' : ''}`}
+        >
+          <ListOrdered size={18} className="text-white" />
+        </button>
+        <div className="w-px bg-white/20 mx-1" />
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          className="p-2 rounded hover:bg-white/20 disabled:opacity-50"
+        >
+          <Undo size={18} className="text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          className="p-2 rounded hover:bg-white/20 disabled:opacity-50"
+        >
+          <Redo size={18} className="text-white" />
+        </button>
+      </div>
+      {/* Editor Content */}
+      <EditorContent editor={editor} className="text-white" />
+    </div>
+  );
 }
 
 export default function CreateCampaignPage() {
@@ -210,14 +293,7 @@ export default function CreateCampaignPage() {
               <h2 className="text-2xl font-bold mb-6 text-white">Email Content</h2>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email Body</label>
-                <div className="bg-white rounded-lg">
-                  <ReactQuill
-                    value={htmlContent}
-                    onChange={setHtmlContent}
-                    theme="snow"
-                    style={{ minHeight: '400px' }}
-                  />
-                </div>
+                <RichTextEditor value={htmlContent} onChange={setHtmlContent} />
                 <p className="text-xs text-gray-400 mt-2">
                   Use variables: {'{{firstName}}'}, {'{{lastName}}'}, {'{{email}}'}
                 </p>
