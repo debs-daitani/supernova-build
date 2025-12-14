@@ -48,17 +48,13 @@ export async function POST(request: NextRequest) {
     const {
       name,
       subject,
-      previewText,
-      htmlContent,
-      textContent,
-      fromName,
-      fromEmail,
-      replyTo,
-      listIds,
-      type = 'BROADCAST'
+      content,
+      status = 'draft',
+      sentAt,
+      sentCount,
     } = body;
 
-    if (!name || !subject || !htmlContent) {
+    if (!name || !subject || !content) {
       return NextResponse.json(
         { error: 'Name, subject, and content are required' },
         { status: 400 }
@@ -69,14 +65,10 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         subject,
-        previewText,
-        htmlContent,
-        textContent,
-        fromName: fromName || 'dAItaniverse',
-        fromEmail: fromEmail || 'hello@daitaniverse.com',
-        replyTo,
-        listIds: listIds || [],
-        type
+        content,
+        status,
+        sentAt: sentAt ? new Date(sentAt) : null,
+        sentCount: sentCount || 0,
       }
     });
 
