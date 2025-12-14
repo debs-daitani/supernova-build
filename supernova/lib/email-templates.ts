@@ -201,7 +201,7 @@ export function getSubscriptionCancelledEmail(
   accessEndDate: string
 ): EmailTemplate {
   return {
-    subject: 'Subscription Cancelled - We'll Miss You',
+    subject: "Subscription Cancelled - We'll Miss You",
     html: `
       <!DOCTYPE html>
       <html>

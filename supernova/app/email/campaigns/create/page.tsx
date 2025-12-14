@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -26,7 +26,9 @@ import {
   AlignRight,
   User,
   ChevronDown,
-  ListPlus,
+  Users,
+  Mail,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface EmailList {
@@ -35,12 +37,40 @@ interface EmailList {
   activeSubscriberCount: number;
 }
 
+type RecipientMode = 'all' | 'manual' | 'lists';
+
 const MERGE_TAGS = [
   { label: 'First Name', value: '{{firstName}}' },
   { label: 'Last Name', value: '{{lastName}}' },
   { label: 'Email', value: '{{email}}' },
   { label: 'Company Name', value: '{{companyName}}' },
 ];
+
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Parse and validate emails from text input
+function parseEmails(input: string): { valid: string[]; invalid: string[] } {
+  const emails = input
+    .split(/[,\n\r]+/)
+    .map(e => e.trim().toLowerCase())
+    .filter(e => e.length > 0);
+
+  const valid: string[] = [];
+  const invalid: string[] = [];
+
+  emails.forEach(email => {
+    if (EMAIL_REGEX.test(email)) {
+      if (!valid.includes(email)) {
+        valid.push(email);
+      }
+    } else {
+      invalid.push(email);
+    }
+  });
+
+  return { valid, invalid };
+}
 
 // Rich Text Editor Component
 function RichTextEditor({
@@ -61,6 +91,14 @@ function RichTextEditor({
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
+        },
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
         },
       }),
       Placeholder.configure({
@@ -88,33 +126,33 @@ function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none min-h-[300px] p-4 focus:outline-none',
+        class: 'prose prose-invert max-w-none min-h-[300px] p-4 focus:outline-none [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1',
       },
     },
   });
 
-  const insertLink = () => {
+  const insertLink = useCallback(() => {
     if (linkUrl && editor) {
       editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
       setLinkUrl('');
       setShowLinkModal(false);
     }
-  };
+  }, [linkUrl, editor]);
 
-  const insertImage = () => {
+  const insertImage = useCallback(() => {
     if (imageUrl && editor) {
       editor.chain().focus().setImage({ src: imageUrl }).run();
       setImageUrl('');
       setShowImageModal(false);
     }
-  };
+  }, [imageUrl, editor]);
 
-  const insertMergeTag = (tag: string) => {
+  const insertMergeTag = useCallback((tag: string) => {
     if (editor) {
       editor.chain().focus().insertContent(tag).run();
     }
     setShowMergeTagsDropdown(false);
-  };
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -126,7 +164,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bold') ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bold') ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Bold"
         >
           <Bold size={18} className="text-white" />
@@ -134,7 +172,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('italic') ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('italic') ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Italic"
         >
           <Italic size={18} className="text-white" />
@@ -146,7 +184,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 1 }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 1 }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Heading 1"
         >
           <Heading1 size={18} className="text-white" />
@@ -154,7 +192,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 2 }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 2 }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Heading 2"
         >
           <Heading2 size={18} className="text-white" />
@@ -162,7 +200,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 3 }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('heading', { level: 3 }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Heading 3"
         >
           <Heading3 size={18} className="text-white" />
@@ -174,7 +212,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'left' }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'left' }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Align Left"
         >
           <AlignLeft size={18} className="text-white" />
@@ -182,7 +220,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'center' }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'center' }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Align Center"
         >
           <AlignCenter size={18} className="text-white" />
@@ -190,7 +228,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'right' }) ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive({ textAlign: 'right' }) ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Align Right"
         >
           <AlignRight size={18} className="text-white" />
@@ -202,7 +240,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bulletList') ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('bulletList') ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Bullet List"
         >
           <List size={18} className="text-white" />
@@ -210,7 +248,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('orderedList') ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('orderedList') ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Numbered List"
         >
           <ListOrdered size={18} className="text-white" />
@@ -222,7 +260,7 @@ function RichTextEditor({
         <button
           type="button"
           onClick={() => setShowLinkModal(true)}
-          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('link') ? 'bg-white/20' : ''}`}
+          className={`p-2 rounded hover:bg-white/20 ${editor.isActive('link') ? 'bg-white/30 ring-1 ring-cyan-400' : ''}`}
           title="Insert Link"
         >
           <LinkIcon size={18} className="text-white" />
@@ -306,6 +344,7 @@ function RichTextEditor({
               placeholder="https://example.com"
               className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white mb-4"
               autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && insertLink()}
             />
             <div className="flex justify-end gap-2">
               <button
@@ -339,6 +378,7 @@ function RichTextEditor({
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white mb-4"
               autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && insertImage()}
             />
             <div className="flex justify-end gap-2">
               <button
@@ -376,23 +416,79 @@ export default function CreateCampaignPage() {
   const [fromName, setFromName] = useState('dAItaniverse');
   const [fromEmail, setFromEmail] = useState('hello@daitaniverse.com');
   const [htmlContent, setHtmlContent] = useState('');
+
+  // Recipient selection
+  const [recipientMode, setRecipientMode] = useState<RecipientMode>('all');
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [manualEmails, setManualEmails] = useState('');
+  const [parsedEmails, setParsedEmails] = useState<{ valid: string[]; invalid: string[] }>({ valid: [], invalid: [] });
+  const [totalSubscribers, setTotalSubscribers] = useState(0);
 
   useEffect(() => {
     fetchLists();
+    fetchTotalSubscribers();
   }, []);
+
+  // Parse manual emails whenever input changes
+  useEffect(() => {
+    if (recipientMode === 'manual') {
+      setParsedEmails(parseEmails(manualEmails));
+    }
+  }, [manualEmails, recipientMode]);
 
   const fetchLists = async () => {
     try {
       const res = await fetch('/api/email/lists');
       const data = await res.json();
-      // Ensure we always have an array
       setLists(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching lists:', error);
       setLists([]);
     } finally {
       setListsLoading(false);
+    }
+  };
+
+  const fetchTotalSubscribers = async () => {
+    try {
+      const res = await fetch('/api/email/subscribers/count');
+      if (res.ok) {
+        const data = await res.json();
+        setTotalSubscribers(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching subscriber count:', error);
+      // Default to showing it works even without API
+      setTotalSubscribers(0);
+    }
+  };
+
+  const getRecipientCount = () => {
+    switch (recipientMode) {
+      case 'all':
+        return totalSubscribers;
+      case 'manual':
+        return parsedEmails.valid.length;
+      case 'lists':
+        if (!Array.isArray(lists)) return 0;
+        return lists
+          .filter(list => selectedLists.includes(list.id))
+          .reduce((sum, list) => sum + (list.activeSubscriberCount || 0), 0);
+      default:
+        return 0;
+    }
+  };
+
+  const canProceedFromStep3 = () => {
+    switch (recipientMode) {
+      case 'all':
+        return true; // Can always send to all
+      case 'manual':
+        return parsedEmails.valid.length > 0;
+      case 'lists':
+        return selectedLists.length > 0;
+      default:
+        return false;
     }
   };
 
@@ -408,7 +504,9 @@ export default function CreateCampaignPage() {
           fromName,
           fromEmail,
           htmlContent,
-          listIds: selectedLists,
+          recipientMode,
+          listIds: recipientMode === 'lists' ? selectedLists : [],
+          manualEmails: recipientMode === 'manual' ? parsedEmails.valid : [],
           type: 'BROADCAST'
         })
       });
@@ -422,10 +520,10 @@ export default function CreateCampaignPage() {
   };
 
   const handleSendNow = async () => {
-    if (!confirm(`Send to ${getTotalSubscribers()} subscribers now?`)) return;
+    const count = getRecipientCount();
+    if (!confirm(`Send to ${count} recipient${count !== 1 ? 's' : ''} now?`)) return;
 
     try {
-      // Create campaign
       const createRes = await fetch('/api/email/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -436,31 +534,23 @@ export default function CreateCampaignPage() {
           fromName,
           fromEmail,
           htmlContent,
-          listIds: selectedLists,
+          recipientMode,
+          listIds: recipientMode === 'lists' ? selectedLists : [],
+          manualEmails: recipientMode === 'manual' ? parsedEmails.valid : [],
           type: 'BROADCAST'
         })
       });
 
       if (createRes.ok) {
         const campaign = await createRes.json();
-
-        // Send campaign
         await fetch(`/api/email/campaigns/${campaign.id}/send`, {
           method: 'POST'
         });
-
         router.push('/email/campaigns');
       }
     } catch (error) {
       console.error('Error sending campaign:', error);
     }
-  };
-
-  const getTotalSubscribers = () => {
-    if (!Array.isArray(lists)) return 0;
-    return lists
-      .filter(list => selectedLists.includes(list.id))
-      .reduce((sum, list) => sum + (list.activeSubscriberCount || 0), 0);
   };
 
   const toggleList = (listId: string) => {
@@ -580,63 +670,162 @@ export default function CreateCampaignPage() {
                   className="px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, #FF008E, #00F0E9)', color: '#000' }}
                 >
-                  Next: Select Lists
+                  Next: Select Recipients
                 </button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Select Lists */}
+          {/* Step 3: Select Recipients */}
           {step === 3 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-white">Select Lists</h2>
+              <h2 className="text-2xl font-bold mb-6 text-white">Select Recipients</h2>
 
-              {listsLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">Loading lists...</p>
-                </div>
-              ) : lists.length === 0 ? (
-                <div className="text-center py-8 bg-white/5 rounded-lg">
-                  <ListPlus size={48} className="mx-auto text-gray-500 mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">No Lists Yet</h3>
-                  <p className="text-gray-400 mb-4">
-                    Create your first subscriber list to start sending campaigns.
-                  </p>
-                  <Link
-                    href="/email/lists"
-                    className="inline-block px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/30"
-                  >
-                    Go to Lists →
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-3">
-                    {lists.map((list) => (
-                      <label
-                        key={list.id}
-                        className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedLists.includes(list.id)}
-                          onChange={() => toggleList(list.id)}
-                          className="w-5 h-5"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium text-white">{list.name}</p>
-                          <p className="text-sm text-gray-400">{list.activeSubscriberCount || 0} subscribers</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="mt-6 p-4 bg-cyan-500/20 border border-cyan-500/50 rounded-lg">
-                    <p className="text-cyan-300 font-semibold">
-                      Total Recipients: {getTotalSubscribers()} subscribers
+              {/* Recipient Mode Selection */}
+              <div className="space-y-4 mb-6">
+                {/* Option 1: All Subscribers */}
+                <label
+                  className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${
+                    recipientMode === 'all'
+                      ? 'bg-cyan-500/20 border-2 border-cyan-500'
+                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="recipientMode"
+                    checked={recipientMode === 'all'}
+                    onChange={() => setRecipientMode('all')}
+                    className="mt-1 w-5 h-5"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Users size={20} className="text-cyan-400" />
+                      <span className="font-medium text-white">All Subscribers</span>
+                      {recipientMode === 'all' && <CheckCircle2 size={18} className="text-cyan-400" />}
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Send to everyone in your subscriber list ({totalSubscribers} subscribers)
                     </p>
                   </div>
-                </>
-              )}
+                </label>
+
+                {/* Option 2: Enter Emails Manually */}
+                <label
+                  className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${
+                    recipientMode === 'manual'
+                      ? 'bg-cyan-500/20 border-2 border-cyan-500'
+                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="recipientMode"
+                    checked={recipientMode === 'manual'}
+                    onChange={() => setRecipientMode('manual')}
+                    className="mt-1 w-5 h-5"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Mail size={20} className="text-cyan-400" />
+                      <span className="font-medium text-white">Enter Emails Manually</span>
+                      {recipientMode === 'manual' && parsedEmails.valid.length > 0 && (
+                        <CheckCircle2 size={18} className="text-cyan-400" />
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Paste or type email addresses (comma or newline separated)
+                    </p>
+                  </div>
+                </label>
+
+                {/* Manual Email Input */}
+                {recipientMode === 'manual' && (
+                  <div className="ml-9 space-y-3">
+                    <textarea
+                      value={manualEmails}
+                      onChange={(e) => setManualEmails(e.target.value)}
+                      placeholder="Enter email addresses, one per line or comma-separated&#10;&#10;example@email.com&#10;another@email.com"
+                      className="w-full h-32 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-500 resize-none"
+                    />
+                    <div className="flex items-center gap-4 text-sm">
+                      {parsedEmails.valid.length > 0 && (
+                        <span className="text-green-400">
+                          ✓ {parsedEmails.valid.length} valid email{parsedEmails.valid.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {parsedEmails.invalid.length > 0 && (
+                        <span className="text-red-400">
+                          ✗ {parsedEmails.invalid.length} invalid
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 3: Select from Lists */}
+                {lists.length > 0 && (
+                  <>
+                    <label
+                      className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${
+                        recipientMode === 'lists'
+                          ? 'bg-cyan-500/20 border-2 border-cyan-500'
+                          : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="recipientMode"
+                        checked={recipientMode === 'lists'}
+                        onChange={() => setRecipientMode('lists')}
+                        className="mt-1 w-5 h-5"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <List size={20} className="text-cyan-400" />
+                          <span className="font-medium text-white">Select from Lists</span>
+                          {recipientMode === 'lists' && selectedLists.length > 0 && (
+                            <CheckCircle2 size={18} className="text-cyan-400" />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Choose specific subscriber lists
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* List Selection */}
+                    {recipientMode === 'lists' && (
+                      <div className="ml-9 space-y-2">
+                        {lists.map((list) => (
+                          <label
+                            key={list.id}
+                            className="flex items-center gap-3 p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedLists.includes(list.id)}
+                              onChange={() => toggleList(list.id)}
+                              className="w-4 h-4"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-white text-sm">{list.name}</p>
+                              <p className="text-xs text-gray-400">{list.activeSubscriberCount || 0} subscribers</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Recipient Count Summary */}
+              <div className="p-4 bg-cyan-500/20 border border-cyan-500/50 rounded-lg">
+                <p className="text-cyan-300 font-semibold">
+                  Total Recipients: {getRecipientCount()} {recipientMode === 'manual' ? 'email' : 'subscriber'}{getRecipientCount() !== 1 ? 's' : ''}
+                </p>
+              </div>
 
               <div className="mt-6 flex justify-between">
                 <button
@@ -647,7 +836,7 @@ export default function CreateCampaignPage() {
                 </button>
                 <button
                   onClick={() => setStep(4)}
-                  disabled={selectedLists.length === 0}
+                  disabled={!canProceedFromStep3()}
                   className="px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, #FF008E, #00F0E9)', color: '#000' }}
                 >
@@ -672,7 +861,12 @@ export default function CreateCampaignPage() {
                 </div>
                 <div className="p-4 bg-white/5 rounded-lg">
                   <p className="text-sm text-gray-400">Recipients</p>
-                  <p className="text-white font-medium">{getTotalSubscribers()} subscribers</p>
+                  <p className="text-white font-medium">
+                    {getRecipientCount()} {recipientMode === 'manual' ? 'email' : 'subscriber'}{getRecipientCount() !== 1 ? 's' : ''}
+                    <span className="text-gray-400 ml-2">
+                      ({recipientMode === 'all' ? 'All Subscribers' : recipientMode === 'manual' ? 'Manual Entry' : 'Selected Lists'})
+                    </span>
+                  </p>
                 </div>
               </div>
               <div className="mt-6 flex justify-between">
