@@ -31,6 +31,9 @@ export async function GET(req: NextRequest) {
         role: true,
         subscriptionStatus: true,
         subscriptionTier: true,
+        subscriptionStart: true,
+        subscriptionEnd: true,
+        isBetaTester: true,
         createdAt: true,
       },
     })

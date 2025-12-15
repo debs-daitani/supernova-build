@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
         contact: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             company: true,
           },
@@ -135,7 +136,8 @@ export async function POST(request: NextRequest) {
         contact: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             company: true,
           },

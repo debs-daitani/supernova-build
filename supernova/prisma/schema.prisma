@@ -13,8 +13,13 @@ model User {
   password           String
   name               String?
   role               UserRole           @default(USER)
-  subscriptionStatus SubscriptionStatus @default(TRIAL)
-  subscriptionTier   SubscriptionTier   @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(INACTIVE)
+  subscriptionTier   SubscriptionTier   @default(NONE)
+  subscriptionStart  DateTime?
+  subscriptionEnd    DateTime?
+  stripeCustomerId   String?
+  stripePriceId      String?
+  isBetaTester       Boolean            @default(false)
   bio                String?
   location           String?
   niche              String?
@@ -664,15 +669,15 @@ enum UserRole {
 enum SubscriptionStatus {
   ACTIVE
   INACTIVE
-  TRIAL
   CANCELLED
+  PAST_DUE
 }
 
 enum SubscriptionTier {
-  FREE
-  BASIC
-  PRO
-  ENTERPRISE
+  NONE
+  VENUED
+  DAITANIVERSE
+  BETA_TESTER
 }
 
 enum CoachingMode {

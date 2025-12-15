@@ -34,7 +34,8 @@ export async function GET(
         contact: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             company: true,
             phone: true,
@@ -148,7 +149,8 @@ export async function PATCH(
         contact: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             company: true,
           },

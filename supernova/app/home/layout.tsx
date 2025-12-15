@@ -12,10 +12,16 @@ const loadingMessages = [
   "The dAItaniverse is preparing your stage...",
 ]
 
+// Tiers that can access the full dAItaniverse dashboard
+const FULL_ACCESS_TIERS = ['DAITANIVERSE', 'BETA_TESTER'];
+
 interface UserData {
   id: string
   email: string
   name: string | null
+  subscriptionTier: string
+  subscriptionStatus: string
+  isBetaTester: boolean
 }
 
 export default function HomeLayout({
@@ -85,7 +91,7 @@ export default function HomeLayout({
       <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
 
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} />
 
       {/* Main Content */}
       <main className="lg:ml-60 pt-16 min-h-screen relative z-10">

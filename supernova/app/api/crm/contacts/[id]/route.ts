@@ -98,7 +98,8 @@ export async function PATCH(
 
     const body = await request.json()
     const {
-      name,
+      firstName,
+      lastName,
       email,
       phone,
       company,
@@ -120,7 +121,8 @@ export async function PATCH(
     const contact = await prisma.contact.update({
       where: { id },
       data: {
-        name,
+        firstName,
+        lastName,
         email,
         phone,
         company,

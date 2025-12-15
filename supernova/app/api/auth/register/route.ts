@@ -32,15 +32,16 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user
+    // Create user - new users start with NONE tier (no subscription)
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name: name || email.split('@')[0],
         role: 'USER',
-        subscriptionStatus: 'TRIAL',
-        subscriptionTier: 'FREE',
+        subscriptionStatus: 'INACTIVE',
+        subscriptionTier: 'NONE',
+        isBetaTester: false,
       },
     })
 

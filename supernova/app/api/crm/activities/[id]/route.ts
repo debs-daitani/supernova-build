@@ -44,7 +44,8 @@ export async function PATCH(
         contact: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
           },
         },
         deal: {

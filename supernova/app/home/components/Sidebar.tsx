@@ -59,9 +59,19 @@ import {
   PenSquare,
 } from 'lucide-react'
 
+interface UserData {
+  id: string
+  email: string
+  name: string | null
+  subscriptionTier: string
+  subscriptionStatus: string
+  isBetaTester: boolean
+}
+
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  user: UserData | null
 }
 
 interface NavItem {
@@ -71,15 +81,20 @@ interface NavItem {
   external?: boolean
   comingSoon?: boolean
   working?: boolean
+  requiresFullAccess?: boolean // Requires DAITANIVERSE or BETA_TESTER tier
 }
 
 interface NavSection {
   label?: string
   items: NavItem[]
   collapsible?: boolean
+  requiresFullAccess?: boolean // Entire section requires DAITANIVERSE or BETA_TESTER tier
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+// Full access tiers that can see all features
+const FULL_ACCESS_TIERS = ['DAITANIVERSE', 'BETA_TESTER'];
+
+export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [showToast, setShowToast] = useState(false)
@@ -89,6 +104,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     'COMMUNITY': true,
     'ADDITIONAL': true,
   })
+
+  // Check if user has full platform access
+  const hasFullAccess = user?.isBetaTester || FULL_ACCESS_TIERS.includes(user?.subscriptionTier || '')
 
   const handleLogout = async () => {
     try {
@@ -110,13 +128,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       items: [
         { icon: <Home size={20} />, label: 'Home', href: '/home', working: true },
-        { icon: <MessageSquare size={20} />, label: 'SUPERNova Chat', href: '/supernova', working: true },
+        { icon: <MessageSquare size={20} />, label: 'SUPERNova Chat', href: '/supernova', working: true, requiresFullAccess: true },
         { icon: <PenSquare size={20} />, label: 'Blog', href: '/blog', working: true },
         { icon: <Guitar size={20} />, label: 'VENUED', href: '/venued', working: true },
       ],
     },
     {
       label: 'BUSINESS HUB',
+      requiresFullAccess: true,
       items: [
         { icon: <Users size={20} />, label: 'CRM', href: '/crm', working: true },
         { icon: <Mail size={20} />, label: 'Email Marketing', href: '/email', working: true },
@@ -131,6 +150,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       label: 'CREATIVE STUDIO',
       collapsible: true,
+      requiresFullAccess: true,
       items: [
         { icon: <Wand2 size={20} />, label: 'AI Content', href: '/coming-soon/ai-content', comingSoon: true },
         { icon: <Image size={20} />, label: 'Image Generation', href: '/coming-soon/image-generation', comingSoon: true },
@@ -149,6 +169,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     },
     {
       label: 'LEARN',
+      requiresFullAccess: true,
       items: [
         { icon: <BookOpen size={20} />, label: 'Guides', href: '/guides', working: true },
         { icon: <BarChart3 size={20} />, label: 'Quiz Builder', href: '/admin/quiz/create', working: true },
@@ -161,6 +182,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     },
     {
       label: 'ANALYTICS',
+      requiresFullAccess: true,
       items: [
         { icon: <PieChart size={20} />, label: 'Dashboard', href: '/coming-soon/analytics-dashboard', comingSoon: true },
         { icon: <TrendingUp size={20} />, label: 'CRM Analytics', href: '/crm/analytics', working: true },
@@ -172,6 +194,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       label: 'COMMUNITY',
       collapsible: true,
+      requiresFullAccess: true,
       items: [
         { icon: <MessageCircle size={20} />, label: 'Forum', href: '/coming-soon/community-forum', comingSoon: true },
         { icon: <Users size={20} />, label: 'Member Profiles', href: '/coming-soon/member-profiles', comingSoon: true },
@@ -183,6 +206,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     },
     {
       label: 'MONEY',
+      requiresFullAccess: true,
       items: [
         { icon: <CreditCard size={20} />, label: 'Billing', href: '/billing', working: true },
         { icon: <DollarSign size={20} />, label: 'Payments Admin', href: '/admin/billing/revenue', working: true },
@@ -194,6 +218,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     {
       label: 'ADDITIONAL',
       collapsible: true,
+      requiresFullAccess: true,
       items: [
         { icon: <Gift size={20} />, label: 'Affiliate Program', href: '/coming-soon/affiliate-program', comingSoon: true },
         { icon: <Crown size={20} />, label: 'Membership Tiers', href: '/coming-soon/membership-tiers', comingSoon: true },
@@ -299,8 +324,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-[#3d3d3d] scrollbar-track-transparent">
           {navSections.map((section, idx) => {
+            // Skip entire sections that require full access if user doesn't have it
+            if (section.requiresFullAccess && !hasFullAccess) {
+              return null
+            }
+
             const isCollapsed = section.label ? collapsedSections[section.label] : false
             const isCollapsible = section.collapsible
+
+            // Filter items that require full access
+            const visibleItems = section.items.filter(item =>
+              !item.requiresFullAccess || hasFullAccess
+            )
+
+            // Skip if no items are visible
+            if (visibleItems.length === 0) {
+              return null
+            }
 
             return (
               <div key={idx} className={section.label ? 'mt-4' : ''}>
@@ -319,7 +359,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 )}
                 {(!isCollapsible || !isCollapsed) && (
                   <div className="space-y-0.5">
-                    {section.items.map((item) => (
+                    {visibleItems.map((item) => (
                       <NavItemComponent key={item.label} item={item} />
                     ))}
                   </div>
@@ -327,6 +367,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             )
           })}
+
+          {/* Upgrade prompt for VENUED-only users */}
+          {!hasFullAccess && (
+            <div className="mt-6 mx-2 p-4 rounded-xl bg-gradient-to-br from-[#FF008E]/10 to-[#00F0E9]/10 border border-[#FF008E]/30">
+              <p className="text-sm text-gray-300 mb-3 font-medium">
+                Unlock the full dAItaniverse
+              </p>
+              <button
+                onClick={() => router.push('/pricing')}
+                className="w-full py-2 rounded-lg bg-gradient-to-r from-[#FF008E] to-[#00F0E9] text-white text-sm font-bold hover:scale-105 transition-transform"
+              >
+                Upgrade to £26/mo
+              </button>
+            </div>
+          )}
         </nav>
 
         {/* Bottom Section */}
