@@ -46,8 +46,12 @@ export default function RegisterPage() {
         return
       }
 
-      // Redirect to home dashboard on success
-      router.push('/home')
+      // Check for redirect after login (e.g., from protected VENUED routes)
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin')
+      sessionStorage.removeItem('redirectAfterLogin')
+
+      // Redirect to intended destination or home dashboard
+      router.push(redirectPath || '/home')
     } catch (err) {
       setError('Something went wrong. Please try again.')
       setIsLoading(false)

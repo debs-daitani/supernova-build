@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import PWAProvider from './components/PWAProvider'
 
 // Load custom fonts
 const supernova = localFont({
@@ -22,6 +23,19 @@ export const metadata: Metadata = {
     icon: '/images/logo-icon-40.png',
     apple: '/images/logo-icon-180.png',
   },
+  manifest: '/manifest.json',
+  themeColor: '#1a0a2e',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'dAItaniverse',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout({
@@ -31,7 +45,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${supernova.variable} ${arpDisplay.variable}`}>
-      <body>{children}</body>
+      <body>
+        <PWAProvider>{children}</PWAProvider>
+      </body>
     </html>
   )
 }

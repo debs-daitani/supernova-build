@@ -1,0 +1,39 @@
+{
+  "name": "dAItaniverse",
+  "short_name": "dAItaniverse",
+  "description": "Your AI-powered creative workspace - VENUED project management, SUPERNova AI assistant, and more",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#1a0a2e",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "business", "lifestyle"],
+  "icons": [
+    {
+      "src": "/images/logo-icon-40.png",
+      "sizes": "40x40",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logo-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
