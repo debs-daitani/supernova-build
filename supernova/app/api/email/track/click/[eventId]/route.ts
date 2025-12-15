@@ -3,8 +3,9 @@ import { trackEmailClick } from '@/lib/email-sender';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
+  const { eventId } = await params;
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
@@ -12,7 +13,7 @@ export async function GET(
     return NextResponse.redirect('/');
   }
 
-  await trackEmailClick(params.eventId, url);
+  await trackEmailClick(eventId, url);
 
   return NextResponse.redirect(url);
 }

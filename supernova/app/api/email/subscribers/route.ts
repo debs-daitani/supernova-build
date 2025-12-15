@@ -32,19 +32,13 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search, mode: 'insensitive' } },
       ];
     }
 
     const subscribers = await prisma.emailSubscriber.findMany({
       where,
       include: {
-        lists: {
-          include: {
-            list: true
-          }
-        },
         _count: {
           select: {
             events: true
@@ -52,7 +46,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        subscribedAt: 'desc'
+        createdAt: 'desc'
       }
     });
 
@@ -73,7 +67,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, firstName, lastName, listIds, tags, source, customFields } = body;
+    const { email, name, tags, source } = body;
 
     if (!email) {
       return NextResponse.json(
@@ -92,11 +86,9 @@ export async function POST(request: NextRequest) {
       subscriber = await prisma.emailSubscriber.update({
         where: { email },
         data: {
-          ...(firstName && { firstName }),
-          ...(lastName && { lastName }),
+          ...(name && { name }),
           ...(tags && { tags }),
-          ...(customFields && { customFields }),
-          status: 'SUBSCRIBED'
+          status: 'active'
         }
       });
     } else {
@@ -104,41 +96,12 @@ export async function POST(request: NextRequest) {
       subscriber = await prisma.emailSubscriber.create({
         data: {
           email,
-          firstName,
-          lastName,
+          name,
           tags: tags || [],
-          source: source || 'MANUAL',
-          customFields
+          source: source || 'manual',
+          status: 'active',
         }
       });
-    }
-
-    // Add to lists if specified
-    if (listIds && listIds.length > 0) {
-      for (const listId of listIds) {
-        await prisma.emailListSubscriber.upsert({
-          where: {
-            listId_subscriberId: {
-              listId,
-              subscriberId: subscriber.id
-            }
-          },
-          create: {
-            listId,
-            subscriberId: subscriber.id
-          },
-          update: {}
-        });
-
-        // Update list subscriber count
-        const count = await prisma.emailListSubscriber.count({
-          where: { listId }
-        });
-        await prisma.emailList.update({
-          where: { id: listId },
-          data: { subscriberCount: count }
-        });
-      }
     }
 
     return NextResponse.json(subscriber, { status: 201 });

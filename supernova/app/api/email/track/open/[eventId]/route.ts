@@ -3,9 +3,10 @@ import { trackEmailOpen } from '@/lib/email-sender';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  await trackEmailOpen(params.eventId);
+  const { eventId } = await params;
+  await trackEmailOpen(eventId);
 
   // Return 1x1 transparent pixel
   const pixel = Buffer.from(

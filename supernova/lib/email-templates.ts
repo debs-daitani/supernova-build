@@ -49,7 +49,7 @@ export function getWelcomeEmail(userName: string, trialEndDate: string): EmailTe
           <p>After your trial, you'll be charged £26/month. Cancel anytime before then if it's not for you.</p>
 
           <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="cta-button">Start Building</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/supernova" class="cta-button">Start Building</a>
           </div>
 
           <div class="footer">
@@ -75,7 +75,7 @@ Your trial ends on ${trialEndDate}.
 
 After your trial, you'll be charged £26/month. Cancel anytime.
 
-Get started: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
+Get started: ${process.env.NEXT_PUBLIC_APP_URL}/supernova
 
 Questions? Email hello@daitaniverse.com
     `,

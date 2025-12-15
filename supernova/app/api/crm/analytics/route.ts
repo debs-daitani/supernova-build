@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const wonThisMonth = await prisma.deal.aggregate({
       where: {
         stage: 'WON',
-        wonAt: {
+        actualCloseDate: {
           gte: startOfMonth,
         },
       },

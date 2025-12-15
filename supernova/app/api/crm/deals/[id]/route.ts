@@ -19,16 +19,17 @@ function getUserIdFromRequest(request: NextRequest): string | null {
 // GET /api/crm/deals/[id] - Get deal by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const deal = await prisma.deal.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         contact: {
           select: {
@@ -89,9 +90,10 @@ export async function GET(
 // PATCH /api/crm/deals/[id] - Update deal
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -112,7 +114,7 @@ export async function PATCH(
     } = body
 
     const existing = await prisma.deal.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existing) {
@@ -134,15 +136,13 @@ export async function PATCH(
 
     // Track stage changes
     if (stage && stage !== existing.stage) {
-      if (stage === 'WON' && !existing.wonAt) {
-        updateData.wonAt = new Date()
-      } else if (stage === 'LOST' && !existing.lostAt) {
-        updateData.lostAt = new Date()
+      if ((stage === 'WON' || stage === 'LOST') && !existing.actualCloseDate) {
+        updateData.actualCloseDate = new Date()
       }
     }
 
     const deal = await prisma.deal.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         contact: {
@@ -173,16 +173,17 @@ export async function PATCH(
 // DELETE /api/crm/deals/[id] - Delete deal
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.deal.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })

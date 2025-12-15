@@ -28,12 +28,11 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status')
     const source = searchParams.get('source')
-    const assignedTo = searchParams.get('assignedTo')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: any = { userId }
 
     // Search filter
     if (search) {
@@ -54,22 +53,10 @@ export async function GET(request: NextRequest) {
       where.source = source
     }
 
-    // Assigned to filter
-    if (assignedTo && assignedTo !== 'ALL') {
-      where.assignedToId = assignedTo === 'UNASSIGNED' ? null : assignedTo
-    }
-
     const [contacts, total] = await Promise.all([
       prisma.contact.findMany({
         where,
         include: {
-          assignedTo: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
           deals: {
             select: {
               id: true,
@@ -128,33 +115,32 @@ export async function POST(request: NextRequest) {
       email,
       phone,
       company,
-      jobTitle,
-      location,
       tags,
-      customFields,
+      notes,
       source,
       status,
-      assignedToId,
     } = body
 
     // Validate required fields
-    if (!name || !email) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Name and email are required' },
+        { error: 'Name is required' },
         { status: 400 }
       )
     }
 
-    // Check if email already exists
-    const existing = await prisma.contact.findUnique({
-      where: { email },
-    })
+    // Check if email already exists for this user
+    if (email) {
+      const existing = await prisma.contact.findFirst({
+        where: { email, userId },
+      })
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Contact with this email already exists' },
-        { status: 409 }
-      )
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Contact with this email already exists' },
+          { status: 409 }
+        )
+      }
     }
 
     const contact = await prisma.contact.create({
@@ -163,22 +149,11 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         company,
-        jobTitle,
-        location,
         tags: tags || [],
-        customFields: customFields || {},
-        source: source || 'MANUAL',
-        status: status || 'LEAD',
-        assignedToId,
-      },
-      include: {
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        notes,
+        source: source || 'manual',
+        status: status || 'lead',
+        userId,
       },
     })
 

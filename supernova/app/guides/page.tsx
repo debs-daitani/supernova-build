@@ -1,5 +1,8 @@
 'use client';
 
+// TODO: Add auth requirement after launch (Jan 26)
+// Currently PUBLIC - no login required for guides
+
 import Link from 'next/link';
 import {
   Guitar,
@@ -134,7 +137,7 @@ export default function GuidesPage() {
         <div className="mt-12 text-center">
           <p className="text-gray-500 text-sm">
             Need help with something not covered here?{' '}
-            <Link href="/chat" className="text-[#00F0E9] hover:underline">
+            <Link href="/supernova" className="text-[#00F0E9] hover:underline">
               Chat with SUPERNova
             </Link>
           </p>

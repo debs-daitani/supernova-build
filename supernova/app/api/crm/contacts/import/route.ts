@@ -42,17 +42,20 @@ export async function POST(request: NextRequest) {
 
     for (const contactData of contacts) {
       try {
-        const { name, email, phone, company, jobTitle, location, tags, status } = contactData
+        const { name, email, phone, company, tags, notes, status } = contactData
 
-        if (!name || !email) {
+        if (!name) {
           results.errors.push(`Missing required fields for contact: ${email || 'unknown'}`)
           continue
         }
 
-        // Check for duplicates
-        const existing = await prisma.contact.findUnique({
-          where: { email },
-        })
+        // Check for duplicates by email (if provided)
+        let existing = null
+        if (email) {
+          existing = await prisma.contact.findFirst({
+            where: { email, userId },
+          })
+        }
 
         if (existing) {
           if (skipDuplicates) {
@@ -61,15 +64,14 @@ export async function POST(request: NextRequest) {
           } else {
             // Update existing contact
             await prisma.contact.update({
-              where: { email },
+              where: { id: existing.id },
               data: {
                 name,
                 phone,
                 company,
-                jobTitle,
-                location,
                 tags: tags || [],
-                status: status || 'LEAD',
+                notes,
+                status: status || 'lead',
               },
             })
             results.imported++
@@ -82,11 +84,11 @@ export async function POST(request: NextRequest) {
               email,
               phone,
               company,
-              jobTitle,
-              location,
               tags: tags || [],
-              source: 'IMPORT',
-              status: status || 'LEAD',
+              notes,
+              source: 'import',
+              status: status || 'lead',
+              userId,
             },
           })
           results.imported++

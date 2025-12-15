@@ -37,31 +37,30 @@ export function detectOverwhelm(userMessage: string): boolean {
 
 /**
  * Get dopamine menu items for user
- * Returns easiest items first, personalized to pillar if provided
+ * Returns items personalized to pillar if provided
  */
 export async function getDopamineMenu(
   userId: string,
   pillar?: string,
-  maxDifficulty: number = 3
+  limit: number = 3
 ) {
   const items = await prisma.dopamineMenuItem.findMany({
     where: {
       AND: [
         {
           OR: [
-            { userId: null }, // Global items
+            { isGlobal: true }, // Global items
             { userId }, // User-specific items
           ],
         },
-        { difficultyLevel: { lte: maxDifficulty } },
         pillar ? { pillar } : {},
       ],
     },
     orderBy: [
-      { difficultyLevel: 'asc' }, // Easiest first
-      { timesCompleted: 'desc' }, // Most successful first
+      { timesAccepted: 'desc' }, // Most successful first
+      { timesOffered: 'asc' }, // Least offered first
     ],
-    take: 5, // Limit to 5 options (avoid choice paralysis!)
+    take: limit, // Limit options (avoid choice paralysis!)
   })
 
   return items
@@ -80,28 +79,13 @@ export async function trackDopamineOffered(itemId: string) {
 }
 
 /**
- * Mark dopamine item as completed
+ * Mark dopamine item as accepted/completed
  */
-export async function trackDopamineCompleted(
-  itemId: string,
-  completionTimeMinutes: number
-) {
-  const item = await prisma.dopamineMenuItem.findUnique({
-    where: { id: itemId },
-  })
-
-  if (!item) return
-
-  // Update average completion time
-  const newAvg = item.avgCompletionTime
-    ? Math.round((item.avgCompletionTime + completionTimeMinutes) / 2)
-    : completionTimeMinutes
-
+export async function trackDopamineAccepted(itemId: string) {
   await prisma.dopamineMenuItem.update({
     where: { id: itemId },
     data: {
-      timesCompleted: { increment: 1 },
-      avgCompletionTime: newAvg,
+      timesAccepted: { increment: 1 },
     },
   })
 }
@@ -114,7 +98,7 @@ export function formatDopamineMenuResponse(
     id: string
     title: string
     description: string
-    difficultyLevel: number
+    duration: string
   }>
 ): string {
   if (items.length === 0) {
@@ -124,7 +108,7 @@ export function formatDopamineMenuResponse(
   const response = `You sound stuck. Let's get you moving. Pick ONE:
 
 ${items
-  .map((item, i) => `${i + 1}. **${item.title}**\n   ${item.description}`)
+  .map((item, i) => `${i + 1}. **${item.title}** (${item.duration})\n   ${item.description}`)
   .join('\n\n')}
 
 Pick a number. Don't think. Just pick.`

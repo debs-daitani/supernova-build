@@ -170,7 +170,7 @@ export default function QuickChatWidget({ userId }: QuickChatWidgetProps) {
 
       {/* Footer */}
       <Link
-        href={conversationId ? `/dashboard?conversation=${conversationId}` : '/dashboard'}
+        href={conversationId ? `/supernova?conversation=${conversationId}` : '/supernova'}
         className="text-[#00F0E9] text-sm hover:underline"
       >
         Open Full Chat →

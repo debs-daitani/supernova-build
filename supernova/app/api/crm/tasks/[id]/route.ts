@@ -19,9 +19,10 @@ function getUserIdFromRequest(request: NextRequest): string | null {
 // PATCH /api/crm/tasks/[id] - Update task
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -41,7 +42,7 @@ export async function PATCH(
     // Mark as completed if status is COMPLETED
     if (status === 'COMPLETED') {
       const existing = await prisma.task.findUnique({
-        where: { id: params.id },
+        where: { id },
       })
       if (existing && !existing.completedAt) {
         updateData.completedAt = new Date()
@@ -49,7 +50,7 @@ export async function PATCH(
     }
 
     const task = await prisma.task.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         contact: {
@@ -83,16 +84,17 @@ export async function PATCH(
 // DELETE /api/crm/tasks/[id] - Delete task
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.task.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })

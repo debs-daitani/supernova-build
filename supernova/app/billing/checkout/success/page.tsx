@@ -116,11 +116,11 @@ export default function CheckoutSuccessPage() {
 
         <div className="space-y-4">
           <Link
-            href="/dashboard"
+            href="/supernova"
             className="block w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-xl font-medium transition-all"
             style={{ fontFamily: 'Josefin Sans, sans-serif' }}
           >
-            Go to Dashboard
+            Go to SUPERNova
           </Link>
           <Link
             href="/billing"

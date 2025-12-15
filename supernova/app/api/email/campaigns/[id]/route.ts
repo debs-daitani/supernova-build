@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const campaign = await prisma.emailCampaign.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!campaign) {
@@ -23,13 +24,14 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json();
 
     const campaign = await prisma.emailCampaign.update({
-      where: { id: params.id },
+      where: { id: id },
       data: body
     });
 
@@ -42,11 +44,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await prisma.emailCampaign.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json({ success: true });

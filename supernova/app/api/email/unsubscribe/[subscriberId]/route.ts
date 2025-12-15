@@ -3,10 +3,11 @@ import { unsubscribeEmail } from '@/lib/email-sender';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { subscriberId: string } }
+  { params }: { params: Promise<{ subscriberId: string }> }
 ) {
   try {
-    const success = await unsubscribeEmail(params.subscriberId);
+    const { subscriberId } = await params;
+    const success = await unsubscribeEmail(subscriberId);
 
     if (success) {
       return NextResponse.json({ success: true, message: 'Successfully unsubscribed' });
@@ -20,10 +21,11 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { subscriberId: string } }
+  { params }: { params: Promise<{ subscriberId: string }> }
 ) {
+  const { subscriberId } = await params;
   // Also support GET for email links
-  await unsubscribeEmail(params.subscriberId);
+  await unsubscribeEmail(subscriberId);
 
   // Redirect to unsubscribe confirmation page
   return NextResponse.redirect(

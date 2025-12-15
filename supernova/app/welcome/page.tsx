@@ -39,7 +39,7 @@ export default function WelcomePage() {
       title: 'SUPERNova AI',
       description: 'Your personal ADHD-friendly AI coach, ready 24/7',
       action: 'Start chatting',
-      link: '/dashboard',
+      link: '/supernova',
     },
     {
       icon: <Brain className="w-6 h-6" />,
@@ -53,14 +53,14 @@ export default function WelcomePage() {
       title: 'ADHD Tools',
       description: 'Dopamine menu, pattern interrupts, and more',
       action: 'Explore tools',
-      link: '/dashboard',
+      link: '/supernova',
     },
     {
       icon: <TrendingUp className="w-6 h-6" />,
       title: 'VENUED Projects',
       description: 'Keep your rebel projects on track',
       action: 'Create a project',
-      link: '/dashboard',
+      link: '/supernova',
     },
   ]
 
@@ -131,7 +131,7 @@ export default function WelcomePage() {
         {/* CTA Buttons */}
         <div className="grid md:grid-cols-2 gap-4">
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/supernova')}
             className="py-4 px-8 rounded-2xl bg-gradient-to-br from-hot-pink via-mid-teal to-light-teal text-white font-josefin font-bold text-lg hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,0,142,0.5)] hover:shadow-[0_0_60px_rgba(255,0,142,0.7)]"
           >
             Start with SUPERNova

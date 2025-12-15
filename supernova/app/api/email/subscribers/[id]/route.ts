@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { unsubscribeEmail } from '@/lib/email-sender';
 
 /**
  * GET /api/email/subscribers/[id]
@@ -8,19 +7,14 @@ import { unsubscribeEmail } from '@/lib/email-sender';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const subscriber = await prisma.emailSubscriber.findUnique({
       where: { id },
       include: {
-        lists: {
-          include: {
-            list: true
-          }
-        },
         events: {
           orderBy: {
             createdAt: 'desc'
@@ -53,50 +47,21 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
-    const { firstName, lastName, tags, status, customFields, listIds } = body;
+    const { name, tags, status } = body;
 
     const subscriber = await prisma.emailSubscriber.update({
       where: { id },
       data: {
-        ...(firstName !== undefined && { firstName }),
-        ...(lastName !== undefined && { lastName }),
+        ...(name !== undefined && { name }),
         ...(tags && { tags }),
         ...(status && { status }),
-        ...(customFields && { customFields })
       }
     });
-
-    // Update list memberships if specified
-    if (listIds) {
-      // Remove from all lists
-      await prisma.emailListSubscriber.deleteMany({
-        where: { subscriberId: id }
-      });
-
-      // Add to new lists
-      for (const listId of listIds) {
-        await prisma.emailListSubscriber.create({
-          data: {
-            listId,
-            subscriberId: id
-          }
-        });
-
-        // Update list subscriber count
-        const count = await prisma.emailListSubscriber.count({
-          where: { listId }
-        });
-        await prisma.emailList.update({
-          where: { id: listId },
-          data: { subscriberCount: count }
-        });
-      }
-    }
 
     return NextResponse.json(subscriber);
   } catch (error) {
@@ -114,10 +79,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.emailSubscriber.delete({
       where: { id }

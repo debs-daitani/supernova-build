@@ -5,9 +5,10 @@ import { verifyAuth } from '../../../../../lib/auth-middleware'
 // PATCH /api/venued/tasks/[id] - Update a task
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const authResult = await verifyAuth(req)
     if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -27,7 +28,7 @@ export async function PATCH(
 
     // Handle task completion - award points and update stats
     const currentTask = await prisma.venuedTask.findFirst({
-      where: { id: params.id, userId: authResult.userId },
+      where: { id: id, userId: authResult.userId },
     })
 
     if (!currentTask) {
@@ -39,7 +40,7 @@ export async function PATCH(
 
     const task = await prisma.venuedTask.updateMany({
       where: {
-        id: params.id,
+        id: id,
         userId: authResult.userId,
       },
       data: {
@@ -115,7 +116,7 @@ export async function PATCH(
     }
 
     const updatedTask = await prisma.venuedTask.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         project: true,
         phase: true,
@@ -135,9 +136,10 @@ export async function PATCH(
 // DELETE /api/venued/tasks/[id] - Delete a task
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const authResult = await verifyAuth(req)
     if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -145,7 +147,7 @@ export async function DELETE(
 
     const result = await prisma.venuedTask.deleteMany({
       where: {
-        id: params.id,
+        id: id,
         userId: authResult.userId,
       },
     })

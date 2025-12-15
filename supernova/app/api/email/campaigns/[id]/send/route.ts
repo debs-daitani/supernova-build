@@ -1,41 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendBulkEmails, generateUnsubscribeUrl } from '@/lib/email-sender';
+import { sendBulkEmails } from '@/lib/email-sender';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const campaign = await prisma.emailCampaign.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    if (campaign.status === 'SENT') {
+    if (campaign.status === 'sent') {
       return NextResponse.json({ error: 'Campaign already sent' }, { status: 400 });
     }
 
-    // Get subscribers from all selected lists
+    // Get all active subscribers
     const subscribers = await prisma.emailSubscriber.findMany({
       where: {
-        status: 'SUBSCRIBED',
-        lists: {
-          some: {
-            listId: {
-              in: campaign.listIds
-            }
-          }
-        }
+        status: 'active',
       },
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true
+        name: true,
       }
     });
 
@@ -45,9 +38,9 @@ export async function POST(
 
     // Update campaign status
     await prisma.emailCampaign.update({
-      where: { id: params.id },
+      where: { id },
       data: {
-        status: 'SENDING'
+        status: 'sending'
       }
     });
 
@@ -57,25 +50,19 @@ export async function POST(
         email: sub.email,
         subscriberId: sub.id,
         variables: {
-          firstName: sub.firstName || '',
-          lastName: sub.lastName || '',
-          name: [sub.firstName, sub.lastName].filter(Boolean).join(' ') || 'there'
+          name: sub.name || 'there'
         }
       })),
       subject: campaign.subject,
-      html: campaign.htmlContent,
-      text: campaign.textContent || undefined,
-      fromName: campaign.fromName,
-      fromEmail: campaign.fromEmail,
-      replyTo: campaign.replyTo || undefined,
+      html: campaign.content,
       campaignId: campaign.id
     });
 
     // Update campaign with results
     await prisma.emailCampaign.update({
-      where: { id: params.id },
+      where: { id },
       data: {
-        status: 'SENT',
+        status: 'sent',
         sentAt: new Date(),
         sentCount: results.sent
       }
@@ -90,10 +77,14 @@ export async function POST(
     console.error('[API] Error sending campaign:', error);
 
     // Reset campaign status on error
-    await prisma.emailCampaign.update({
-      where: { id: params.id },
-      data: { status: 'DRAFT' }
-    });
+    try {
+      await prisma.emailCampaign.update({
+        where: { id },
+        data: { status: 'draft' }
+      });
+    } catch {
+      // Ignore cleanup errors
+    }
 
     return NextResponse.json({ error: 'Failed to send campaign' }, { status: 500 });
   }

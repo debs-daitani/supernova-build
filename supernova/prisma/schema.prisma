@@ -33,6 +33,9 @@ model User {
   memories           UserMemory[]
   userPatterns       UserPattern[]
   voiceMemos         VoiceMemo[]
+  assignedDeals      Deal[]       @relation("DealAssignee")
+  assignedTasks      Task[]       @relation("TaskAssignee")
+  assignedActivities Activity[]   @relation("ActivityAssignee")
 
   @@index([email])
 }
@@ -472,22 +475,99 @@ model EmailEvent {
 }
 
 model Contact {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
   email       String?
   phone       String?
   company     String?
   tags        String[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   lastContact DateTime?
   notes       String?
   userId      String
   source      String?
-  status      String    @default("lead")
+  status      String     @default("lead")
+
+  deals       Deal[]
+  tasks       Task[]
+  activities  Activity[]
 
   @@index([userId])
   @@index([userId, status])
+}
+
+model Deal {
+  id                String     @id @default(cuid())
+  title             String
+  value             Float
+  currency          String     @default("USD")
+  stage             String     @default("LEAD")
+  probability       Int        @default(0)
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  notes             String?
+  customFields      Json?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  contactId         String
+  assignedToId      String?
+
+  contact           Contact    @relation(fields: [contactId], references: [id])
+  assignedTo        User?      @relation("DealAssignee", fields: [assignedToId], references: [id])
+  tasks             Task[]
+  activities        Activity[]
+
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([stage])
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  priority     String    @default("MEDIUM")
+  status       String    @default("PENDING")
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  contactId    String?
+  dealId       String?
+  assignedToId String?
+
+  contact      Contact?  @relation(fields: [contactId], references: [id])
+  deal         Deal?     @relation(fields: [dealId], references: [id])
+  assignedTo   User?     @relation("TaskAssignee", fields: [assignedToId], references: [id])
+
+  @@index([contactId])
+  @@index([dealId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model Activity {
+  id           String    @id @default(cuid())
+  type         String
+  subject      String
+  description  String?
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  contactId    String?
+  dealId       String?
+  assignedToId String?
+
+  contact      Contact?  @relation(fields: [contactId], references: [id])
+  deal         Deal?     @relation(fields: [dealId], references: [id])
+  assignedTo   User?     @relation("ActivityAssignee", fields: [assignedToId], references: [id])
+
+  @@index([contactId])
+  @@index([dealId])
+  @@index([assignedToId])
+  @@index([type])
 }
 
 model StripeCustomer {
@@ -508,13 +588,59 @@ model Subscription {
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
   canceledAt           DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   priceId              String
   status               String
 
+  invoices             Invoice[]
+  payments             Payment[]
+
   @@index([userId])
   @@index([stripeSubscriptionId])
+}
+
+model Invoice {
+  id                String    @id @default(cuid())
+  userId            String
+  subscriptionId    String
+  stripeInvoiceId   String    @unique
+  amountDue         Int
+  amountPaid        Int
+  currency          String
+  status            String
+  hostedInvoiceUrl  String?
+  invoicePdf        String?
+  paidAt            DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([stripeInvoiceId])
+}
+
+model Payment {
+  id                     String   @id @default(cuid())
+  userId                 String
+  subscriptionId         String
+  stripePaymentIntentId  String   @unique
+  amount                 Int
+  currency               String
+  status                 String
+  description            String?
+  receiptUrl             String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  subscription           Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([stripePaymentIntentId])
 }
 
 enum UserRole {

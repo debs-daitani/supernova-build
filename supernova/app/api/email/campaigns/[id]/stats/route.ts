@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const campaign = await prisma.emailCampaign.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!campaign) {
@@ -16,13 +17,12 @@ export async function GET(
 
     // Get detailed event statistics
     const events = await prisma.emailEvent.findMany({
-      where: { campaignId: params.id },
+      where: { campaignId: id },
       include: {
         subscriber: {
           select: {
             email: true,
-            firstName: true,
-            lastName: true
+            name: true,
           }
         }
       }
@@ -30,42 +30,40 @@ export async function GET(
 
     // Group events by type
     const eventsByType = events.reduce((acc: any, event) => {
-      if (!acc[event.type]) {
-        acc[event.type] = [];
+      if (!acc[event.eventType]) {
+        acc[event.eventType] = [];
       }
-      acc[event.type].push(event);
+      acc[event.eventType].push(event);
       return acc;
     }, {});
 
     // Calculate click stats
     const clickedLinks = events
-      .filter(e => e.type === 'CLICKED' && e.data)
+      .filter(e => e.eventType === 'click' && e.metadata)
       .reduce((acc: any, event: any) => {
-        const url = event.data.url;
-        if (!acc[url]) {
-          acc[url] = 0;
+        const url = (event.metadata as any)?.url;
+        if (url) {
+          if (!acc[url]) {
+            acc[url] = 0;
+          }
+          acc[url]++;
         }
-        acc[url]++;
         return acc;
       }, {});
 
     // Calculate rates
     const sentCount = campaign.sentCount || 0;
-    const openRate = sentCount > 0 ? (campaign.openedCount / sentCount) * 100 : 0;
-    const clickRate = sentCount > 0 ? (campaign.clickedCount / sentCount) * 100 : 0;
-    const unsubscribeRate = sentCount > 0 ? (campaign.unsubscribedCount / sentCount) * 100 : 0;
+    const openRate = sentCount > 0 ? (campaign.openCount / sentCount) * 100 : 0;
+    const clickRate = sentCount > 0 ? (campaign.clickCount / sentCount) * 100 : 0;
 
     return NextResponse.json({
       campaign,
       stats: {
         sent: sentCount,
-        opened: campaign.openedCount,
-        clicked: campaign.clickedCount,
-        bounced: campaign.bouncedCount,
-        unsubscribed: campaign.unsubscribedCount,
+        opened: campaign.openCount,
+        clicked: campaign.clickCount,
         openRate: openRate.toFixed(2),
         clickRate: clickRate.toFixed(2),
-        unsubscribeRate: unsubscribeRate.toFixed(2)
       },
       eventsByType,
       clickedLinks,

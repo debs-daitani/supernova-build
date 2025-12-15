@@ -11,9 +11,10 @@ const prisma = new PrismaClient();
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function GET(
 
     const invoice = await prisma.invoice.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
       include: {

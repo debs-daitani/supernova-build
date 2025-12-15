@@ -11,9 +11,10 @@ const prisma = new PrismaClient();
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function POST(
 
     const subscription = await prisma.subscription.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -40,7 +41,7 @@ export async function POST(
 
     // Update in database
     const updated = await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         cancelAtPeriodEnd: true,
         canceledAt: new Date(),
@@ -66,9 +67,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -76,7 +78,7 @@ export async function DELETE(
 
     const subscription = await prisma.subscription.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -95,7 +97,7 @@ export async function DELETE(
 
     // Update in database
     const updated = await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         cancelAtPeriodEnd: false,
         canceledAt: null,

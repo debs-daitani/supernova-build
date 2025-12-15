@@ -26,7 +26,7 @@ export async function GET() {
       prisma.dopamineMenuItem.aggregate({
         _sum: {
           timesOffered: true,
-          timesCompleted: true,
+          timesAccepted: true,
         },
       }),
       prisma.loopDetection.count(),
@@ -42,7 +42,7 @@ export async function GET() {
       totalKnowledgePrograms,
       totalContentChunks,
       dopamineItemsOffered: dopamineStats._sum.timesOffered || 0,
-      dopamineItemsCompleted: dopamineStats._sum.timesCompleted || 0,
+      dopamineItemsAccepted: dopamineStats._sum.timesAccepted || 0,
       patternsDetected,
     })
   } catch (error) {

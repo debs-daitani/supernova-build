@@ -11,9 +11,10 @@ const prisma = new PrismaClient();
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function PATCH(
 
     const paymentMethod = await prisma.paymentMethod.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -48,7 +49,7 @@ export async function PATCH(
 
     // Set this one as default
     const updated = await prisma.paymentMethod.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isDefault: true },
     });
 
@@ -68,9 +69,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -78,7 +80,7 @@ export async function DELETE(
 
     const paymentMethod = await prisma.paymentMethod.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -95,7 +97,7 @@ export async function DELETE(
 
     // Delete from database
     await prisma.paymentMethod.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: 'Payment method removed' });

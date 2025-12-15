@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
@@ -29,7 +30,7 @@
     "lucide-react": "^0.554.0",
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",
-    "next": "16.0.3",
+    "next": "^16.0.10",
     "openai": "^6.9.1",
     "papaparse": "^5.5.3",
     "pdf-parse": "^2.4.5",

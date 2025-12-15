@@ -11,9 +11,10 @@ const prisma = new PrismaClient();
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function GET(
 
     const subscription = await prisma.subscription.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -57,9 +58,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -70,7 +72,7 @@ export async function PATCH(
 
     const subscription = await prisma.subscription.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -119,7 +121,7 @@ export async function PATCH(
     };
 
     const updatedSub = await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         stripePriceId: priceId || subscription.stripePriceId,
         status: statusMap[updated.status] || subscription.status,
@@ -145,9 +147,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -155,7 +158,7 @@ export async function DELETE(
 
     const subscription = await prisma.subscription.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: auth.userId,
       },
     });
@@ -172,7 +175,7 @@ export async function DELETE(
 
     // Update in database
     await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: 'CANCELED',
         canceledAt: new Date(),

@@ -7,10 +7,11 @@ import { prisma } from '../../../../lib/prisma'
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quizId = params.id
+    const { id } = await params
+    const quizId = id
 
     const quiz = await prisma.quiz.findUnique({
       where: {

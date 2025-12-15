@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { subscribers, listId, source = 'IMPORT' } = body;
+    const { subscribers, source = 'import' } = body;
 
     if (!subscribers || !Array.isArray(subscribers)) {
       return NextResponse.json(
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     for (const sub of subscribers) {
       try {
-        const { email, firstName, lastName, tags, customFields } = sub;
+        const { email, name, tags } = sub;
 
         if (!email || !email.includes('@')) {
           results.skipped++;
@@ -39,66 +39,33 @@ export async function POST(request: NextRequest) {
           where: { email }
         });
 
-        let subscriber;
-
         if (existing) {
           // Update existing subscriber
-          subscriber = await prisma.emailSubscriber.update({
+          await prisma.emailSubscriber.update({
             where: { email },
             data: {
-              ...(firstName && { firstName }),
-              ...(lastName && { lastName }),
+              ...(name && { name }),
               ...(tags && { tags }),
-              ...(customFields && { customFields })
             }
           });
           results.updated++;
         } else {
           // Create new subscriber
-          subscriber = await prisma.emailSubscriber.create({
+          await prisma.emailSubscriber.create({
             data: {
               email,
-              firstName: firstName || null,
-              lastName: lastName || null,
+              name: name || null,
               tags: tags || [],
               source,
-              customFields: customFields || null
+              status: 'active',
             }
           });
           results.created++;
-        }
-
-        // Add to list if specified
-        if (listId) {
-          await prisma.emailListSubscriber.upsert({
-            where: {
-              listId_subscriberId: {
-                listId,
-                subscriberId: subscriber.id
-              }
-            },
-            create: {
-              listId,
-              subscriberId: subscriber.id
-            },
-            update: {}
-          });
         }
       } catch (error: any) {
         results.skipped++;
         results.errors.push(error.message);
       }
-    }
-
-    // Update list subscriber count if list specified
-    if (listId) {
-      const count = await prisma.emailListSubscriber.count({
-        where: { listId }
-      });
-      await prisma.emailList.update({
-        where: { id: listId },
-        data: { subscriberCount: count }
-      });
     }
 
     return NextResponse.json(results);

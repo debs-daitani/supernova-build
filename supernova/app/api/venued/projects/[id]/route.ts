@@ -5,9 +5,10 @@ import { verifyAuth } from '../../../../../lib/auth-middleware'
 // GET /api/venued/projects/[id] - Get a specific project
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const authResult = await verifyAuth(req)
     if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +16,7 @@ export async function GET(
 
     const project = await prisma.venuedProject.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: authResult.userId,
       },
       include: {
@@ -53,9 +54,10 @@ export async function GET(
 // PATCH /api/venued/projects/[id] - Update a project
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const authResult = await verifyAuth(req)
     if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -66,7 +68,7 @@ export async function PATCH(
 
     const project = await prisma.venuedProject.updateMany({
       where: {
-        id: params.id,
+        id: id,
         userId: authResult.userId,
       },
       data: {
@@ -84,7 +86,7 @@ export async function PATCH(
     }
 
     const updatedProject = await prisma.venuedProject.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         phases: true,
         tasks: true,
@@ -105,9 +107,10 @@ export async function PATCH(
 // DELETE /api/venued/projects/[id] - Delete a project
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const authResult = await verifyAuth(req)
     if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -115,7 +118,7 @@ export async function DELETE(
 
     const result = await prisma.venuedProject.deleteMany({
       where: {
-        id: params.id,
+        id: id,
         userId: authResult.userId,
       },
     })

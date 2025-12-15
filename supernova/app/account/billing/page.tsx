@@ -157,11 +157,11 @@ export default function BillingPage() {
             Billing Settings
           </h1>
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/home')}
             className="flex items-center gap-2 px-6 py-2 rounded-xl bg-charcoal/60 text-white font-josefin font-semibold hover:bg-charcoal/80 transition-all border border-light-teal/20"
           >
             <ArrowLeft className="w-4 h-4" />
-            Dashboard
+            Home
           </button>
         </div>
       </header>

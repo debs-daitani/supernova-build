@@ -11,11 +11,12 @@ const prisma = new PrismaClient();
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         prices: {
           where: { active: true },
@@ -44,9 +45,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -66,7 +68,7 @@ export async function PATCH(
     const { name, description, features, active } = body;
 
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!product) {
@@ -84,7 +86,7 @@ export async function PATCH(
 
     // Update in database
     const updated = await prisma.product.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name: name || undefined,
         description: description !== undefined ? description : undefined,
@@ -112,9 +114,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const auth = await verifyAuth(request);
     if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -131,7 +134,7 @@ export async function DELETE(
     }
 
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!product) {
@@ -147,7 +150,7 @@ export async function DELETE(
 
     // Deactivate in database
     await prisma.product.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { active: false },
     });
 

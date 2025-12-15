@@ -19,9 +19,10 @@ function getUserIdFromRequest(request: NextRequest): string | null {
 // PATCH /api/crm/activities/[id] - Update activity
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -31,7 +32,7 @@ export async function PATCH(
     const { type, subject, description, dueDate, completedAt } = body
 
     const activity = await prisma.activity.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         type,
         subject,
@@ -65,16 +66,17 @@ export async function PATCH(
 // DELETE /api/crm/activities/[id] - Delete activity
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = getUserIdFromRequest(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.activity.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
