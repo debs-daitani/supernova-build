@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
 
     for (const contactData of contacts) {
       try {
-        const { name, email, phone, company, tags, notes, status } = contactData
+        const { firstName, lastName, email, phone, company, tags, notes, status } = contactData
 
-        if (!name) {
-          results.errors.push(`Missing required fields for contact: ${email || 'unknown'}`)
+        if (!firstName) {
+          results.errors.push(`Missing first name for contact: ${email || 'unknown'}`)
           continue
         }
 
@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
             await prisma.contact.update({
               where: { id: existing.id },
               data: {
-                name,
+                firstName,
+                lastName: lastName || null,
                 phone,
                 company,
                 tags: tags || [],
@@ -80,7 +81,8 @@ export async function POST(request: NextRequest) {
           // Create new contact
           await prisma.contact.create({
             data: {
-              name,
+              firstName,
+              lastName: lastName || null,
               email,
               phone,
               company,

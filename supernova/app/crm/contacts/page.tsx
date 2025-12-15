@@ -6,7 +6,8 @@ import { Plus, Search, Filter, Mail, Phone, Building, Tag } from 'lucide-react'
 
 interface Contact {
   id: string
-  name: string
+  firstName: string
+  lastName?: string
   email: string
   phone?: string
   company?: string
@@ -58,6 +59,13 @@ export default function ContactsPage() {
       INACTIVE: 'text-gray-500',
     }
     return colors[status] || 'text-gray-400'
+  }
+
+  // Helper to format full name
+  const getFullName = (contact: Contact) => {
+    return contact.lastName
+      ? `${contact.firstName} ${contact.lastName}`
+      : contact.firstName
   }
 
   if (loading) {
@@ -151,7 +159,7 @@ export default function ContactsPage() {
                 >
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <div className="font-josefin text-white">{contact.name}</div>
+                      <div className="font-josefin text-white">{getFullName(contact)}</div>
                       {contact.tags.length > 0 && (
                         <div className="flex gap-1 mt-1">
                           {contact.tags.slice(0, 2).map((tag, i) => (
@@ -234,12 +242,11 @@ export default function ContactsPage() {
 
 function NewContactModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     company: '',
-    jobTitle: '',
-    location: '',
     status: 'LEAD',
   })
   const [saving, setSaving] = useState(false)
@@ -273,21 +280,31 @@ function NewContactModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       <div className="backdrop-blur-xl bg-white/10 rounded-2xl border border-light-teal/20 p-6 max-w-lg w-full">
         <h3 className="text-2xl font-supernova text-light-teal mb-4">New Contact</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-josefin text-gray-300 mb-1">Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-josefin text-gray-300 mb-1">First Name *</label>
+              <input
+                type="text"
+                required
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-josefin text-gray-300 mb-1">Last Name</label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+              />
+            </div>
           </div>
           <div>
-            <label className="block text-sm font-josefin text-gray-300 mb-1">Email *</label>
+            <label className="block text-sm font-josefin text-gray-300 mb-1">Email</label>
             <input
               type="email"
-              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
@@ -313,28 +330,17 @@ function NewContactModal({ onClose, onSuccess }: { onClose: () => void; onSucces
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-josefin text-gray-300 mb-1">Job Title</label>
-              <input
-                type="text"
-                value={formData.jobTitle}
-                onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-josefin text-gray-300 mb-1">Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
-              >
-                <option value="LEAD">Lead</option>
-                <option value="PROSPECT">Prospect</option>
-                <option value="CUSTOMER">Customer</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-josefin text-gray-300 mb-1">Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+            >
+              <option value="LEAD">Lead</option>
+              <option value="PROSPECT">Prospect</option>
+              <option value="CUSTOMER">Customer</option>
+            </select>
           </div>
           <div className="flex gap-3 mt-6">
             <button

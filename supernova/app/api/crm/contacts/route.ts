@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     // Search filter
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { company: { contains: search, mode: 'insensitive' } },
       ]
@@ -111,7 +112,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const {
-      name,
+      firstName,
+      lastName,
       email,
       phone,
       company,
@@ -122,9 +124,9 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!name) {
+    if (!firstName) {
       return NextResponse.json(
-        { error: 'Name is required' },
+        { error: 'First name is required' },
         { status: 400 }
       )
     }
@@ -145,7 +147,8 @@ export async function POST(request: NextRequest) {
 
     const contact = await prisma.contact.create({
       data: {
-        name,
+        firstName,
+        lastName: lastName || null,
         email,
         phone,
         company,

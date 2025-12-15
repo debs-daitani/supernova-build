@@ -167,10 +167,10 @@ export default function CreateQuizPage() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push('/admin')}
+            onClick={() => router.push('/admin/quiz')}
             className="text-light-teal hover:text-hot-pink mb-4 font-josefin"
           >
-            ← Back to Admin
+            ← Back to Quizzes
           </button>
           <h1 className="text-4xl font-supernova text-transparent bg-clip-text bg-gradient-to-r from-hot-pink via-light-teal to-neon-lime mb-2">
             Create Quiz

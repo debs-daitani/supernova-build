@@ -36,10 +36,10 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-gray-400 font-josefin">Customer Relationship Management</p>
             </div>
             <Link
-              href="/admin"
+              href="/home"
               className="px-4 py-2 rounded-lg bg-light-teal/10 hover:bg-light-teal/20 text-light-teal font-josefin transition-all"
             >
-              Back to Admin
+              Back to Dashboard
             </Link>
           </div>
         </div>

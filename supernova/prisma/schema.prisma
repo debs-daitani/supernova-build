@@ -487,7 +487,8 @@ model EmailEvent {
 
 model Contact {
   id          String     @id @default(cuid())
-  name        String
+  firstName   String
+  lastName    String?
   email       String?
   phone       String?
   company     String?

@@ -1,9 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react'
 import Papa from 'papaparse'
+
+// Helper to auto-detect column mapping based on common patterns
+const autoDetectColumn = (columns: string[], patterns: string[]): string => {
+  const lowerColumns = columns.map(c => c.toLowerCase().trim())
+  for (const pattern of patterns) {
+    const idx = lowerColumns.findIndex(c =>
+      c === pattern.toLowerCase() ||
+      c.replace(/[_\s-]/g, '') === pattern.toLowerCase().replace(/[_\s-]/g, '')
+    )
+    if (idx !== -1) return columns[idx]
+  }
+  return ''
+}
+
+// Split a full name into first and last name
+const splitFullName = (fullName: string): { firstName: string; lastName: string } => {
+  if (!fullName || typeof fullName !== 'string') return { firstName: '', lastName: '' }
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' }
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' ')
+  }
+}
 
 export default function ImportContactsPage() {
   const router = useRouter()
@@ -12,13 +36,14 @@ export default function ImportContactsPage() {
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [fieldMapping, setFieldMapping] = useState<any>({
-    name: 'name',
-    email: 'email',
-    phone: 'phone',
-    company: 'company',
-    jobTitle: 'jobTitle',
-    location: 'location',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
   })
+  const [hasFullNameColumn, setHasFullNameColumn] = useState(false)
+  const [fullNameColumn, setFullNameColumn] = useState('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -32,6 +57,43 @@ export default function ImportContactsPage() {
       preview: 5,
       complete: (results) => {
         setPreview(results.data)
+
+        // Auto-detect columns
+        if (results.data.length > 0) {
+          const columns = Object.keys(results.data[0])
+
+          // Check for firstName/lastName columns first
+          const detectedFirstName = autoDetectColumn(columns, ['firstName', 'first_name', 'first name', 'firstname', 'given name', 'givenname'])
+          const detectedLastName = autoDetectColumn(columns, ['lastName', 'last_name', 'last name', 'lastname', 'surname', 'family name', 'familyname'])
+
+          // Check for full name column if no firstName found
+          const detectedFullName = autoDetectColumn(columns, ['name', 'full name', 'fullname', 'contact name', 'contactname'])
+
+          if (detectedFirstName) {
+            setFieldMapping(prev => ({
+              ...prev,
+              firstName: detectedFirstName,
+              lastName: detectedLastName,
+              email: autoDetectColumn(columns, ['email', 'e-mail', 'email address', 'emailaddress']),
+              phone: autoDetectColumn(columns, ['phone', 'telephone', 'mobile', 'cell', 'phone number', 'phonenumber']),
+              company: autoDetectColumn(columns, ['company', 'organization', 'organisation', 'business', 'employer']),
+            }))
+            setHasFullNameColumn(false)
+            setFullNameColumn('')
+          } else if (detectedFullName) {
+            // Use full name column - will split on import
+            setFieldMapping(prev => ({
+              ...prev,
+              firstName: '',
+              lastName: '',
+              email: autoDetectColumn(columns, ['email', 'e-mail', 'email address', 'emailaddress']),
+              phone: autoDetectColumn(columns, ['phone', 'telephone', 'mobile', 'cell', 'phone number', 'phonenumber']),
+              company: autoDetectColumn(columns, ['company', 'organization', 'organisation', 'business', 'employer']),
+            }))
+            setHasFullNameColumn(true)
+            setFullNameColumn(detectedFullName)
+          }
+        }
       },
     })
   }
@@ -45,16 +107,30 @@ export default function ImportContactsPage() {
       header: true,
       complete: async (results) => {
         const contacts = results.data
-          .map((row: any) => ({
-            name: row[fieldMapping.name],
-            email: row[fieldMapping.email],
-            phone: row[fieldMapping.phone] || undefined,
-            company: row[fieldMapping.company] || undefined,
-            jobTitle: row[fieldMapping.jobTitle] || undefined,
-            location: row[fieldMapping.location] || undefined,
-            status: 'LEAD',
-          }))
-          .filter((c: any) => c.name && c.email)
+          .map((row: any) => {
+            let firstName = ''
+            let lastName = ''
+
+            // If using full name column, split it
+            if (hasFullNameColumn && fullNameColumn) {
+              const split = splitFullName(row[fullNameColumn])
+              firstName = split.firstName
+              lastName = split.lastName
+            } else {
+              firstName = row[fieldMapping.firstName] || ''
+              lastName = row[fieldMapping.lastName] || ''
+            }
+
+            return {
+              firstName: firstName.trim(),
+              lastName: lastName.trim(),
+              email: row[fieldMapping.email] || undefined,
+              phone: row[fieldMapping.phone] || undefined,
+              company: row[fieldMapping.company] || undefined,
+              status: 'LEAD',
+            }
+          })
+          .filter((c: any) => c.firstName) // At minimum need a first name
 
         try {
           const response = await fetch('/api/crm/contacts/import', {
@@ -92,8 +168,8 @@ export default function ImportContactsPage() {
             <span className="text-light-teal font-josefin text-lg mb-2">
               Click to upload CSV file
             </span>
-            <span className="text-gray-400 font-josefin text-sm">
-              CSV should include: name, email, phone, company, etc.
+            <span className="text-gray-400 font-josefin text-sm text-center">
+              CSV should include: firstName, lastName (or name), email, phone, company
             </span>
             <input
               type="file"
@@ -123,6 +199,8 @@ export default function ImportContactsPage() {
                 onClick={() => {
                   setFile(null)
                   setPreview([])
+                  setHasFullNameColumn(false)
+                  setFullNameColumn('')
                 }}
                 className="text-red-400 hover:text-red-300 font-josefin text-sm"
               >
@@ -133,20 +211,34 @@ export default function ImportContactsPage() {
             {/* Field Mapping */}
             <div className="mb-6">
               <h3 className="text-lg font-supernova text-light-teal mb-3">Map CSV Columns</h3>
+
+              {/* Name Mode Toggle */}
+              <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasFullNameColumn}
+                    onChange={(e) => setHasFullNameColumn(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="font-josefin text-gray-300 text-sm">
+                    My CSV has a single "Name" column (will auto-split into First/Last)
+                  </span>
+                </label>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                {Object.keys(fieldMapping).map((field) => (
-                  <div key={field}>
-                    <label className="block text-sm font-josefin text-gray-300 mb-1 capitalize">
-                      {field}
+                {hasFullNameColumn ? (
+                  <div className="col-span-2">
+                    <label className="block text-sm font-josefin text-gray-300 mb-1">
+                      Full Name Column
                     </label>
                     <select
-                      value={fieldMapping[field]}
-                      onChange={(e) =>
-                        setFieldMapping({ ...fieldMapping, [field]: e.target.value })
-                      }
+                      value={fullNameColumn}
+                      onChange={(e) => setFullNameColumn(e.target.value)}
                       className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
                     >
-                      <option value="">-- Skip --</option>
+                      <option value="">-- Select Column --</option>
                       {preview.length > 0 &&
                         Object.keys(preview[0]).map((col) => (
                           <option key={col} value={col}>
@@ -154,8 +246,115 @@ export default function ImportContactsPage() {
                           </option>
                         ))}
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">First word = First Name, rest = Last Name</p>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-josefin text-gray-300 mb-1">
+                        First Name *
+                      </label>
+                      <select
+                        value={fieldMapping.firstName}
+                        onChange={(e) =>
+                          setFieldMapping({ ...fieldMapping, firstName: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                      >
+                        <option value="">-- Select Column --</option>
+                        {preview.length > 0 &&
+                          Object.keys(preview[0]).map((col) => (
+                            <option key={col} value={col}>
+                              {col}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-josefin text-gray-300 mb-1">
+                        Last Name
+                      </label>
+                      <select
+                        value={fieldMapping.lastName}
+                        onChange={(e) =>
+                          setFieldMapping({ ...fieldMapping, lastName: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                      >
+                        <option value="">-- Skip --</option>
+                        {preview.length > 0 &&
+                          Object.keys(preview[0]).map((col) => (
+                            <option key={col} value={col}>
+                              {col}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-sm font-josefin text-gray-300 mb-1">
+                    Email
+                  </label>
+                  <select
+                    value={fieldMapping.email}
+                    onChange={(e) =>
+                      setFieldMapping({ ...fieldMapping, email: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                  >
+                    <option value="">-- Skip --</option>
+                    {preview.length > 0 &&
+                      Object.keys(preview[0]).map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-josefin text-gray-300 mb-1">
+                    Phone
+                  </label>
+                  <select
+                    value={fieldMapping.phone}
+                    onChange={(e) =>
+                      setFieldMapping({ ...fieldMapping, phone: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                  >
+                    <option value="">-- Skip --</option>
+                    {preview.length > 0 &&
+                      Object.keys(preview[0]).map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-josefin text-gray-300 mb-1">
+                    Company
+                  </label>
+                  <select
+                    value={fieldMapping.company}
+                    onChange={(e) =>
+                      setFieldMapping({ ...fieldMapping, company: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                  >
+                    <option value="">-- Skip --</option>
+                    {preview.length > 0 &&
+                      Object.keys(preview[0]).map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -197,7 +396,7 @@ export default function ImportContactsPage() {
 
             <button
               onClick={handleImport}
-              disabled={importing}
+              disabled={importing || (!hasFullNameColumn && !fieldMapping.firstName) || (hasFullNameColumn && !fullNameColumn)}
               className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-hot-pink to-light-teal text-white font-josefin hover:shadow-[0_0_20px_rgba(255,0,142,0.5)] transition-all disabled:opacity-50"
             >
               {importing ? 'Importing...' : 'Import Contacts'}
@@ -253,6 +452,8 @@ export default function ImportContactsPage() {
                 setFile(null)
                 setPreview([])
                 setResult(null)
+                setHasFullNameColumn(false)
+                setFullNameColumn('')
               }}
               className="flex-1 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-josefin transition-all"
             >
