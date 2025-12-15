@@ -25,6 +25,14 @@ interface GuideCard {
 
 const guides: GuideCard[] = [
   {
+    id: 'platform',
+    title: 'dAItaniverse Platform Guide',
+    description: 'The complete guide to all dAItaniverse tools - working features AND coming soon',
+    icon: <Target size={48} className="text-[#C1FF00]" />,
+    href: '/guides/platform',
+    available: true,
+  },
+  {
     id: 'venued',
     title: 'VENUED App Guide',
     description: 'Master your project and task management with the rock & roll productivity app',
@@ -62,14 +70,6 @@ const guides: GuideCard[] = [
     description: 'Build engaging quizzes to capture leads and segment your audience',
     icon: <BarChart3 size={48} className="text-[#00F0E9]" />,
     href: '/guides/quiz',
-    available: false,
-  },
-  {
-    id: 'platform',
-    title: 'Platform Overview',
-    description: 'Get the big picture of all dAItaniverse tools and how they work together',
-    icon: <Target size={48} className="text-[#C1FF00]" />,
-    href: '/guides/platform',
     available: false,
   },
 ];
