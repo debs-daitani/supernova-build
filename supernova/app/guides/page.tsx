@@ -12,6 +12,7 @@ import {
   BarChart3,
   Target,
   ArrowRight,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface GuideCard {
@@ -78,6 +79,15 @@ export default function GuidesPage() {
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-6xl mx-auto px-4 py-12">
+        {/* Back to Dashboard */}
+        <Link
+          href="/home"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </Link>
+
         {/* Header */}
         <div className="mb-12">
           <h1

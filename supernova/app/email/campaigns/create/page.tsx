@@ -32,7 +32,10 @@ import {
   Mail,
   CheckCircle2,
   Loader2,
+  Layout,
+  Eye,
 } from 'lucide-react';
+import { campaignTemplates, applyTemplate } from '@/lib/campaign-templates';
 
 interface EmailList {
   id: string;
@@ -428,6 +431,8 @@ export default function CreateCampaignPage() {
   const [fromName, setFromName] = useState('dAItaniverse');
   const [fromEmail, setFromEmail] = useState('hello@daitaniverse.com');
   const [htmlContent, setHtmlContent] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('simple-branded');
+  const [showPreview, setShowPreview] = useState(false);
 
   // Recipient selection
   const [recipientMode, setRecipientMode] = useState<RecipientMode>('all');
@@ -515,6 +520,9 @@ export default function CreateCampaignPage() {
     setErrorMessage('');
     setSuccessMessage('');
 
+    // Apply template to content
+    const finalContent = applyTemplate(selectedTemplate, htmlContent);
+
     try {
       const res = await fetch('/api/email/campaigns', {
         method: 'POST',
@@ -522,11 +530,12 @@ export default function CreateCampaignPage() {
         body: JSON.stringify({
           name,
           subject,
-          content: htmlContent, // Using 'content' to match schema
+          content: finalContent, // Using 'content' to match schema
           status: 'draft',
           recipientMode,
           listIds: recipientMode === 'lists' ? selectedLists : [],
           manualEmails: recipientMode === 'manual' ? parsedEmails.valid : [],
+          templateId: selectedTemplate,
         })
       });
 
@@ -553,6 +562,9 @@ export default function CreateCampaignPage() {
     setErrorMessage('');
     setSuccessMessage('');
 
+    // Apply template to content
+    const finalContent = applyTemplate(selectedTemplate, htmlContent);
+
     try {
       // First, create the campaign
       const createRes = await fetch('/api/email/campaigns', {
@@ -561,13 +573,14 @@ export default function CreateCampaignPage() {
         body: JSON.stringify({
           name,
           subject,
-          content: htmlContent, // Using 'content' to match schema
+          content: finalContent, // Using 'content' to match schema
           status: 'sent', // Mark as sent immediately
           recipientMode,
           listIds: recipientMode === 'lists' ? selectedLists : [],
           manualEmails: recipientMode === 'manual' ? parsedEmails.valid : [],
           sentAt: new Date().toISOString(),
           sentCount: count,
+          templateId: selectedTemplate,
         })
       });
 
@@ -705,9 +718,66 @@ export default function CreateCampaignPage() {
           {step === 2 && (
             <div>
               <h2 className="text-2xl font-bold mb-6 text-white">Email Content</h2>
+
+              {/* Template Selector */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                  <Layout size={16} />
+                  Choose Template
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {campaignTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => setSelectedTemplate(template.id)}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        selectedTemplate === template.id
+                          ? 'border-cyan-500 bg-cyan-500/20'
+                          : 'border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40'
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">{template.thumbnail}</div>
+                      <div className="font-medium text-white text-sm">{template.name}</div>
+                      <div className="text-xs text-gray-400 mt-1 line-clamp-2">{template.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Body</label>
-                <RichTextEditor value={htmlContent} onChange={setHtmlContent} />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-300">Email Body</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300"
+                  >
+                    <Eye size={16} />
+                    {showPreview ? 'Hide Preview' : 'Preview Email'}
+                  </button>
+                </div>
+
+                {showPreview ? (
+                  <div className="bg-white rounded-lg overflow-hidden">
+                    <div className="bg-gray-100 px-4 py-2 border-b text-gray-600 text-sm flex items-center justify-between">
+                      <span>Email Preview</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowPreview(false)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        Back to Editor
+                      </button>
+                    </div>
+                    <div
+                      className="max-h-[500px] overflow-y-auto"
+                      dangerouslySetInnerHTML={{ __html: applyTemplate(selectedTemplate, htmlContent || '<p>Start writing your email content...</p>') }}
+                    />
+                  </div>
+                ) : (
+                  <RichTextEditor value={htmlContent} onChange={setHtmlContent} />
+                )}
               </div>
               <div className="mt-6 flex justify-between">
                 <button
@@ -926,6 +996,13 @@ export default function CreateCampaignPage() {
                 <div className="p-4 bg-white/5 rounded-lg">
                   <p className="text-sm text-gray-400">Subject</p>
                   <p className="text-white font-medium">{subject}</p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-lg">
+                  <p className="text-sm text-gray-400">Template</p>
+                  <p className="text-white font-medium flex items-center gap-2">
+                    <span>{campaignTemplates.find(t => t.id === selectedTemplate)?.thumbnail}</span>
+                    {campaignTemplates.find(t => t.id === selectedTemplate)?.name || 'Simple Branded'}
+                  </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-lg">
                   <p className="text-sm text-gray-400">Recipients</p>

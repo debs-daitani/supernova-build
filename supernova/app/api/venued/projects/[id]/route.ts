@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
 import { verifyAuth } from '../../../../../lib/auth-middleware'
 
-// GET /api/venued/projects/[id] - Get a specific project
+// GET /api/venued/projects/[id] - Get single project
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,7 +16,7 @@ export async function GET(
 
     const project = await prisma.venuedProject.findFirst({
       where: {
-        id: id,
+        id,
         userId: authResult.userId,
       },
       include: {
@@ -24,15 +24,12 @@ export async function GET(
           orderBy: { order: 'asc' },
           include: {
             tasks: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { order: 'asc' },
             },
           },
         },
         tasks: {
-          orderBy: { createdAt: 'desc' },
-        },
-        goals: {
-          orderBy: { targetDate: 'asc' },
+          orderBy: { order: 'asc' },
         },
       },
     })
@@ -41,18 +38,26 @@ export async function GET(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ project })
+    const totalTasks = project.tasks.length
+    const completedTasks = project.tasks.filter(t => t.completed).length
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+    return NextResponse.json({
+      project: {
+        ...project,
+        tasksTotal: totalTasks,
+        tasksCompleted: completedTasks,
+        progress,
+      },
+    })
   } catch (error) {
     console.error('Get project error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PATCH /api/venued/projects/[id] - Update a project
-export async function PATCH(
+// PUT /api/venued/projects/[id] - Update project
+export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -64,47 +69,52 @@ export async function PATCH(
     }
 
     const body = await req.json()
-    const { title, description, emoji, color, status, archived } = body
+    const { name, description, status, startDate, targetDate, priority, tags, color, archived } = body
 
-    const project = await prisma.venuedProject.updateMany({
-      where: {
-        id: id,
-        userId: authResult.userId,
-      },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(emoji !== undefined && { emoji }),
-        ...(color !== undefined && { color }),
-        ...(status !== undefined && { status }),
-        ...(archived !== undefined && { archived }),
-      },
+    // Verify ownership
+    const existing = await prisma.venuedProject.findFirst({
+      where: { id, userId: authResult.userId },
     })
 
-    if (project.count === 0) {
+    if (!existing) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    const updatedProject = await prisma.venuedProject.findUnique({
-      where: { id: id },
+    const project = await prisma.venuedProject.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(status !== undefined && { status: status.toUpperCase() }),
+        ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
+        ...(targetDate !== undefined && { targetDate: targetDate ? new Date(targetDate) : null }),
+        ...(priority !== undefined && { priority: priority.toUpperCase() }),
+        ...(tags !== undefined && { tags }),
+        ...(color !== undefined && { color }),
+        ...(archived !== undefined && { archived }),
+      },
       include: {
         phases: true,
         tasks: true,
-        goals: true,
       },
     })
 
-    return NextResponse.json({ project: updatedProject })
+    return NextResponse.json({ project })
   } catch (error) {
     console.error('Update project error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// DELETE /api/venued/projects/[id] - Delete a project
+// PATCH - same as PUT for compatibility
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PUT(req, { params })
+}
+
+// DELETE /api/venued/projects/[id] - Delete project
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -116,23 +126,22 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const result = await prisma.venuedProject.deleteMany({
-      where: {
-        id: id,
-        userId: authResult.userId,
-      },
+    // Verify ownership
+    const existing = await prisma.venuedProject.findFirst({
+      where: { id, userId: authResult.userId },
     })
 
-    if (result.count === 0) {
+    if (!existing) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
+
+    await prisma.venuedProject.delete({
+      where: { id },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete project error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

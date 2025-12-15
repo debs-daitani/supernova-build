@@ -56,6 +56,7 @@ import {
   ShoppingBag,
   ChevronDown,
   ChevronRight,
+  PenSquare,
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -110,7 +111,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       items: [
         { icon: <Home size={20} />, label: 'Home', href: '/home', working: true },
         { icon: <MessageSquare size={20} />, label: 'SUPERNova Chat', href: '/supernova', working: true },
-        { icon: <Guitar size={20} />, label: 'VENUED', href: 'https://venued.wtf', external: true, working: true },
+        { icon: <PenSquare size={20} />, label: 'Blog', href: '/blog', working: true },
+        { icon: <Guitar size={20} />, label: 'VENUED', href: '/venued', working: true },
       ],
     },
     {
@@ -184,6 +186,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       items: [
         { icon: <CreditCard size={20} />, label: 'Billing', href: '/billing', working: true },
         { icon: <DollarSign size={20} />, label: 'Payments Admin', href: '/admin/billing/revenue', working: true },
+        { icon: <PenSquare size={20} />, label: 'Blog Manager', href: '/admin/blog', working: true },
         { icon: <ShoppingBag size={20} />, label: 'Ecommerce', href: '/coming-soon/ecommerce', comingSoon: true },
         { icon: <CalendarCheck size={20} />, label: 'Booking System', href: '/coming-soon/booking-system', comingSoon: true },
       ],

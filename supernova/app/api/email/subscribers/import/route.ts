@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const results = {
-      created: 0,
+      imported: 0,
       updated: 0,
       skipped: 0,
       errors: [] as string[]
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     for (const sub of subscribers) {
       try {
-        const { email, name, tags } = sub;
+        const { email, firstName, lastName, name, tags } = sub;
 
         if (!email || !email.includes('@')) {
           results.skipped++;
@@ -34,17 +34,23 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // Build the name from firstName/lastName or use provided name
+        let fullName = name;
+        if (!fullName && (firstName || lastName)) {
+          fullName = [firstName, lastName].filter(Boolean).join(' ');
+        }
+
         // Check if subscriber exists
         const existing = await prisma.emailSubscriber.findUnique({
-          where: { email }
+          where: { email: email.toLowerCase().trim() }
         });
 
         if (existing) {
           // Update existing subscriber
           await prisma.emailSubscriber.update({
-            where: { email },
+            where: { email: email.toLowerCase().trim() },
             data: {
-              ...(name && { name }),
+              ...(fullName && { name: fullName }),
               ...(tags && { tags }),
             }
           });
@@ -53,14 +59,14 @@ export async function POST(request: NextRequest) {
           // Create new subscriber
           await prisma.emailSubscriber.create({
             data: {
-              email,
-              name: name || null,
+              email: email.toLowerCase().trim(),
+              name: fullName || null,
               tags: tags || [],
               source,
               status: 'active',
             }
           });
-          results.created++;
+          results.imported++;
         }
       } catch (error: any) {
         results.skipped++;

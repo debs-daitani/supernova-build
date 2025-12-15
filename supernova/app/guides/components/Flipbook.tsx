@@ -95,14 +95,24 @@ export default function Flipbook({ title, pages, backUrl = '/guides' }: Flipbook
       {/* Header */}
       <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button
-            onClick={() => router.push(backUrl)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={20} />
-            <span>Back to Guides</span>
-          </button>
-          <h1 className="text-xl font-bold text-white">{title}</h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/home')}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <Home size={20} />
+              <span className="hidden sm:inline">Dashboard</span>
+            </button>
+            <span className="text-gray-600">|</span>
+            <button
+              onClick={() => router.push(backUrl)}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span>Guides</span>
+            </button>
+          </div>
+          <h1 className="text-xl font-bold text-white hidden md:block">{title}</h1>
           <button
             onClick={() => setShowContents(!showContents)}
             className="lg:hidden p-2 text-gray-400 hover:text-white"

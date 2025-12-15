@@ -83,6 +83,12 @@ export default function AdminDashboard() {
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <ActionCard
+            title="Blog Manager"
+            description="Create and manage blog posts for the dAItaniverse"
+            href="/admin/blog"
+            icon="✍️"
+          />
+          <ActionCard
             title="Create Quiz"
             description="Build ScoreApp-style quizzes with drag-drop questions"
             href="/admin/quiz/create"

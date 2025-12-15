@@ -36,6 +36,17 @@ model User {
   assignedDeals      Deal[]       @relation("DealAssignee")
   assignedTasks      Task[]       @relation("TaskAssignee")
   assignedActivities Activity[]   @relation("ActivityAssignee")
+  blogPosts          BlogPost[]
+
+  // VENUED Relations
+  venuedProjects        VenuedProject[]
+  venuedTasks           VenuedTask[]
+  venuedStats           VenuedStats?
+  venuedTimeTracking    VenuedTimeTracking[]
+  venuedHyperfocus      VenuedHyperfocus[]
+  venuedEnergyLogs      VenuedEnergyLog[]
+  venuedBrainDumps      VenuedBrainDump[]
+  venuedDopamineRewards VenuedDopamineReward[]
 
   @@index([email])
 }
@@ -686,4 +697,269 @@ enum ProgramType {
   COACHING_PROGRAM
   RESOURCE
   TEMPLATE
+}
+
+// Blog System
+model BlogPost {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  content         String
+  excerpt         String?
+  featuredImage   String?
+  status          PostStatus  @default(DRAFT)
+  publishedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  authorId        String
+  author          User        @relation(fields: [authorId], references: [id])
+  categories      BlogCategory[]
+  tags            BlogTag[]
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Stats
+  viewCount       Int         @default(0)
+
+  @@index([status])
+  @@index([authorId])
+  @@index([publishedAt])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
+model BlogCategory {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  slug  String     @unique
+  posts BlogPost[]
+}
+
+model BlogTag {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  slug  String     @unique
+  posts BlogPost[]
+}
+
+// ============================================
+// VENUED - Project Management System
+// ============================================
+
+model VenuedProject {
+  id          String              @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  status      VenuedProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  targetDate  DateTime?
+  progress    Int                 @default(0)
+  priority    VenuedPriority      @default(MEDIUM)
+  tags        String[]
+  color       String?             @default("#FF008E")
+  archived    Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phases VenuedPhase[]
+  tasks  VenuedTask[]
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, archived])
+}
+
+model VenuedPhase {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  order       Int      @default(0)
+  color       String?  @default("#00F0E9")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project VenuedProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   VenuedTask[]
+
+  @@index([projectId])
+}
+
+model VenuedTask {
+  id              String           @id @default(cuid())
+  userId          String
+  projectId       String?
+  phaseId         String?
+  title           String
+  description     String?
+  energyLevel     VenuedEnergy     @default(MEDIUM)
+  estimatedMins   Int?
+  difficulty      VenuedDifficulty @default(MEDIUM)
+  isHyperfocus    Boolean          @default(false)
+  isQuickWin      Boolean          @default(false)
+  dependencies    String[]
+  completed       Boolean          @default(false)
+  completedAt     DateTime?
+  order           Int              @default(0)
+  scheduledDate   DateTime?
+  scheduledTime   String?
+  timeSpent       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project VenuedProject? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase   VenuedPhase?   @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, completed])
+  @@index([userId, scheduledDate])
+  @@index([projectId])
+  @@index([phaseId])
+}
+
+model VenuedStats {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  totalPoints    Int      @default(0)
+  level          Int      @default(1)
+  tasksCompleted Int      @default(0)
+  focusMinutes   Int      @default(0)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ADHD Support Tools (Entourage)
+
+model VenuedTimeTracking {
+  id              String       @id @default(cuid())
+  userId          String
+  taskId          String?
+  taskName        String
+  taskType        String?
+  estimatedMins   Int
+  actualMins      Int
+  date            DateTime
+  energyLevel     VenuedEnergy @default(MEDIUM)
+  createdAt       DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+model VenuedHyperfocus {
+  id                 String   @id @default(cuid())
+  userId             String
+  startTime          DateTime
+  endTime            DateTime
+  durationMins       Int
+  trigger            String?
+  taskType           String?
+  taskName           String?
+  productivityRating Int?
+  notes              String?
+  createdAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, startTime])
+}
+
+model VenuedEnergyLog {
+  id        String       @id @default(cuid())
+  userId    String
+  level     VenuedEnergy
+  notes     String?
+  timestamp DateTime     @default(now())
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, timestamp])
+}
+
+model VenuedBrainDump {
+  id              String   @id @default(cuid())
+  userId          String
+  content         String
+  converted       Boolean  @default(false)
+  convertedTaskId String?
+  archived        Boolean  @default(false)
+  tags            String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, archived])
+}
+
+model VenuedDopamineReward {
+  id               String                @id @default(cuid())
+  userId           String
+  reward           String
+  category         VenuedRewardCategory  @default(OTHER)
+  usageCount       Int                   @default(0)
+  motivationRating Int?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// VENUED Enums
+
+enum VenuedProjectStatus {
+  PLANNING
+  LIVE
+  COMPLETE
+}
+
+enum VenuedPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum VenuedEnergy {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum VenuedDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum VenuedRewardCategory {
+  BREAK
+  TREAT
+  SOCIAL
+  MOVEMENT
+  CREATIVE
+  OTHER
 }
