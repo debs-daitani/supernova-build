@@ -11,7 +11,7 @@ import {
   BarChart3,
   Guitar,
   CreditCard,
-  DollarSign,
+  PoundSterling,
   BookOpen,
   GraduationCap,
   FileText,
@@ -211,7 +211,7 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
       items: [
         { icon: <TrendingUp size={20} />, label: 'Finance', href: '/finance', working: true },
         { icon: <CreditCard size={20} />, label: 'Billing', href: '/billing', working: true },
-        { icon: <DollarSign size={20} />, label: 'Payments Admin', href: '/admin/billing/revenue', working: true },
+        { icon: <PoundSterling size={20} />, label: 'Payments Admin', href: '/admin/billing/revenue', working: true },
         { icon: <PenSquare size={20} />, label: 'Blog Manager', href: '/admin/blog', working: true },
         { icon: <ShoppingBag size={20} />, label: 'Ecommerce', href: '/coming-soon/ecommerce', comingSoon: true },
         { icon: <CalendarCheck size={20} />, label: 'Booking System', href: '/coming-soon/booking-system', comingSoon: true },

@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, DollarSign, CheckSquare, BarChart3, Upload } from 'lucide-react'
+import { Users, PoundSterling, CheckSquare, BarChart3, Upload } from 'lucide-react'
 
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const navItems = [
     { href: '/crm/contacts', label: 'Contacts', icon: Users },
-    { href: '/crm/deals', label: 'Deals', icon: DollarSign },
+    { href: '/crm/deals', label: 'Deals', icon: PoundSterling },
     { href: '/crm/tasks', label: 'Tasks', icon: CheckSquare },
     { href: '/crm/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/crm/contacts/import', label: 'Import', icon: Upload },

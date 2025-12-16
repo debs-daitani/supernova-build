@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { DndContext, DragEndEvent, DragOverlay, closestCorners } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Plus, DollarSign } from 'lucide-react'
+import { Plus, PoundSterling } from 'lucide-react'
 
 const STAGES = [
   { id: 'LEAD', name: 'Lead', color: 'neon-lime' },

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const userId = auth.userId
 
     const body = await request.json()
-    const { contactId, issueDate, dueDate, lineItems, notes, tax, status } = body
+    const { contactId, issueDate, dueDate, lineItems, notes, tax, status, prefixId } = body
 
     if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
       return NextResponse.json({ error: 'At least one line item is required' }, { status: 400 })
@@ -70,26 +70,54 @@ export async function POST(request: NextRequest) {
     const taxAmount = tax ? (subtotal * tax / 100) : 0
     const total = subtotal + taxAmount
 
-    // Generate invoice number
-    const lastInvoice = await prisma.financeInvoice.findFirst({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      select: { invoiceNumber: true },
-    })
+    let invoiceNumber: string
+    let selectedPrefixId: string | null = null
 
-    let nextNumber = 1
-    if (lastInvoice?.invoiceNumber) {
-      const match = lastInvoice.invoiceNumber.match(/INV-(\d+)/)
-      if (match) {
-        nextNumber = parseInt(match[1]) + 1
+    if (prefixId) {
+      // Use custom prefix
+      const prefix = await prisma.invoicePrefix.findFirst({
+        where: { id: prefixId, userId }
+      })
+
+      if (!prefix) {
+        return NextResponse.json({ error: 'Invalid prefix' }, { status: 400 })
       }
+
+      invoiceNumber = `${prefix.prefix}-${prefix.nextNumber.toString().padStart(4, '0')}`
+      selectedPrefixId = prefix.id
+
+      // Increment the next number for this prefix
+      await prisma.invoicePrefix.update({
+        where: { id: prefix.id },
+        data: { nextNumber: prefix.nextNumber + 1 }
+      })
+    } else {
+      // Use default INV- prefix
+      const lastInvoice = await prisma.financeInvoice.findFirst({
+        where: {
+          userId,
+          prefixId: null,
+          invoiceNumber: { startsWith: 'INV-' }
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { invoiceNumber: true },
+      })
+
+      let nextNumber = 1
+      if (lastInvoice?.invoiceNumber) {
+        const match = lastInvoice.invoiceNumber.match(/INV-(\d+)/)
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1
+        }
+      }
+      invoiceNumber = `INV-${nextNumber.toString().padStart(4, '0')}`
     }
-    const invoiceNumber = `INV-${nextNumber.toString().padStart(4, '0')}`
 
     const invoice = await prisma.financeInvoice.create({
       data: {
         userId,
         contactId: contactId || null,
+        prefixId: selectedPrefixId,
         invoiceNumber,
         status: status || 'DRAFT',
         issueDate: new Date(issueDate || new Date()),
@@ -102,6 +130,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true, company: true, email: true } },
+        prefix: true,
       },
     })
 

@@ -2,17 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { TrendingUp, TrendingDown, FileText, BarChart3, DollarSign } from 'lucide-react'
+import { TrendingUp, TrendingDown, FileText, BarChart3, PoundSterling, Settings } from 'lucide-react'
 
 export default function FinanceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/finance', label: 'Dashboard', icon: DollarSign, exact: true },
+    { href: '/finance', label: 'Dashboard', icon: PoundSterling, exact: true },
     { href: '/finance/income', label: 'Income', icon: TrendingUp },
     { href: '/finance/expenses', label: 'Expenses', icon: TrendingDown },
     { href: '/finance/invoices', label: 'Invoices', icon: FileText },
     { href: '/finance/reports', label: 'Reports', icon: BarChart3 },
+    { href: '/finance/settings', label: 'Settings', icon: Settings },
   ]
 
   return (

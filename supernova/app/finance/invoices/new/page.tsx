@@ -17,14 +17,23 @@ interface LineItem {
   rate: number
 }
 
+interface InvoicePrefix {
+  id: string
+  name: string
+  prefix: string
+  nextNumber: number
+}
+
 export default function NewInvoicePage() {
   const router = useRouter()
   const [contacts, setContacts] = useState<Contact[]>([])
+  const [prefixes, setPrefixes] = useState<InvoicePrefix[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   const [formData, setFormData] = useState({
     contactId: '',
+    prefixId: '',
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     notes: '',
@@ -36,18 +45,27 @@ export default function NewInvoicePage() {
   ])
 
   useEffect(() => {
-    fetchContacts()
+    fetchData()
   }, [])
 
-  const fetchContacts = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch('/api/crm/contacts?limit=500')
-      if (response.ok) {
-        const data = await response.json()
+      const [contactsRes, prefixesRes] = await Promise.all([
+        fetch('/api/crm/contacts?limit=500'),
+        fetch('/api/finance/invoice-prefixes')
+      ])
+
+      if (contactsRes.ok) {
+        const data = await contactsRes.json()
         setContacts(data.contacts || [])
       }
+
+      if (prefixesRes.ok) {
+        const data = await prefixesRes.json()
+        setPrefixes(data)
+      }
     } catch (error) {
-      console.error('Failed to fetch contacts:', error)
+      console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
     }
@@ -97,6 +115,7 @@ export default function NewInvoicePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contactId: formData.contactId || null,
+          prefixId: formData.prefixId || null,
           issueDate: formData.issueDate,
           dueDate: formData.dueDate,
           notes: formData.notes,
@@ -151,7 +170,7 @@ export default function NewInvoicePage() {
             {/* Client & Dates */}
             <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-light-teal/20 p-6">
               <h3 className="text-lg font-supernova text-light-teal mb-4">Invoice Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-josefin text-gray-300 mb-1">Client</label>
                   <select
@@ -167,6 +186,29 @@ export default function NewInvoicePage() {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-josefin text-gray-300 mb-1">Invoice Prefix</label>
+                  <select
+                    value={formData.prefixId}
+                    onChange={(e) => setFormData({ ...formData, prefixId: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-light-teal"
+                  >
+                    <option value="">Default (INV-0001)</option>
+                    {prefixes.map((prefix) => (
+                      <option key={prefix.id} value={prefix.id}>
+                        {prefix.name} ({prefix.prefix}-{prefix.nextNumber.toString().padStart(4, '0')})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.prefixId
+                      ? `Next invoice will be: ${prefixes.find(p => p.id === formData.prefixId)?.prefix}-${prefixes.find(p => p.id === formData.prefixId)?.nextNumber.toString().padStart(4, '0')}`
+                      : 'Using default INV- prefix'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-josefin text-gray-300 mb-1">Issue Date *</label>
                   <input

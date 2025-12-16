@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, DollarSign, TrendingUp, CheckSquare, Activity } from 'lucide-react'
+import { Users, PoundSterling, TrendingUp, CheckSquare, Activity } from 'lucide-react'
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<any>(null)
@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
         <MetricCard
           title="Total Deals"
           value={analytics.deals.total}
-          icon={DollarSign}
+          icon={PoundSterling}
           color="hot-pink"
           subtitle={`${analytics.deals.recent} created in last 30 days`}
         />

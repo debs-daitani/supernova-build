@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Percent, Download } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, PoundSterling, Percent, Download } from 'lucide-react'
 
 interface ReportData {
   period: string
@@ -171,7 +171,7 @@ export default function ReportsPage() {
         <div className={`backdrop-blur-xl bg-white/5 rounded-2xl border p-6 ${(reportData?.summary.profit || 0) >= 0 ? 'border-neon-lime/20' : 'border-red-500/20'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 font-josefin text-sm">Net Profit</span>
-            <DollarSign className={`${(reportData?.summary.profit || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`} size={20} />
+            <PoundSterling className={`${(reportData?.summary.profit || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`} size={20} />
           </div>
           <div className={`text-2xl font-supernova ${(reportData?.summary.profit || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`}>
             {formatCurrency(reportData?.summary.profit || 0)}

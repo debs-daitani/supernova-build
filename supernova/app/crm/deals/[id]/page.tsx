@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, DollarSign, Calendar, TrendingUp, User, Building } from 'lucide-react'
+import { ArrowLeft, PoundSterling, Calendar, TrendingUp, User, Building } from 'lucide-react'
 
 export default function DealDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -81,7 +81,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
               <div>
                 <div className="text-sm text-gray-400 font-josefin mb-1">Value</div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="text-hot-pink" size={20} />
+                  <PoundSterling className="text-hot-pink" size={20} />
                   <span className="text-2xl font-supernova text-hot-pink">
                     {deal.value.toLocaleString()} {deal.currency}
                   </span>

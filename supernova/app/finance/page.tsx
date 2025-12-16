@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
+  PoundSterling,
   FileText,
   ArrowUpRight,
   ArrowDownRight,
@@ -138,7 +138,7 @@ export default function FinanceDashboard() {
         <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-light-teal/20 p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 font-josefin text-sm">Net Profit</span>
-            <DollarSign className={`${(stats?.profit.monthly || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`} size={20} />
+            <PoundSterling className={`${(stats?.profit.monthly || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`} size={20} />
           </div>
           <div className={`text-2xl font-supernova ${(stats?.profit.monthly || 0) >= 0 ? 'text-neon-lime' : 'text-red-400'}`}>
             {formatCurrency(stats?.profit.monthly || 0)}
