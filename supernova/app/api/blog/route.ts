@@ -58,7 +58,10 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
 
+    console.log('[BLOG API] Auth result:', { authenticated: auth.authenticated, userId: auth.userId });
+
     if (!auth.authenticated || !auth.userId) {
+      console.log('[BLOG API] Returning 401 - not authenticated');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -68,10 +71,13 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },
-      select: { role: true },
+      select: { role: true, email: true },
     });
 
+    console.log('[BLOG API] User lookup:', { userId: auth.userId, user });
+
     if (user?.role !== 'ADMIN') {
+      console.log('[BLOG API] Returning 403 - role is:', user?.role);
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
