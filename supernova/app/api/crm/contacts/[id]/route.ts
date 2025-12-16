@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-
-function getUserIdFromRequest(request: NextRequest): string | null {
-  const token = request.cookies.get('token')?.value
-  if (!token) return null
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-    return decoded.userId
-  } catch {
-    return null
-  }
-}
+import { verifyAuth } from '@/lib/auth-middleware'
 
 // GET /api/crm/contacts/[id] - Get contact by ID
 export async function GET(
@@ -23,8 +9,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const userId = getUserIdFromRequest(request)
-    if (!userId) {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -91,8 +77,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const userId = getUserIdFromRequest(request)
-    if (!userId) {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -147,8 +133,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const userId = getUserIdFromRequest(request)
-    if (!userId) {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

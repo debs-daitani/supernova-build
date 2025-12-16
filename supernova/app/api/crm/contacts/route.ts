@@ -1,28 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-
-function getUserIdFromRequest(request: NextRequest): string | null {
-  const token = request.cookies.get('token')?.value
-  if (!token) return null
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-    return decoded.userId
-  } catch {
-    return null
-  }
-}
+import { verifyAuth } from '@/lib/auth-middleware'
 
 // GET /api/crm/contacts - List contacts with filters
 export async function GET(request: NextRequest) {
   try {
-    const userId = getUserIdFromRequest(request)
-    if (!userId) {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const userId = auth.userId
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
@@ -105,10 +92,11 @@ export async function GET(request: NextRequest) {
 // POST /api/crm/contacts - Create contact
 export async function POST(request: NextRequest) {
   try {
-    const userId = getUserIdFromRequest(request)
-    if (!userId) {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const userId = auth.userId
 
     const body = await request.json()
     const {
