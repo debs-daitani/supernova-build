@@ -63,6 +63,10 @@ model User {
   calendarConnection    CalendarConnection?
   calendarEvents        CalendarEvent[]
 
+  // Social Media Relations
+  socialAccounts        SocialAccount[]
+  socialPosts           SocialPost[]
+
   @@index([email])
 }
 
@@ -1118,4 +1122,53 @@ model CalendarEvent {
   @@index([userId, startTime])
   @@index([userId, source])
   @@index([externalId])
+}
+
+// ============================================
+// SOCIAL MEDIA MODULE
+// ============================================
+
+model SocialAccount {
+  id            String    @id @default(cuid())
+  userId        String
+  platform      String    // instagram, facebook, linkedin, tiktok
+  accountId     String    // Platform's account ID
+  accountName   String    // Display name
+  accessToken   String
+  refreshToken  String?
+  expiresAt     DateTime?
+  profileImage  String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts SocialPost[] @relation("SocialAccountPosts")
+
+  @@unique([userId, platform, accountId])
+  @@index([userId])
+  @@index([userId, platform])
+}
+
+model SocialPost {
+  id            String    @id @default(cuid())
+  userId        String
+  content       String
+  mediaUrls     Json?     // Array of image/video URLs
+  platforms     Json      // Array of platform names to post to
+  status        String    @default("draft") // draft, scheduled, published, failed
+  scheduledFor  DateTime?
+  publishedAt   DateTime?
+  externalIds   Json?     // {instagram: "123", facebook: "456"}
+  analytics     Json?     // {likes: 10, comments: 5, shares: 2}
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts SocialAccount[] @relation("SocialAccountPosts")
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, scheduledFor])
 }

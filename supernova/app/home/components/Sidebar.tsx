@@ -149,6 +149,13 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
       ],
     },
     {
+      label: 'MARKETING',
+      requiresFullAccess: true,
+      items: [
+        { icon: <Share2 size={20} />, label: 'Social Media', href: '/social', working: true },
+      ],
+    },
+    {
       label: 'CREATIVE STUDIO',
       collapsible: true,
       requiresFullAccess: true,
