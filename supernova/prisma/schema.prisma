@@ -53,6 +53,15 @@ model User {
   venuedBrainDumps      VenuedBrainDump[]
   venuedDopamineRewards VenuedDopamineReward[]
 
+  // Finance Relations
+  financeIncome         FinanceIncome[]
+  financeExpenses       FinanceExpense[]
+  financeInvoices       FinanceInvoice[]
+
+  // Calendar Relations
+  calendarConnection    CalendarConnection?
+  calendarEvents        CalendarEvent[]
+
   @@index([email])
 }
 
@@ -506,9 +515,12 @@ model Contact {
   source      String?
   status      String     @default("lead")
 
-  deals       Deal[]
-  tasks       Task[]
-  activities  Activity[]
+  deals            Deal[]
+  tasks            Task[]
+  activities       Activity[]
+  financeIncome    FinanceIncome[]
+  financeInvoices  FinanceInvoice[]
+  calendarEvents   CalendarEvent[]
 
   @@index([userId])
   @@index([userId, status])
@@ -968,4 +980,122 @@ enum VenuedRewardCategory {
   MOVEMENT
   CREATIVE
   OTHER
+}
+
+// ============================================
+// FINANCE MODULE
+// ============================================
+
+model FinanceIncome {
+  id                 String    @id @default(cuid())
+  userId             String
+  amount             Float
+  source             String
+  category           String
+  date               DateTime
+  notes              String?
+  contactId          String?
+  isRecurring        Boolean   @default(false)
+  recurringFrequency String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, category])
+}
+
+model FinanceExpense {
+  id                 String   @id @default(cuid())
+  userId             String
+  amount             Float
+  vendor             String
+  category           String
+  date               DateTime
+  notes              String?
+  isRecurring        Boolean  @default(false)
+  recurringFrequency String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, category])
+}
+
+model FinanceInvoice {
+  id            String   @id @default(cuid())
+  userId        String
+  contactId     String?
+  invoiceNumber String
+  status        String   @default("DRAFT")
+  issueDate     DateTime
+  dueDate       DateTime
+  subtotal      Float
+  tax           Float?
+  total         Float
+  notes         String?
+  lineItems     Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([invoiceNumber])
+}
+
+// ============================================
+// CALENDAR MODULE
+// ============================================
+
+model CalendarConnection {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  provider      String   @default("google")
+  accessToken   String
+  refreshToken  String
+  expiresAt     DateTime
+  calendarIds   Json?    // Which calendars to sync
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarEvent {
+  id              String    @id @default(cuid())
+  userId          String
+  externalId      String?   // Google Calendar event ID
+  title           String
+  description     String?
+  startTime       DateTime
+  endTime         DateTime
+  allDay          Boolean   @default(false)
+  location        String?
+  colour          String?
+  isRecurring     Boolean   @default(false)
+  recurrenceRule  String?   // RRULE format
+  contactId       String?   // Link to CRM contact
+  venuedTaskId    String?   // Link to VENUED task
+  source          String    @default("manual") // manual, google, venued
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, startTime])
+  @@index([userId, source])
+  @@index([externalId])
 }

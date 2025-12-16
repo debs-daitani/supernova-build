@@ -1,19 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Mail, Phone, Building, MapPin, Calendar, Plus } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Building } from 'lucide-react'
 
 interface Contact {
   id: string
-  name: string
-  email: string
+  firstName: string
+  lastName?: string
+  email?: string
   phone?: string
   company?: string
-  jobTitle?: string
-  location?: string
+  notes?: string
   status: string
-  source: string
+  source?: string
   tags: string[]
   deals: any[]
   activities: any[]
@@ -21,7 +21,8 @@ interface Contact {
   createdAt: string
 }
 
-export default function ContactDetailPage({ params }: { params: { id: string } }) {
+export default function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [contact, setContact] = useState<Contact | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,11 +30,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 
   useEffect(() => {
     fetchContact()
-  }, [params.id])
+  }, [id])
 
   const fetchContact = async () => {
     try {
-      const response = await fetch(`/api/crm/contacts/${params.id}`)
+      const response = await fetch(`/api/crm/contacts/${id}`)
       if (response.ok) {
         const data = await response.json()
         setContact(data)
@@ -72,8 +73,10 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <ArrowLeft className="text-light-teal" size={24} />
         </button>
         <div className="flex-1">
-          <h2 className="text-2xl font-supernova text-light-teal">{contact.name}</h2>
-          <p className="text-sm text-gray-400 font-josefin">{contact.status}</p>
+          <h2 className="text-2xl font-supernova text-light-teal">
+            {contact.firstName} {contact.lastName || ''}
+          </h2>
+          <p className="text-sm text-gray-400 font-josefin capitalize">{contact.status}</p>
         </div>
       </div>
 
@@ -83,12 +86,14 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-light-teal/20 p-6">
             <h3 className="text-lg font-supernova text-light-teal mb-4">Contact Information</h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-300 font-josefin">
-                <Mail size={18} className="text-light-teal" />
-                <a href={`mailto:${contact.email}`} className="hover:text-white">
-                  {contact.email}
-                </a>
-              </div>
+              {contact.email && (
+                <div className="flex items-center gap-3 text-gray-300 font-josefin">
+                  <Mail size={18} className="text-light-teal" />
+                  <a href={`mailto:${contact.email}`} className="hover:text-white">
+                    {contact.email}
+                  </a>
+                </div>
+              )}
               {contact.phone && (
                 <div className="flex items-center gap-3 text-gray-300 font-josefin">
                   <Phone size={18} className="text-light-teal" />
@@ -103,13 +108,12 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                   <span>{contact.company}</span>
                 </div>
               )}
-              {contact.location && (
-                <div className="flex items-center gap-3 text-gray-300 font-josefin">
-                  <MapPin size={18} className="text-light-teal" />
-                  <span>{contact.location}</span>
+              {contact.notes && (
+                <div className="pt-3 border-t border-white/10">
+                  <p className="text-gray-300 font-josefin text-sm">{contact.notes}</p>
                 </div>
               )}
-              {contact.tags.length > 0 && (
+              {contact.tags && contact.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10">
                   {contact.tags.map((tag, i) => (
                     <span

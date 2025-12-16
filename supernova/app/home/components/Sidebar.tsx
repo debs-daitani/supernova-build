@@ -63,6 +63,7 @@ interface UserData {
   id: string
   email: string
   name: string | null
+  role: string
   subscriptionTier: string
   subscriptionStatus: string
   isBetaTester: boolean
@@ -105,8 +106,8 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
     'ADDITIONAL': true,
   })
 
-  // Check if user has full platform access
-  const hasFullAccess = user?.isBetaTester || FULL_ACCESS_TIERS.includes(user?.subscriptionTier || '')
+  // Check if user has full platform access (ADMIN = GOD MODE)
+  const hasFullAccess = user?.role === 'ADMIN' || user?.isBetaTester || FULL_ACCESS_TIERS.includes(user?.subscriptionTier || '')
 
   const handleLogout = async () => {
     try {
@@ -139,7 +140,7 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
       items: [
         { icon: <Users size={20} />, label: 'CRM', href: '/crm', working: true },
         { icon: <Mail size={20} />, label: 'Email Marketing', href: '/email', working: true },
-        { icon: <Calendar size={20} />, label: 'Calendar', href: '/coming-soon/calendar', comingSoon: true },
+        { icon: <Calendar size={20} />, label: 'Calendar', href: '/calendar', working: true },
         { icon: <FolderOpen size={20} />, label: 'Documents', href: '/coming-soon/documents', comingSoon: true },
         { icon: <Cloud size={20} />, label: 'Cloud Storage', href: '/coming-soon/cloud-storage', comingSoon: true },
         { icon: <UserPlus size={20} />, label: 'Team Collaboration', href: '/coming-soon/team-collaboration', comingSoon: true },
@@ -208,6 +209,7 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
       label: 'MONEY',
       requiresFullAccess: true,
       items: [
+        { icon: <TrendingUp size={20} />, label: 'Finance', href: '/finance', working: true },
         { icon: <CreditCard size={20} />, label: 'Billing', href: '/billing', working: true },
         { icon: <DollarSign size={20} />, label: 'Payments Admin', href: '/admin/billing/revenue', working: true },
         { icon: <PenSquare size={20} />, label: 'Blog Manager', href: '/admin/blog', working: true },
