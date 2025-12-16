@@ -79,23 +79,15 @@ export default function QuizAnalyticsPage() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-black text-white p-8"
-      style={{
-        backgroundImage: 'url("/images/dAitaniverse Stage.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push('/admin/quiz')}
+            onClick={() => router.push('/home')}
             className="text-light-teal hover:text-hot-pink mb-4 font-josefin"
           >
-            ← Back to Quizzes
+            ← Back to Dashboard
           </button>
           <h1 className="text-4xl font-supernova text-transparent bg-clip-text bg-gradient-to-r from-hot-pink via-light-teal to-neon-lime mb-2">
             Quiz Analytics

@@ -114,21 +114,13 @@ export default function AdminBlogPage() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-black text-white p-8"
-      style={{
-        backgroundImage: 'url("/images/dAitaniverse Stage.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="text-white p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <Link href="/admin" className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 text-sm">
-              <ArrowLeft size={16} /> Back to Admin
+            <Link href="/home" className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 text-sm">
+              <ArrowLeft size={16} /> Back to Dashboard
             </Link>
             <h1 className="text-4xl font-supernova text-transparent bg-clip-text bg-gradient-to-r from-hot-pink via-light-teal to-neon-lime">
               Blog Manager

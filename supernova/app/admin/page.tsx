@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 interface DashboardStats {
   totalUsers: number
@@ -41,22 +43,14 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="flex items-center justify-center p-8">
         <div className="text-white">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div
-      className="min-h-screen bg-black text-white p-8"
-      style={{
-        backgroundImage: 'url("/images/dAitaniverse Stage.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
