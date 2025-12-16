@@ -89,6 +89,40 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// DELETE /api/crm/contacts - Bulk delete contacts
+export async function DELETE(request: NextRequest) {
+  try {
+    const auth = await verifyAuth(request)
+    if (!auth.authenticated || !auth.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = auth.userId
+
+    const body = await request.json()
+    const { ids } = body
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { error: 'No contact IDs provided' },
+        { status: 400 }
+      )
+    }
+
+    // Delete contacts that belong to this user
+    const result = await prisma.contact.deleteMany({
+      where: {
+        id: { in: ids },
+        userId, // Ensure user can only delete their own contacts
+      },
+    })
+
+    return NextResponse.json({ deleted: result.count })
+  } catch (error) {
+    console.error('Error deleting contacts:', error)
+    return NextResponse.json({ error: 'Failed to delete contacts' }, { status: 500 })
+  }
+}
+
 // POST /api/crm/contacts - Create contact
 export async function POST(request: NextRequest) {
   try {

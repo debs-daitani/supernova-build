@@ -27,6 +27,21 @@ export async function POST(request: NextRequest) {
       errors: [] as string[],
     }
 
+    // Get all existing emails for this user in one query (much faster than checking each one)
+    const existingContacts = await prisma.contact.findMany({
+      where: { userId },
+      select: { id: true, email: true },
+    })
+    const existingEmailMap = new Map(
+      existingContacts
+        .filter(c => c.email)
+        .map(c => [c.email!.toLowerCase(), c.id])
+    )
+
+    // Prepare contacts for batch insert
+    const contactsToCreate: any[] = []
+    const contactsToUpdate: { id: string; data: any }[] = []
+
     for (const contactData of contacts) {
       try {
         const { firstName, lastName, email, phone, company, tags, notes, status } = contactData
@@ -37,21 +52,16 @@ export async function POST(request: NextRequest) {
         }
 
         // Check for duplicates by email (if provided)
-        let existing = null
-        if (email) {
-          existing = await prisma.contact.findFirst({
-            where: { email, userId },
-          })
-        }
+        const existingId = email ? existingEmailMap.get(email.toLowerCase()) : null
 
-        if (existing) {
+        if (existingId) {
           if (skipDuplicates) {
             results.skipped++
             continue
           } else {
-            // Update existing contact
-            await prisma.contact.update({
-              where: { id: existing.id },
+            // Queue for update
+            contactsToUpdate.push({
+              id: existingId,
               data: {
                 firstName,
                 lastName: lastName || null,
@@ -65,25 +75,54 @@ export async function POST(request: NextRequest) {
             results.imported++
           }
         } else {
-          // Create new contact
-          await prisma.contact.create({
-            data: {
-              firstName,
-              lastName: lastName || null,
-              email,
-              phone,
-              company,
-              tags: tags || [],
-              notes,
-              source: 'import',
-              status: status || 'lead',
-              userId,
-            },
+          // Queue for batch create
+          contactsToCreate.push({
+            firstName,
+            lastName: lastName || null,
+            email: email || null,
+            phone: phone || null,
+            company: company || null,
+            tags: tags || [],
+            notes: notes || null,
+            source: 'import',
+            status: status || 'lead',
+            userId,
           })
           results.imported++
+
+          // Add to map to prevent duplicates within same import
+          if (email) {
+            existingEmailMap.set(email.toLowerCase(), 'pending')
+          }
         }
       } catch (error) {
-        results.errors.push(`Error importing contact ${contactData.email}: ${error}`)
+        results.errors.push(`Error processing contact ${contactData.email}: ${error}`)
+      }
+    }
+
+    // Batch create contacts (much faster than individual creates)
+    if (contactsToCreate.length > 0) {
+      // Process in batches of 100 to avoid overwhelming the database
+      const BATCH_SIZE = 100
+      for (let i = 0; i < contactsToCreate.length; i += BATCH_SIZE) {
+        const batch = contactsToCreate.slice(i, i + BATCH_SIZE)
+        await prisma.contact.createMany({
+          data: batch,
+          skipDuplicates: true,
+        })
+      }
+    }
+
+    // Process updates (still need to do these individually)
+    for (const update of contactsToUpdate) {
+      try {
+        await prisma.contact.update({
+          where: { id: update.id },
+          data: update.data,
+        })
+      } catch (error) {
+        results.errors.push(`Error updating contact: ${error}`)
+        results.imported-- // Decrement since we already counted it
       }
     }
 

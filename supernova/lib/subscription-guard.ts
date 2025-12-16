@@ -1,12 +1,35 @@
 import { prisma } from './prisma'
 
 /**
+ * Check if user is an ADMIN (GOD MODE - bypass all subscription checks)
+ * @param userId - The user ID to check
+ * @returns boolean indicating if user is ADMIN
+ */
+export async function isAdmin(userId: string): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    })
+    return user?.role === 'ADMIN'
+  } catch (error) {
+    console.error('Error checking admin status:', error)
+    return false
+  }
+}
+
+/**
  * Check if user has an active subscription
  * @param userId - The user ID to check
  * @returns boolean indicating if user has active subscription
  */
 export async function hasActiveSubscription(userId: string): Promise<boolean> {
   try {
+    // ADMIN = GOD MODE - always has access
+    if (await isAdmin(userId)) {
+      return true
+    }
+
     const subscription = await prisma.subscription.findFirst({
       where: {
         userId,

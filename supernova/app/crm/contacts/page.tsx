@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Mail, Phone, Building, Tag } from 'lucide-react'
+import { Plus, Search, Filter, Mail, Phone, Building, Tag, Trash2 } from 'lucide-react'
 
 interface Contact {
   id: string
@@ -27,6 +27,8 @@ export default function ContactsPage() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [sourceFilter, setSourceFilter] = useState('ALL')
   const [showNewModal, setShowNewModal] = useState(false)
+  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchContacts()
@@ -68,6 +70,54 @@ export default function ContactsPage() {
       : contact.firstName
   }
 
+  // Selection handlers
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newSelected = new Set(selectedContacts)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedContacts(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedContacts.size === contacts.length) {
+      setSelectedContacts(new Set())
+    } else {
+      setSelectedContacts(new Set(contacts.map(c => c.id)))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedContacts.size === 0) return
+
+    const confirmed = confirm(`Are you sure you want to delete ${selectedContacts.size} contact(s)? This cannot be undone.`)
+    if (!confirmed) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch('/api/crm/contacts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedContacts) }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setSelectedContacts(new Set())
+        fetchContacts()
+      } else {
+        alert('Failed to delete contacts')
+      }
+    } catch (error) {
+      alert('Failed to delete contacts')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -84,13 +134,25 @@ export default function ContactsPage() {
           <h2 className="text-2xl font-supernova text-light-teal">Contacts</h2>
           <p className="text-sm text-gray-400 font-josefin">{contacts.length} contacts</p>
         </div>
-        <button
-          onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-hot-pink to-light-teal text-white font-josefin hover:shadow-[0_0_20px_rgba(255,0,142,0.5)] transition-all"
-        >
-          <Plus size={20} />
-          New Contact
-        </button>
+        <div className="flex items-center gap-3">
+          {selectedContacts.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 font-josefin hover:bg-red-500/30 transition-all disabled:opacity-50"
+            >
+              <Trash2 size={20} />
+              {deleting ? 'Deleting...' : `Delete (${selectedContacts.size})`}
+            </button>
+          )}
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-hot-pink to-light-teal text-white font-josefin hover:shadow-[0_0_20px_rgba(255,0,142,0.5)] transition-all"
+          >
+            <Plus size={20} />
+            New Contact
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -142,6 +204,14 @@ export default function ContactsPage() {
           <table className="w-full">
             <thead className="bg-white/5 border-b border-light-teal/20">
               <tr>
+                <th className="px-4 py-3 w-12">
+                  <input
+                    type="checkbox"
+                    checked={contacts.length > 0 && selectedContacts.size === contacts.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-light-teal/30 bg-black/50 text-hot-pink focus:ring-hot-pink/50 cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-supernova text-light-teal uppercase">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-supernova text-light-teal uppercase">Contact</th>
                 <th className="px-6 py-3 text-left text-xs font-supernova text-light-teal uppercase">Company</th>
@@ -155,8 +225,16 @@ export default function ContactsPage() {
                 <tr
                   key={contact.id}
                   onClick={() => router.push(`/crm/contacts/${contact.id}`)}
-                  className="hover:bg-white/5 cursor-pointer transition-colors"
+                  className={`hover:bg-white/5 cursor-pointer transition-colors ${selectedContacts.has(contact.id) ? 'bg-hot-pink/10' : ''}`}
                 >
+                  <td className="px-4 py-4" onClick={(e) => toggleSelect(contact.id, e)}>
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.has(contact.id)}
+                      onChange={() => {}}
+                      className="w-4 h-4 rounded border-light-teal/30 bg-black/50 text-hot-pink focus:ring-hot-pink/50 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <div className="font-josefin text-white">{getFullName(contact)}</div>

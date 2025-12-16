@@ -62,12 +62,23 @@ export default function ImportContactsPage() {
         if (results.data.length > 0) {
           const columns = Object.keys(results.data[0])
 
-          // Check for firstName/lastName columns first
-          const detectedFirstName = autoDetectColumn(columns, ['firstName', 'first_name', 'first name', 'firstname', 'given name', 'givenname'])
-          const detectedLastName = autoDetectColumn(columns, ['lastName', 'last_name', 'last name', 'lastname', 'surname', 'family name', 'familyname'])
+          // Check for firstName/lastName columns first (including Wix patterns)
+          const detectedFirstName = autoDetectColumn(columns, [
+            'firstName', 'first_name', 'first name', 'firstname', 'given name', 'givenname',
+            'First Name', 'First', 'first', 'forename', 'Forename'
+          ])
+          const detectedLastName = autoDetectColumn(columns, [
+            'lastName', 'last_name', 'last name', 'lastname', 'surname', 'family name', 'familyname',
+            'Last Name', 'Last', 'last', 'Surname', 'Family Name'
+          ])
 
-          // Check for full name column if no firstName found
-          const detectedFullName = autoDetectColumn(columns, ['name', 'full name', 'fullname', 'contact name', 'contactname'])
+          // Check for full name column if no firstName found (including Wix patterns)
+          const detectedFullName = autoDetectColumn(columns, [
+            'name', 'full name', 'fullname', 'contact name', 'contactname',
+            'Name', 'Full Name', 'FullName', 'Contact Name', 'ContactName',
+            'display name', 'Display Name', 'displayname', 'DisplayName',
+            'member name', 'Member Name', 'Contact'
+          ])
 
           if (detectedFirstName) {
             setFieldMapping(prev => ({
@@ -106,31 +117,49 @@ export default function ImportContactsPage() {
     Papa.parse(file, {
       header: true,
       complete: async (results) => {
-        const contacts = results.data
-          .map((row: any) => {
-            let firstName = ''
-            let lastName = ''
+        const totalRows = results.data.length
 
-            // If using full name column, split it
-            if (hasFullNameColumn && fullNameColumn) {
-              const split = splitFullName(row[fullNameColumn])
-              firstName = split.firstName
-              lastName = split.lastName
-            } else {
-              firstName = row[fieldMapping.firstName] || ''
-              lastName = row[fieldMapping.lastName] || ''
-            }
+        const allContacts = results.data.map((row: any) => {
+          let firstName = ''
+          let lastName = ''
+          const email = row[fieldMapping.email] || ''
 
-            return {
-              firstName: firstName.trim(),
-              lastName: lastName.trim(),
-              email: row[fieldMapping.email] || undefined,
-              phone: row[fieldMapping.phone] || undefined,
-              company: row[fieldMapping.company] || undefined,
-              status: 'LEAD',
-            }
-          })
-          .filter((c: any) => c.firstName) // At minimum need a first name
+          // If using full name column, split it
+          if (hasFullNameColumn && fullNameColumn) {
+            const split = splitFullName(row[fullNameColumn])
+            firstName = split.firstName
+            lastName = split.lastName
+          } else {
+            firstName = row[fieldMapping.firstName] || ''
+            lastName = row[fieldMapping.lastName] || ''
+          }
+
+          // If no first name but we have an email, use email prefix as first name
+          if (!firstName.trim() && email) {
+            const emailPrefix = email.split('@')[0]
+            // Clean up email prefix: replace dots/underscores with spaces, capitalize
+            firstName = emailPrefix
+              .replace(/[._-]/g, ' ')
+              .split(' ')
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ')
+          }
+
+          return {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email || undefined,
+            phone: row[fieldMapping.phone] || undefined,
+            company: row[fieldMapping.company] || undefined,
+            status: 'LEAD',
+          }
+        })
+
+        // Filter out contacts that have neither name nor email
+        const contacts = allContacts.filter((c: any) => c.firstName || c.email)
+        const skippedNoData = totalRows - contacts.length
+
+        console.log(`CSV has ${totalRows} rows, ${contacts.length} valid contacts, ${skippedNoData} skipped (no name or email)`)
 
         try {
           const response = await fetch('/api/crm/contacts/import', {
@@ -141,7 +170,12 @@ export default function ImportContactsPage() {
 
           if (response.ok) {
             const data = await response.json()
-            setResult(data)
+            // Add the skipped count to results
+            setResult({
+              ...data,
+              skippedNoData,
+              totalInFile: totalRows,
+            })
           }
         } catch (error) {
           console.error('Import failed:', error)
@@ -416,7 +450,16 @@ export default function ImportContactsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          {/* Show total file info if available */}
+          {result.totalInFile && (
+            <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+              <p className="text-sm font-josefin text-gray-300">
+                CSV contained <span className="text-light-teal font-bold">{result.totalInFile}</span> rows
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
               <div className="text-2xl font-supernova text-green-400">{result.imported}</div>
               <div className="text-sm font-josefin text-gray-400">Imported</div>
@@ -425,6 +468,12 @@ export default function ImportContactsPage() {
               <div className="text-2xl font-supernova text-yellow-400">{result.skipped}</div>
               <div className="text-sm font-josefin text-gray-400">Skipped (Duplicates)</div>
             </div>
+            {result.skippedNoData > 0 && (
+              <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                <div className="text-2xl font-supernova text-orange-400">{result.skippedNoData}</div>
+                <div className="text-sm font-josefin text-gray-400">Empty Rows</div>
+              </div>
+            )}
             <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
               <div className="text-2xl font-supernova text-red-400">
                 {result.errors?.length || 0}
@@ -432,6 +481,16 @@ export default function ImportContactsPage() {
               <div className="text-sm font-josefin text-gray-400">Errors</div>
             </div>
           </div>
+
+          {/* Warning if many empty rows */}
+          {result.skippedNoData > 10 && (
+            <div className="mb-4 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+              <h4 className="font-josefin text-orange-400 font-bold mb-1">Some rows skipped</h4>
+              <p className="text-sm font-josefin text-gray-300">
+                {result.skippedNoData} rows were skipped because they had no email address or name data.
+              </p>
+            </div>
+          )}
 
           {result.errors && result.errors.length > 0 && (
             <div className="mb-6">
