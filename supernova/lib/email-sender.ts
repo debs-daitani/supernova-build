@@ -8,6 +8,13 @@
 import { Resend } from 'resend';
 import { prisma } from './prisma';
 
+// Verify API key is loaded
+if (!process.env.RESEND_API_KEY) {
+  console.error('[EMAIL] WARNING: RESEND_API_KEY environment variable is not set!');
+} else {
+  console.log('[EMAIL] Resend API key loaded (first 10 chars):', process.env.RESEND_API_KEY.substring(0, 10) + '...');
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface EmailOptions {
@@ -169,7 +176,9 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     // Send email via Resend
     try {
-      await resend.emails.send({
+      console.log(`[EMAIL] Attempting to send email to ${to} with from: ${fromName} <${from}>`);
+
+      const result = await resend.emails.send({
         from: `${fromName} <${from}>`,
         to,
         reply_to: replyTo || 'debs@daitani.co.uk',
@@ -178,10 +187,15 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
         text: text || html.replace(/<[^>]*>/g, ''),
       });
 
+      console.log(`[EMAIL] Resend API response:`, JSON.stringify(result, null, 2));
       console.log(`[EMAIL] Sent successfully to ${to} - Event ID: ${event.id}`);
       return true;
-    } catch (sendError) {
+    } catch (sendError: any) {
       console.error('[EMAIL] Resend API error:', sendError);
+      console.error('[EMAIL] Error details:', JSON.stringify(sendError, null, 2));
+      if (sendError.response) {
+        console.error('[EMAIL] Response data:', sendError.response);
+      }
       return false;
     }
   } catch (error) {
