@@ -96,10 +96,10 @@ export default function CampaignsPage() {
               {campaigns.map((campaign) => (
                 <tr key={campaign.id} className="hover:bg-white/5">
                   <td className="px-6 py-4">
-                    <div>
+                    <Link href={`/email/campaigns/${campaign.id}`} className="block hover:opacity-80">
                       <p className="font-medium text-white">{campaign.name}</p>
                       <p className="text-sm text-gray-400">{campaign.subject}</p>
-                    </div>
+                    </Link>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-sm font-semibold ${getStatusColor(campaign.status)}`}>
@@ -113,13 +113,26 @@ export default function CampaignsPage() {
                     <span className="text-green-400 font-semibold">{getOpenRate(campaign)}%</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/email/campaigns/${campaign.id}/stats`}
-                      className="text-sm hover:underline"
-                      style={{ color: '#00F0E9' }}
-                    >
-                      View Stats
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      {campaign.status === 'draft' && (
+                        <Link
+                          href={`/email/campaigns/${campaign.id}`}
+                          className="text-sm hover:underline font-semibold"
+                          style={{ color: '#FF008E' }}
+                        >
+                          Edit & Send
+                        </Link>
+                      )}
+                      {campaign.status === 'sent' && (
+                        <Link
+                          href={`/email/campaigns/${campaign.id}/stats`}
+                          className="text-sm hover:underline"
+                          style={{ color: '#00F0E9' }}
+                        >
+                          View Stats
+                        </Link>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

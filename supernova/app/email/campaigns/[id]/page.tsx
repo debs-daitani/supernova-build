@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Eye, MousePointer, UserX, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Send, Eye, MousePointer, UserX, AlertCircle, Save, Edit } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CampaignDetailPage() {
@@ -11,9 +11,13 @@ export default function CampaignDetailPage() {
   const [campaign, setCampaign] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [subscriberCount, setSubscriberCount] = useState(0)
 
   useEffect(() => {
     fetchCampaign()
+    fetchSubscriberCount()
   }, [params.id])
 
   const fetchCampaign = async () => {
@@ -21,6 +25,7 @@ export default function CampaignDetailPage() {
       const res = await fetch(`/api/email/campaigns/${params.id}`)
       const data = await res.json()
       setCampaign(data)
+      setEditing(data.status === 'DRAFT' || data.status === 'draft')
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -28,14 +33,61 @@ export default function CampaignDetailPage() {
     }
   }
 
-  const handleSend = async () => {
-    if (!confirm('Send this campaign now?')) return
-    setSending(true)
+  const fetchSubscriberCount = async () => {
     try {
-      await fetch(`/api/email/campaigns/${params.id}/send`, { method: 'POST' })
-      fetchCampaign()
+      const response = await fetch('/api/email/subscribers')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscriberCount(data.filter((s: any) => s.status === 'active').length)
+      }
+    } catch (error) {
+      console.error('Failed to fetch subscribers:', error)
+    }
+  }
+
+  const saveDraft = async () => {
+    if (!campaign) return
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/email/campaigns/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: campaign.name,
+          subject: campaign.subject,
+          content: campaign.htmlContent || campaign.content,
+        }),
+      })
+      if (response.ok) {
+        alert('Draft saved!')
+      }
     } catch (error) {
       console.error('Error:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSend = async () => {
+    if (subscriberCount === 0) {
+      alert('No active subscribers! Go to Email → Subscribers and click "Sync from CRM"')
+      return
+    }
+    if (!confirm(`Send this campaign to ${subscriberCount} subscribers?`)) return
+    setSending(true)
+    try {
+      const response = await fetch(`/api/email/campaigns/${params.id}/send`, { method: 'POST' })
+      if (response.ok) {
+        alert('Campaign sent successfully!')
+        // Refresh the campaign data to show updated stats
+        await fetchCampaign()
+        setEditing(false)
+      } else {
+        alert('Failed to send campaign')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Failed to send campaign')
     } finally {
       setSending(false)
     }
@@ -61,29 +113,52 @@ export default function CampaignDetailPage() {
           </Link>
           <div>
             <h2 className="text-2xl font-supernova text-white">{campaign.name}</h2>
-            <p className="text-sm text-gray-400 font-josefin">{campaign.subject}</p>
+            <p className="text-sm text-gray-400 font-josefin">
+              {editing ? `Ready to send to ${subscriberCount} subscribers` : campaign.subject}
+            </p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-josefin ${
-            campaign.status === 'SENT' ? 'bg-green-500/10 text-green-400' :
+            campaign.status === 'SENT' || campaign.status === 'sent' ? 'bg-green-500/10 text-green-400' :
             campaign.status === 'SCHEDULED' ? 'bg-blue-500/10 text-blue-400' :
-            campaign.status === 'DRAFT' ? 'bg-gray-500/10 text-gray-400' :
+            campaign.status === 'DRAFT' || campaign.status === 'draft' ? 'bg-gray-500/10 text-gray-400' :
             'bg-yellow-500/10 text-yellow-400'
           }`}>
             {campaign.status}
           </span>
         </div>
-        {campaign.status === 'DRAFT' && (
-          <button
-            onClick={handleSend}
-            disabled={sending}
-            className="px-6 py-3 rounded-lg bg-gradient-to-r from-hot-pink to-light-teal text-black font-bold font-josefin disabled:opacity-50"
-          >
-            {sending ? 'Sending...' : 'Send Now'}
-          </button>
+        {editing && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={saveDraft}
+              disabled={saving}
+              className="px-4 py-2 rounded-lg bg-white/10 text-white font-josefin hover:bg-white/20 transition-all disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Draft'}
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={sending || subscriberCount === 0}
+              className="px-6 py-3 rounded-lg bg-gradient-to-r from-hot-pink to-light-teal text-black font-bold font-josefin disabled:opacity-50"
+            >
+              {sending ? 'Sending...' : 'Send Now'}
+            </button>
+          </div>
         )}
       </div>
 
-      {campaign.status === 'SENT' && (
+      {subscriberCount === 0 && editing && (
+        <div className="backdrop-blur-xl bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
+          <p className="text-red-400 font-josefin">
+            ⚠️ No active subscribers! Go to{' '}
+            <Link href="/email/subscribers" className="underline font-semibold">
+              Email → Subscribers
+            </Link>{' '}
+            and click "Sync from CRM" to add your contacts.
+          </p>
+        </div>
+      )}
+
+      {(campaign.status === 'SENT' || campaign.status === 'sent') && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {stats.map((stat) => {
             const Icon = stat.icon
@@ -101,34 +176,79 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
-          <h3 className="text-xl font-supernova text-hot-pink mb-4">Campaign Details</h3>
-          <div className="space-y-3">
+      {editing ? (
+        <div className="space-y-6">
+          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6 space-y-4">
+            <h3 className="text-xl font-supernova text-hot-pink mb-4">Edit Campaign</h3>
             <div>
-              <label className="block text-sm font-josefin text-gray-400 mb-1">From</label>
-              <p className="text-white font-josefin">{campaign.fromName} &lt;{campaign.fromEmail}&gt;</p>
+              <label className="block text-sm font-josefin text-gray-400 mb-1">Campaign Name</label>
+              <input
+                type="text"
+                value={campaign.name}
+                onChange={(e) => setCampaign({ ...campaign, name: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-josefin text-gray-400 mb-1">Subject</label>
-              <p className="text-white font-josefin">{campaign.subject}</p>
+              <label className="block text-sm font-josefin text-gray-400 mb-1">Subject Line</label>
+              <input
+                type="text"
+                value={campaign.subject}
+                onChange={(e) => setCampaign({ ...campaign, subject: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500"
+              />
             </div>
-            {campaign.previewText && (
-              <div>
-                <label className="block text-sm font-josefin text-gray-400 mb-1">Preview Text</label>
-                <p className="text-white font-josefin">{campaign.previewText}</p>
+            <div>
+              <label className="block text-sm font-josefin text-gray-400 mb-1">Email Content (HTML supported)</label>
+              <textarea
+                value={campaign.htmlContent || campaign.content || ''}
+                onChange={(e) => setCampaign({ ...campaign, htmlContent: e.target.value })}
+                rows={12}
+                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500 font-mono text-sm"
+                placeholder="Write your email content here..."
+              />
+            </div>
+          </div>
+          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
+            <h3 className="text-xl font-supernova text-hot-pink mb-4">Preview</h3>
+            <div className="bg-white rounded-lg p-6 max-h-96 overflow-y-auto">
+              <div className="border-b border-gray-300 pb-4 mb-4">
+                <p className="text-sm text-gray-600 font-josefin">Subject: {campaign.subject || 'No subject'}</p>
               </div>
-            )}
+              <div dangerouslySetInnerHTML={{ __html: campaign.htmlContent || campaign.content || '<p class="text-gray-400">No content yet...</p>' }} />
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
+            <h3 className="text-xl font-supernova text-hot-pink mb-4">Campaign Details</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-josefin text-gray-400 mb-1">From</label>
+                <p className="text-white font-josefin">{campaign.fromName} &lt;{campaign.fromEmail}&gt;</p>
+              </div>
+              <div>
+                <label className="block text-sm font-josefin text-gray-400 mb-1">Subject</label>
+                <p className="text-white font-josefin">{campaign.subject}</p>
+              </div>
+              {campaign.previewText && (
+                <div>
+                  <label className="block text-sm font-josefin text-gray-400 mb-1">Preview Text</label>
+                  <p className="text-white font-josefin">{campaign.previewText}</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-        <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
-          <h3 className="text-xl font-supernova text-hot-pink mb-4">Preview</h3>
-          <div className="bg-white rounded-lg p-4 max-h-96 overflow-y-auto">
-            <div dangerouslySetInnerHTML={{ __html: campaign.htmlContent }} />
+          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
+            <h3 className="text-xl font-supernova text-hot-pink mb-4">Preview</h3>
+            <div className="bg-white rounded-lg p-4 max-h-96 overflow-y-auto">
+              <div dangerouslySetInnerHTML={{ __html: campaign.htmlContent }} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

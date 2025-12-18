@@ -36,16 +36,18 @@ export async function POST(
       return NextResponse.json({ error: 'No subscribers to send to' }, { status: 400 });
     }
 
-    // Update campaign status
+    // Update campaign status to 'sent' immediately
     await prisma.emailCampaign.update({
       where: { id },
       data: {
-        status: 'sending'
+        status: 'sent',
+        sentAt: new Date(),
+        sentCount: subscribers.length
       }
     });
 
-    // Send emails
-    const results = await sendBulkEmails({
+    // Send emails asynchronously (don't await)
+    sendBulkEmails({
       subscribers: subscribers.map(sub => ({
         email: sub.email,
         subscriberId: sub.id,
@@ -54,24 +56,16 @@ export async function POST(
         }
       })),
       subject: campaign.subject,
-      html: campaign.content,
+      html: campaign.content || campaign.htmlContent,
       campaignId: campaign.id
+    }).catch(error => {
+      console.error('[API] Error in background email sending:', error);
     });
 
-    // Update campaign with results
-    await prisma.emailCampaign.update({
-      where: { id },
-      data: {
-        status: 'sent',
-        sentAt: new Date(),
-        sentCount: results.sent
-      }
-    });
-
+    // Return immediately
     return NextResponse.json({
       success: true,
-      sent: results.sent,
-      failed: results.failed
+      sent: subscribers.length
     });
   } catch (error) {
     console.error('[API] Error sending campaign:', error);
