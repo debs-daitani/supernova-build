@@ -2,11 +2,13 @@
  * Email Sending Service for dAItaniverse
  *
  * This service provides email sending functionality with tracking and analytics.
- * Currently configured for logging (development mode).
- * Ready for SendGrid/Postmark integration in production.
+ * Integrated with Resend for reliable email delivery.
  */
 
+import { Resend } from 'resend';
 import { prisma } from './prisma';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface EmailOptions {
   to: string;
@@ -126,14 +128,14 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       subscriber = await prisma.emailSubscriber.create({
         data: {
           email: to,
-          status: 'SUBSCRIBED',
+          status: 'active',
           source: 'MANUAL'
         }
       });
     }
 
     // Check if subscriber is unsubscribed
-    if (subscriber.status !== 'SUBSCRIBED') {
+    if (subscriber.status !== 'active') {
       console.log(`[EMAIL] Skipping email to ${to} - status: ${subscriber.status}`);
       return false;
     }
@@ -165,37 +167,23 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       );
     }
 
-    // In development: Log to console
-    console.log('\n========== EMAIL SENT ==========');
-    console.log(`From: ${fromName} <${from}>`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Campaign ID: ${campaignId || 'N/A'}`);
-    console.log(`Sequence Email ID: ${sequenceEmailId || 'N/A'}`);
-    console.log(`Event ID: ${event.id}`);
-    console.log('================================\n');
+    // Send email via Resend
+    try {
+      await resend.emails.send({
+        from: `${fromName} <${from}>`,
+        to,
+        reply_to: replyTo,
+        subject,
+        html: trackedHtml,
+        text: text || html.replace(/<[^>]*>/g, ''),
+      });
 
-    // TODO: In production, integrate with SendGrid or Postmark
-    // Example SendGrid integration:
-    /*
-    const sgMail = require('@sendgrid/mail');
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-    await sgMail.send({
-      to,
-      from: { email: from, name: fromName },
-      replyTo,
-      subject,
-      html: trackedHtml,
-      text: text || html.replace(/<[^>]*>/g, ''),
-      trackingSettings: {
-        clickTracking: { enable: false }, // We handle our own tracking
-        openTracking: { enable: false }
-      }
-    });
-    */
-
-    return true;
+      console.log(`[EMAIL] Sent successfully to ${to} - Event ID: ${event.id}`);
+      return true;
+    } catch (sendError) {
+      console.error('[EMAIL] Resend API error:', sendError);
+      return false;
+    }
   } catch (error) {
     console.error('[EMAIL] Error sending email:', error);
     return false;
