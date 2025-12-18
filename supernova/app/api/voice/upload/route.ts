@@ -115,9 +115,5 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Enable larger payload size for audio uploads
-export const config = {
-  api: {
-    bodyParser: false, // Disable default body parser
-  },
-}
+// Note: In Next.js App Router, body parsing is handled automatically
+// The formData() method handles multipart form data without additional configuration
