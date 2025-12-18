@@ -36,36 +36,45 @@ export async function POST(
       return NextResponse.json({ error: 'No subscribers to send to' }, { status: 400 });
     }
 
-    // Update campaign status to 'sent' immediately
+    // Update campaign status to 'sending'
     await prisma.emailCampaign.update({
       where: { id },
       data: {
-        status: 'sent',
+        status: 'sending',
         sentAt: new Date(),
-        sentCount: subscribers.length
       }
     });
 
-    // Send emails asynchronously (don't await)
-    sendBulkEmails({
-      subscribers: subscribers.map(sub => ({
-        email: sub.email,
-        subscriberId: sub.id,
-        variables: {
-          name: sub.name || 'there'
-        }
-      })),
-      subject: campaign.subject,
-      html: campaign.content,
-      campaignId: campaign.id
-    }).catch(error => {
-      console.error('[API] Error in background email sending:', error);
-    });
+    // Queue all emails to the database for background processing
+    console.log(`[CAMPAIGN] Queuing ${subscribers.length} emails for campaign ${id}`);
 
-    // Return immediately
+    const queuedEmails = await prisma.$transaction(
+      subscribers.map(sub =>
+        prisma.emailEvent.create({
+          data: {
+            campaignId: campaign.id,
+            subscriberId: sub.id,
+            eventType: 'QUEUED',
+            metadata: {
+              subject: campaign.subject,
+              html: campaign.content,
+              variables: {
+                name: sub.name || 'there',
+                email: sub.email,
+              }
+            }
+          }
+        })
+      )
+    );
+
+    console.log(`[CAMPAIGN] Queued ${queuedEmails.length} emails successfully`);
+
+    // Return immediately - emails will be processed by cron job
     return NextResponse.json({
       success: true,
-      sent: subscribers.length
+      queued: queuedEmails.length,
+      message: 'Emails queued for sending'
     });
   } catch (error) {
     console.error('[API] Error sending campaign:', error);
