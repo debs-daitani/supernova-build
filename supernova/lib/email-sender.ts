@@ -172,7 +172,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       await resend.emails.send({
         from: `${fromName} <${from}>`,
         to,
-        reply_to: replyTo,
+        reply_to: replyTo || 'debs@daitani.co.uk',
         subject,
         html: trackedHtml,
         text: text || html.replace(/<[^>]*>/g, ''),
