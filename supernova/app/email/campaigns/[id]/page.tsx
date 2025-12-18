@@ -256,9 +256,14 @@ export default function CampaignDetailPage() {
               ) : (
                 <div className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300">
                   <div
+                    ref={(el) => {
+                      if (el && !el.innerHTML) {
+                        el.innerHTML = campaign.content || '<p style="color: #9ca3af;">Start typing your email content...</p>'
+                      }
+                    }}
                     contentEditable
-                    onInput={(e) => setCampaign({ ...campaign, content: e.currentTarget.innerHTML })}
-                    dangerouslySetInnerHTML={{ __html: campaign.content || '<p class="text-gray-400">Start typing your email content...</p>' }}
+                    onBlur={(e) => setCampaign({ ...campaign, content: e.currentTarget.innerHTML })}
+                    suppressContentEditableWarning
                     className="min-h-[300px] focus:outline-none text-gray-900"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                   />
