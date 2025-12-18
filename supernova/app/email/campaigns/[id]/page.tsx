@@ -94,6 +94,31 @@ export default function CampaignDetailPage() {
     }
   }
 
+  const resetToDraft = async () => {
+    if (!confirm('Reset this campaign to draft status? This will allow you to edit and resend it.')) return
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/email/campaigns/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'draft',
+          sentCount: 0,
+          openCount: 0,
+          clickCount: 0,
+          sentAt: null,
+        }),
+      })
+      if (response.ok) {
+        await fetchCampaign()
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) return <div className="text-white font-josefin">Loading...</div>
   if (!campaign) return <div className="text-white font-josefin">Campaign not found</div>
 
@@ -158,21 +183,32 @@ export default function CampaignDetailPage() {
       )}
 
       {(campaign.status === 'SENT' || campaign.status === 'sent') && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon
-            return (
-              <div key={stat.label} className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-4">
-                <Icon className={`${stat.color} mb-2`} size={24} />
-                <div className="text-2xl font-supernova text-white">{stat.value}</div>
-                <div className="text-sm text-gray-400 font-josefin">{stat.label}</div>
-                {stat.percent && (
-                  <div className="text-xs text-gray-500 font-josefin mt-1">{stat.percent}%</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {stats.map((stat) => {
+              const Icon = stat.icon
+              return (
+                <div key={stat.label} className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-4">
+                  <Icon className={`${stat.color} mb-2`} size={24} />
+                  <div className="text-2xl font-supernova text-white">{stat.value}</div>
+                  <div className="text-sm text-gray-400 font-josefin">{stat.label}</div>
+                  {stat.percent && (
+                    <div className="text-xs text-gray-500 font-josefin mt-1">{stat.percent}%</div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={resetToDraft}
+              disabled={saving}
+              className="px-4 py-2 rounded-lg bg-white/10 text-white font-josefin hover:bg-white/20 transition-all disabled:opacity-50"
+            >
+              {saving ? 'Resetting...' : 'Reset to Draft & Edit'}
+            </button>
+          </div>
+        </>
       )}
 
       {editing ? (

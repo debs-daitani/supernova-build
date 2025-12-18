@@ -125,7 +125,7 @@ export default function CampaignsPage() {
                       )}
                       {campaign.status === 'sent' && (
                         <Link
-                          href={`/email/campaigns/${campaign.id}/stats`}
+                          href={`/email/campaigns/${campaign.id}`}
                           className="text-sm hover:underline"
                           style={{ color: '#00F0E9' }}
                         >
