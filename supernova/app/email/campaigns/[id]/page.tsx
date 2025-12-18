@@ -14,6 +14,7 @@ export default function CampaignDetailPage() {
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
   const [subscriberCount, setSubscriberCount] = useState(0)
+  const [htmlMode, setHtmlMode] = useState(false)
 
   useEffect(() => {
     fetchCampaign()
@@ -199,14 +200,36 @@ export default function CampaignDetailPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-josefin text-gray-400 mb-1">Email Content (HTML supported)</label>
-              <textarea
-                value={campaign.htmlContent || campaign.content || ''}
-                onChange={(e) => setCampaign({ ...campaign, htmlContent: e.target.value })}
-                rows={12}
-                className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500 font-mono text-sm"
-                placeholder="Write your email content here..."
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-josefin text-gray-400">Email Content</label>
+                <button
+                  type="button"
+                  onClick={() => setHtmlMode(!htmlMode)}
+                  className="flex items-center gap-2 px-3 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-xs font-josefin hover:bg-purple-500/30 transition-all"
+                >
+                  <Edit size={14} />
+                  {htmlMode ? 'Switch to Visual' : 'Switch to HTML'}
+                </button>
+              </div>
+              {htmlMode ? (
+                <textarea
+                  value={campaign.htmlContent || campaign.content || ''}
+                  onChange={(e) => setCampaign({ ...campaign, htmlContent: e.target.value })}
+                  rows={12}
+                  className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500 font-mono text-sm"
+                  placeholder="Write your HTML content here..."
+                />
+              ) : (
+                <div className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300">
+                  <div
+                    contentEditable
+                    onInput={(e) => setCampaign({ ...campaign, htmlContent: e.currentTarget.innerHTML })}
+                    dangerouslySetInnerHTML={{ __html: campaign.htmlContent || campaign.content || '<p class="text-gray-400">Start typing your email content...</p>' }}
+                    className="min-h-[300px] focus:outline-none text-gray-900"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
           <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
