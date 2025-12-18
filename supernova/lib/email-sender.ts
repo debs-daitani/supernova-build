@@ -152,9 +152,8 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       data: {
         subscriberId: subscriber.id,
         campaignId,
-        sequenceEmailId,
-        type: 'SENT',
-        data: {
+        eventType: 'SENT',
+        metadata: {
           subject,
           from: `${fromName} <${from}>`,
           to
@@ -293,8 +292,7 @@ export async function trackEmailOpen(eventId: string): Promise<void> {
       where: {
         subscriberId: event.subscriberId,
         campaignId: event.campaignId,
-        sequenceEmailId: event.sequenceEmailId,
-        type: 'OPENED'
+        eventType: 'OPENED'
       }
     });
 
@@ -307,9 +305,8 @@ export async function trackEmailOpen(eventId: string): Promise<void> {
       data: {
         subscriberId: event.subscriberId,
         campaignId: event.campaignId,
-        sequenceEmailId: event.sequenceEmailId,
-        type: 'OPENED',
-        data: {
+        eventType: 'OPENED',
+        metadata: {
           originalEventId: eventId,
           timestamp: new Date().toISOString()
         }
@@ -356,9 +353,8 @@ export async function trackEmailClick(
       data: {
         subscriberId: event.subscriberId,
         campaignId: event.campaignId,
-        sequenceEmailId: event.sequenceEmailId,
-        type: 'CLICKED',
-        data: {
+        eventType: 'CLICKED',
+        metadata: {
           originalEventId: eventId,
           url,
           timestamp: new Date().toISOString()
@@ -372,7 +368,7 @@ export async function trackEmailClick(
         where: {
           subscriberId: event.subscriberId,
           campaignId: event.campaignId,
-          type: 'CLICKED'
+          eventType: 'CLICKED'
         }
       });
 
@@ -411,8 +407,8 @@ export async function unsubscribeEmail(subscriberId: string): Promise<boolean> {
     await prisma.emailEvent.create({
       data: {
         subscriberId,
-        type: 'UNSUBSCRIBED',
-        data: {
+        eventType: 'UNSUBSCRIBED',
+        metadata: {
           timestamp: new Date().toISOString()
         }
       }
