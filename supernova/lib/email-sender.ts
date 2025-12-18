@@ -107,7 +107,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
     const {
       to,
-      from = process.env.EMAIL_FROM || 'hello@daitaniverse.com',
+      from = process.env.EMAIL_FROM || 'onboarding@resend.dev',
       fromName = 'dAItaniverse',
       replyTo,
       subject,
@@ -199,7 +199,7 @@ export async function sendBulkEmails(options: BulkEmailOptions): Promise<{
 }> {
   const {
     subscribers,
-    from = process.env.EMAIL_FROM || 'hello@daitaniverse.com',
+    from = process.env.EMAIL_FROM || 'onboarding@resend.dev',
     fromName = 'dAItaniverse',
     replyTo,
     subject,

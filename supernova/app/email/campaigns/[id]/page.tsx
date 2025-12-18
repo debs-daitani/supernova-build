@@ -254,7 +254,7 @@ export default function CampaignDetailPage() {
                   placeholder="Write your HTML content here..."
                 />
               ) : (
-                <div className="w-full rounded-lg bg-white border border-[#366f7e]">
+                <div className="w-full rounded-lg bg-black/30 border border-[#366f7e]">
                   <div className="flex gap-2 p-2 border-b border-[#366f7e]/30">
                     <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold') }} className="px-2 py-1 hover:bg-gray-100 rounded font-bold">B</button>
                     <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('italic') }} className="px-2 py-1 hover:bg-gray-100 rounded italic">I</button>
@@ -278,7 +278,7 @@ export default function CampaignDetailPage() {
                     contentEditable
                     onBlur={(e) => setCampaign({ ...campaign, content: e.currentTarget.innerHTML })}
                     suppressContentEditableWarning
-                    className="min-h-[300px] focus:outline-none text-gray-900 p-4"
+                    className="min-h-[300px] focus:outline-none text-white p-4"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                   />
                 </div>
