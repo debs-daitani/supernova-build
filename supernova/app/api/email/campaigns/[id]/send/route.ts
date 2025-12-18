@@ -48,27 +48,24 @@ export async function POST(
     // Queue all emails to the database for background processing
     console.log(`[CAMPAIGN] Queuing ${subscribers.length} emails for campaign ${id}`);
 
-    const queuedEmails = await prisma.$transaction(
-      subscribers.map(sub =>
-        prisma.emailEvent.create({
-          data: {
-            campaignId: campaign.id,
-            subscriberId: sub.id,
-            eventType: 'QUEUED',
-            metadata: {
-              subject: campaign.subject,
-              html: campaign.content,
-              variables: {
-                name: sub.name || 'there',
-                email: sub.email,
-              }
-            }
+    // Use createMany for much faster bulk insert (single query instead of 263 queries)
+    await prisma.emailEvent.createMany({
+      data: subscribers.map(sub => ({
+        campaignId: campaign.id,
+        subscriberId: sub.id,
+        eventType: 'QUEUED',
+        metadata: {
+          subject: campaign.subject,
+          html: campaign.content,
+          variables: {
+            name: sub.name || 'there',
+            email: sub.email,
           }
-        })
-      )
-    );
+        }
+      }))
+    });
 
-    console.log(`[CAMPAIGN] Queued ${queuedEmails.length} emails successfully`);
+    console.log(`[CAMPAIGN] Queued ${subscribers.length} emails successfully`);
 
     // Trigger queue processing immediately (non-blocking)
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://supernova-b5ekalzz9-debs-daitanis-projects.vercel.app';
@@ -84,7 +81,7 @@ export async function POST(
     // Return immediately - emails will be processed in background
     return NextResponse.json({
       success: true,
-      queued: queuedEmails.length,
+      queued: subscribers.length,
       message: 'Emails queued and processing started'
     });
   } catch (error) {
