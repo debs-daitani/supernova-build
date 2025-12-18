@@ -56,7 +56,7 @@ export async function POST(
         }
       })),
       subject: campaign.subject,
-      html: campaign.content || campaign.htmlContent,
+      html: campaign.content,
       campaignId: campaign.id
     }).catch(error => {
       console.error('[API] Error in background email sending:', error);

@@ -9,8 +9,8 @@ interface Campaign {
   subject: string;
   status: string;
   sentCount: number;
-  openedCount: number;
-  clickedCount: number;
+  openCount: number;
+  clickCount: number;
   createdAt: string;
   sentAt: string | null;
 }
@@ -47,7 +47,7 @@ export default function CampaignsPage() {
 
   const getOpenRate = (campaign: Campaign) => {
     if (campaign.sentCount === 0) return '0';
-    return ((campaign.openedCount / campaign.sentCount) * 100).toFixed(1);
+    return ((campaign.openCount / campaign.sentCount) * 100).toFixed(1);
   };
 
   if (loading) {
@@ -107,8 +107,8 @@ export default function CampaignsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center text-white">{campaign.sentCount}</td>
-                  <td className="px-6 py-4 text-center text-white">{campaign.openedCount}</td>
-                  <td className="px-6 py-4 text-center text-white">{campaign.clickedCount}</td>
+                  <td className="px-6 py-4 text-center text-white">{campaign.openCount}</td>
+                  <td className="px-6 py-4 text-center text-white">{campaign.clickCount}</td>
                   <td className="px-6 py-4 text-center">
                     <span className="text-green-400 font-semibold">{getOpenRate(campaign)}%</span>
                   </td>

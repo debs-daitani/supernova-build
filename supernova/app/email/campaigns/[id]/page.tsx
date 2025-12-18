@@ -51,12 +51,12 @@ export default function CampaignDetailPage() {
     setSaving(true)
     try {
       const response = await fetch(`/api/email/campaigns/${params.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: campaign.name,
           subject: campaign.subject,
-          content: campaign.htmlContent || campaign.content,
+          content: campaign.content,
         }),
       })
       if (response.ok) {
@@ -98,11 +98,9 @@ export default function CampaignDetailPage() {
   if (!campaign) return <div className="text-white font-josefin">Campaign not found</div>
 
   const stats = [
-    { icon: Send, label: 'Sent', value: campaign.sentCount, color: 'text-blue-400' },
-    { icon: Eye, label: 'Opened', value: campaign.openedCount, percent: campaign.sentCount ? ((campaign.openedCount / campaign.sentCount) * 100).toFixed(1) : 0, color: 'text-green-400' },
-    { icon: MousePointer, label: 'Clicked', value: campaign.clickedCount, percent: campaign.sentCount ? ((campaign.clickedCount / campaign.sentCount) * 100).toFixed(1) : 0, color: 'text-purple-400' },
-    { icon: AlertCircle, label: 'Bounced', value: campaign.bouncedCount, color: 'text-yellow-400' },
-    { icon: UserX, label: 'Unsubscribed', value: campaign.unsubscribedCount, color: 'text-red-400' },
+    { icon: Send, label: 'Sent', value: campaign.sentCount || 0, color: 'text-blue-400' },
+    { icon: Eye, label: 'Opened', value: campaign.openCount || 0, percent: campaign.sentCount ? ((campaign.openCount / campaign.sentCount) * 100).toFixed(1) : 0, color: 'text-green-400' },
+    { icon: MousePointer, label: 'Clicked', value: campaign.clickCount || 0, percent: campaign.sentCount ? ((campaign.clickCount / campaign.sentCount) * 100).toFixed(1) : 0, color: 'text-purple-400' },
   ]
 
   return (
@@ -213,8 +211,8 @@ export default function CampaignDetailPage() {
               </div>
               {htmlMode ? (
                 <textarea
-                  value={campaign.htmlContent || campaign.content || ''}
-                  onChange={(e) => setCampaign({ ...campaign, htmlContent: e.target.value })}
+                  value={campaign.content || ''}
+                  onChange={(e) => setCampaign({ ...campaign, content: e.target.value })}
                   rows={12}
                   className="w-full px-4 py-3 rounded-lg bg-black/50 border border-light-teal/20 text-white font-josefin focus:outline-none focus:border-purple-500 font-mono text-sm"
                   placeholder="Write your HTML content here..."
@@ -223,8 +221,8 @@ export default function CampaignDetailPage() {
                 <div className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300">
                   <div
                     contentEditable
-                    onInput={(e) => setCampaign({ ...campaign, htmlContent: e.currentTarget.innerHTML })}
-                    dangerouslySetInnerHTML={{ __html: campaign.htmlContent || campaign.content || '<p class="text-gray-400">Start typing your email content...</p>' }}
+                    onInput={(e) => setCampaign({ ...campaign, content: e.currentTarget.innerHTML })}
+                    dangerouslySetInnerHTML={{ __html: campaign.content || '<p class="text-gray-400">Start typing your email content...</p>' }}
                     className="min-h-[300px] focus:outline-none text-gray-900"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                   />
@@ -238,37 +236,18 @@ export default function CampaignDetailPage() {
               <div className="border-b border-gray-300 pb-4 mb-4">
                 <p className="text-sm text-gray-600 font-josefin">Subject: {campaign.subject || 'No subject'}</p>
               </div>
-              <div dangerouslySetInnerHTML={{ __html: campaign.htmlContent || campaign.content || '<p class="text-gray-400">No content yet...</p>' }} />
+              <div dangerouslySetInnerHTML={{ __html: campaign.content || '<p class="text-gray-400">No content yet...</p>' }} />
             </div>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
-            <h3 className="text-xl font-supernova text-hot-pink mb-4">Campaign Details</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-josefin text-gray-400 mb-1">From</label>
-                <p className="text-white font-josefin">{campaign.fromName} &lt;{campaign.fromEmail}&gt;</p>
-              </div>
-              <div>
-                <label className="block text-sm font-josefin text-gray-400 mb-1">Subject</label>
-                <p className="text-white font-josefin">{campaign.subject}</p>
-              </div>
-              {campaign.previewText && (
-                <div>
-                  <label className="block text-sm font-josefin text-gray-400 mb-1">Preview Text</label>
-                  <p className="text-white font-josefin">{campaign.previewText}</p>
-                </div>
-              )}
+        <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
+          <h3 className="text-xl font-supernova text-hot-pink mb-4">Email Content</h3>
+          <div className="bg-white rounded-lg p-6 max-h-96 overflow-y-auto">
+            <div className="border-b border-gray-300 pb-4 mb-4">
+              <p className="text-sm text-gray-600 font-josefin">Subject: {campaign.subject}</p>
             </div>
-          </div>
-
-          <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
-            <h3 className="text-xl font-supernova text-hot-pink mb-4">Preview</h3>
-            <div className="bg-white rounded-lg p-4 max-h-96 overflow-y-auto">
-              <div dangerouslySetInnerHTML={{ __html: campaign.htmlContent }} />
-            </div>
+            <div dangerouslySetInnerHTML={{ __html: campaign.content }} />
           </div>
         </div>
       )}
