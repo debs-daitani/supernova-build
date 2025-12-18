@@ -67,6 +67,14 @@ model User {
   socialAccounts        SocialAccount[]
   socialPosts           SocialPost[]
 
+  // Marketing Tools Relations
+  landingPages          LandingPage[]
+  leadMagnets           LeadMagnet[]
+  marketingForms        MarketingForm[]
+  automations           Automation[]
+  shortLinks            ShortLink[]
+  linkInBio             LinkInBio?
+
   @@index([email])
 }
 
@@ -1171,4 +1179,128 @@ model SocialPost {
   @@index([userId])
   @@index([userId, status])
   @@index([userId, scheduledFor])
+}
+
+// ============================================
+// MARKETING TOOLS MODULE
+// ============================================
+
+model LandingPage {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  slug          String    @unique
+  template      String?   // lead-magnet, webinar, sales, coming-soon
+  content       Json      // Page blocks/sections
+  settings      Json?     // SEO, custom domain, etc.
+  status        String    @default("draft") // draft, published
+  publishedAt   DateTime?
+  views         Int       @default(0)
+  conversions   Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leadMagnets LeadMagnet[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([userId, status])
+}
+
+model LeadMagnet {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  description   String?
+  fileUrl       String
+  fileName      String
+  downloads     Int       @default(0)
+  landingPageId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  landingPage LandingPage? @relation(fields: [landingPageId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([landingPageId])
+}
+
+model MarketingForm {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  fields      Json     // Array of field definitions
+  settings    Json?    // Redirect URL, notifications, etc.
+  submissions Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formSubmissions  FormSubmission[]
+
+  @@index([userId])
+}
+
+model FormSubmission {
+  id        String   @id @default(cuid())
+  formId    String
+  data      Json     // Submitted field values
+  createdAt DateTime @default(now())
+
+  form MarketingForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@index([createdAt])
+}
+
+model Automation {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  trigger   Json     // {type: "form_submitted", formId: "xxx"}
+  actions   Json     // [{type: "send_email", templateId: "xxx"}]
+  isActive  Boolean  @default(true)
+  runCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model ShortLink {
+  id             String   @id @default(cuid())
+  userId         String
+  slug           String   @unique
+  destinationUrl String
+  clicks         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([slug])
+}
+
+model LinkInBio {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  username  String   @unique
+  title     String?
+  bio       String?
+  avatarUrl String?
+  links     Json     // Array of {title, url, icon}
+  theme     String   @default("default")
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([username])
 }

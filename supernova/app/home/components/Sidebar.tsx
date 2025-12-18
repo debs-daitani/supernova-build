@@ -57,6 +57,8 @@ import {
   ChevronDown,
   ChevronRight,
   PenSquare,
+  Share2,
+  Megaphone,
 } from 'lucide-react'
 
 interface UserData {
@@ -153,6 +155,7 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
       requiresFullAccess: true,
       items: [
         { icon: <Share2 size={20} />, label: 'Social Media', href: '/social', working: true },
+        { icon: <Megaphone size={20} />, label: 'Marketing Tools', href: '/marketing', working: true },
       ],
     },
     {
