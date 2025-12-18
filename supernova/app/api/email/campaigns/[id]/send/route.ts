@@ -70,11 +70,22 @@ export async function POST(
 
     console.log(`[CAMPAIGN] Queued ${queuedEmails.length} emails successfully`);
 
-    // Return immediately - emails will be processed by cron job
+    // Trigger queue processing immediately (non-blocking)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://supernova-b5ekalzz9-debs-daitanis-projects.vercel.app';
+    fetch(`${baseUrl}/api/email/process-queue`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.CRON_SECRET}`
+      }
+    }).catch(error => {
+      console.error('[CAMPAIGN] Failed to trigger queue processing:', error);
+    });
+
+    // Return immediately - emails will be processed in background
     return NextResponse.json({
       success: true,
       queued: queuedEmails.length,
-      message: 'Emails queued for sending'
+      message: 'Emails queued and processing started'
     });
   } catch (error) {
     console.error('[API] Error sending campaign:', error);
