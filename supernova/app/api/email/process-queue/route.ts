@@ -141,12 +141,44 @@ export async function GET(request: NextRequest) {
 
     console.log(`[QUEUE] Batch complete. Sent: ${sent}, Failed: ${failed}`);
 
-    return NextResponse.json({
-      processed: queuedEmails.length,
-      sent,
-      failed,
-      message: 'Queue processing complete'
+    // Check if there are more queued emails to process
+    const remainingInQueue = await prisma.emailEvent.count({
+      where: { eventType: 'QUEUED' }
     });
+
+    console.log(`[QUEUE] Remaining emails in queue: ${remainingInQueue}`);
+
+    if (remainingInQueue > 0) {
+      // Auto-trigger next batch processing
+      console.log(`[QUEUE] Auto-triggering next batch processing...`);
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://supernova-b5ekalzz9-debs-daitanis-projects.vercel.app';
+
+      fetch(`${baseUrl}/api/email/process-queue`, {
+        method: 'GET',
+        headers: {
+          'Authorization': request.headers.get('authorization') || ''
+        }
+      }).catch(error => {
+        console.error('[QUEUE] Failed to trigger next batch:', error);
+      });
+
+      return NextResponse.json({
+        processed: queuedEmails.length,
+        sent,
+        failed,
+        remaining: remainingInQueue,
+        message: 'Batch complete, next batch triggered automatically'
+      });
+    } else {
+      console.log(`[QUEUE] All emails processed successfully!`);
+      return NextResponse.json({
+        processed: queuedEmails.length,
+        sent,
+        failed,
+        remaining: 0,
+        message: 'Queue processing complete - all emails sent'
+      });
+    }
   } catch (error) {
     console.error('[QUEUE] Error processing queue:', error);
     return NextResponse.json({ error: 'Failed to process queue' }, { status: 500 });
