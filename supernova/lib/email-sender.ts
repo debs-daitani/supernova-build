@@ -226,8 +226,10 @@ export async function sendBulkEmails(options: BulkEmailOptions): Promise<{
   let failed = 0;
 
   console.log(`\n[BULK EMAIL] Sending ${subscribers.length} emails...`);
+  console.log(`[BULK EMAIL] Starting loop for ${subscribers.length} subscribers`);
 
   for (const subscriber of subscribers) {
+    console.log(`[BULK EMAIL] Processing subscriber: ${subscriber.email}`);
     try {
       // Replace variables in subject and content
       const variables = {
