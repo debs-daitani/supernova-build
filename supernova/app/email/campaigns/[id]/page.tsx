@@ -254,7 +254,21 @@ export default function CampaignDetailPage() {
                   placeholder="Write your HTML content here..."
                 />
               ) : (
-                <div className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300">
+                <div className="w-full rounded-lg bg-white border border-[#366f7e]">
+                  <div className="flex gap-2 p-2 border-b border-[#366f7e]/30">
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold') }} className="px-2 py-1 hover:bg-gray-100 rounded font-bold">B</button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('italic') }} className="px-2 py-1 hover:bg-gray-100 rounded italic">I</button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('underline') }} className="px-2 py-1 hover:bg-gray-100 rounded underline">U</button>
+                    <div className="w-px bg-gray-300 mx-1"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('formatBlock', false, 'h1') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">H1</button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('formatBlock', false, 'h2') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">H2</button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('formatBlock', false, 'p') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">P</button>
+                    <div className="w-px bg-gray-300 mx-1"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertUnorderedList') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">• List</button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertOrderedList') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">1. List</button>
+                    <div className="w-px bg-gray-300 mx-1"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('createLink', false, prompt('Enter URL:') || '') }} className="px-2 py-1 hover:bg-gray-100 rounded text-sm">Link</button>
+                  </div>
                   <div
                     ref={(el) => {
                       if (el && !el.innerHTML) {
@@ -264,7 +278,7 @@ export default function CampaignDetailPage() {
                     contentEditable
                     onBlur={(e) => setCampaign({ ...campaign, content: e.currentTarget.innerHTML })}
                     suppressContentEditableWarning
-                    className="min-h-[300px] focus:outline-none text-gray-900"
+                    className="min-h-[300px] focus:outline-none text-gray-900 p-4"
                     style={{ fontFamily: 'Arial, sans-serif' }}
                   />
                 </div>
@@ -273,8 +287,8 @@ export default function CampaignDetailPage() {
           </div>
           <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
             <h3 className="text-xl font-supernova text-hot-pink mb-4">Preview</h3>
-            <div className="bg-white rounded-lg p-6 max-h-96 overflow-y-auto">
-              <div className="border-b border-gray-300 pb-4 mb-4">
+            <div className="bg-white rounded-lg border border-[#366f7e] p-6 max-h-96 overflow-y-auto">
+              <div className="border-b border-[#366f7e]/30 pb-4 mb-4">
                 <p className="text-sm text-gray-600 font-josefin">Subject: {campaign.subject || 'No subject'}</p>
               </div>
               <div dangerouslySetInnerHTML={{ __html: campaign.content || '<p class="text-gray-400">No content yet...</p>' }} />
@@ -284,8 +298,8 @@ export default function CampaignDetailPage() {
       ) : (
         <div className="backdrop-blur-xl bg-white/5 border border-hot-pink/20 rounded-2xl p-6">
           <h3 className="text-xl font-supernova text-hot-pink mb-4">Email Content</h3>
-          <div className="bg-white rounded-lg p-6 max-h-96 overflow-y-auto">
-            <div className="border-b border-gray-300 pb-4 mb-4">
+          <div className="bg-white rounded-lg border border-[#366f7e] p-6 max-h-96 overflow-y-auto">
+            <div className="border-b border-[#366f7e]/30 pb-4 mb-4">
               <p className="text-sm text-gray-600 font-josefin">Subject: {campaign.subject}</p>
             </div>
             <div dangerouslySetInnerHTML={{ __html: campaign.content }} />
