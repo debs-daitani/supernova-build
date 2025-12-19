@@ -248,64 +248,73 @@ export default function CampaignsPage() {
               }}
             />
             <div
-              className="fixed w-48 bg-gray-900 border border-hot-pink/30 rounded-lg shadow-2xl z-50"
+              className="fixed w-56 rounded-xl shadow-2xl z-50 overflow-hidden"
               style={{
-                top: `${menuPosition.top}px`,
-                right: `${menuPosition.right}px`
+                top: `${menuPosition.top + 4}px`,
+                right: `${menuPosition.right}px`,
+                background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(31, 41, 55, 0.98))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 0, 142, 0.3)'
               }}
             >
-              <div className="py-2">
-                {campaigns.find(c => c.id === openMenuId) && (
-                  <>
-                    <Link
-                      href={`/email/campaigns/${openMenuId}`}
-                      className="block px-4 py-2 text-sm text-white hover:bg-hot-pink/20 transition-all"
-                      onClick={() => {
-                        setOpenMenuId(null);
-                        setMenuPosition(null);
-                      }}
-                    >
-                      {campaigns.find(c => c.id === openMenuId)?.status === 'draft' ||
-                       campaigns.find(c => c.id === openMenuId)?.status === 'DRAFT' ? '✏️ Edit' : '👁️ View'}
-                    </Link>
+              {campaigns.find(c => c.id === openMenuId) && (
+                <div className="py-1">
+                  <Link
+                    href={`/email/campaigns/${openMenuId}`}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-cyan-500/10 transition-all font-medium"
+                    onClick={() => {
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                    }}
+                  >
+                    <span className="text-base">{campaigns.find(c => c.id === openMenuId)?.status === 'draft' || campaigns.find(c => c.id === openMenuId)?.status === 'DRAFT' ? '✏️' : '👁️'}</span>
+                    <span>{campaigns.find(c => c.id === openMenuId)?.status === 'draft' || campaigns.find(c => c.id === openMenuId)?.status === 'DRAFT' ? 'Edit' : 'View'}</span>
+                  </Link>
 
-                    {(campaigns.find(c => c.id === openMenuId)?.status === 'sent' ||
-                      campaigns.find(c => c.id === openMenuId)?.status === 'SENT' ||
-                      campaigns.find(c => c.id === openMenuId)?.status === 'sending') && (
-                      <>
-                        <button
-                          onClick={() => handleResend(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
-                          className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-hot-pink/20 transition-all"
-                        >
-                          📧 Resend
-                        </button>
-                        <button
-                          onClick={() => handleResetToDraft(openMenuId)}
-                          className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-hot-pink/20 transition-all"
-                        >
-                          🔄 Reset to Draft
-                        </button>
-                      </>
-                    )}
-
+                  {(campaigns.find(c => c.id === openMenuId)?.status === 'sent' ||
+                    campaigns.find(c => c.id === openMenuId)?.status === 'SENT' ||
+                    campaigns.find(c => c.id === openMenuId)?.status === 'sending') && (
                     <button
-                      onClick={() => handleDuplicate(openMenuId)}
-                      className="w-full text-left px-4 py-2 text-sm text-light-teal hover:bg-hot-pink/20 transition-all"
+                      onClick={() => handleResend(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-cyan-500/10 transition-all font-medium"
+                      style={{ color: '#00F0E9' }}
                     >
-                      📋 Duplicate
+                      <span className="text-base">📧</span>
+                      <span>Resend</span>
                     </button>
+                  )}
 
-                    <div className="border-t border-white/10 my-1"></div>
+                  <button
+                    onClick={() => handleDuplicate(openMenuId)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-cyan-400 hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-cyan-500/10 transition-all font-medium"
+                  >
+                    <span className="text-base">📋</span>
+                    <span>Duplicate</span>
+                  </button>
 
+                  {(campaigns.find(c => c.id === openMenuId)?.status === 'sent' ||
+                    campaigns.find(c => c.id === openMenuId)?.status === 'SENT' ||
+                    campaigns.find(c => c.id === openMenuId)?.status === 'sending') && (
                     <button
-                      onClick={() => handleDelete(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
-                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-all"
+                      onClick={() => handleResetToDraft(openMenuId)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-yellow-400 hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-cyan-500/10 transition-all font-medium"
                     >
-                      🗑️ Delete
+                      <span className="text-base">🔄</span>
+                      <span>Reset to Draft</span>
                     </button>
-                  </>
-                )}
-              </div>
+                  )}
+
+                  <div className="my-1" style={{ height: '1px', background: 'linear-gradient(90deg, rgba(255,0,142,0.3), rgba(0,240,233,0.3))' }}></div>
+
+                  <button
+                    onClick={() => handleDelete(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/20 transition-all font-medium"
+                  >
+                    <span className="text-base">🗑️</span>
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
