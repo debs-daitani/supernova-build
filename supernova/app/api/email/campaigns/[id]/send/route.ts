@@ -69,14 +69,27 @@ export async function POST(
 
     // Trigger queue processing immediately (non-blocking)
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://supernova-b5ekalzz9-debs-daitanis-projects.vercel.app';
-    fetch(`${baseUrl}/api/email/process-queue`, {
+    const queueUrl = `${baseUrl}/api/email/process-queue`;
+    console.log(`[CAMPAIGN] Triggering queue processor at: ${queueUrl}`);
+    console.log(`[CAMPAIGN] CRON_SECRET exists:`, !!process.env.CRON_SECRET);
+
+    fetch(queueUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${process.env.CRON_SECRET}`
       }
-    }).catch(error => {
-      console.error('[CAMPAIGN] Failed to trigger queue processing:', error);
-    });
+    })
+      .then(res => {
+        console.log(`[CAMPAIGN] Queue processor response status: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log(`[CAMPAIGN] Queue processor response:`, JSON.stringify(data, null, 2));
+      })
+      .catch(error => {
+        console.error('[CAMPAIGN] Failed to trigger queue processing:', error);
+        console.error('[CAMPAIGN] Error details:', error.message);
+      });
 
     // Return immediately - emails will be processed in background
     return NextResponse.json({

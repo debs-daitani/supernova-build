@@ -6,10 +6,20 @@ const BATCH_SIZE = 50; // Process 50 emails per cron run
 const MAX_RETRIES = 3;
 
 export async function GET(request: NextRequest) {
+  console.log('[QUEUE] ========== QUEUE PROCESSOR CALLED ==========');
+  console.log('[QUEUE] Request URL:', request.url);
+  console.log('[QUEUE] Headers:', Object.fromEntries(request.headers.entries()));
+
   try {
     // Verify cron secret to prevent unauthorized access
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+    console.log('[QUEUE] Auth check - Header:', authHeader?.substring(0, 20) + '...');
+    console.log('[QUEUE] Auth check - Expected:', expectedAuth?.substring(0, 20) + '...');
+    console.log('[QUEUE] Auth check - Match:', authHeader === expectedAuth);
+
+    if (authHeader !== expectedAuth) {
+      console.log('[QUEUE] UNAUTHORIZED - Auth check failed');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -41,11 +51,14 @@ export async function GET(request: NextRequest) {
     let failed = 0;
 
     for (const queuedEmail of queuedEmails) {
+      console.log(`[QUEUE] Processing email ID: ${queuedEmail.id} to ${queuedEmail.subscriber.email}`);
       try {
         const metadata = queuedEmail.metadata as any;
         const variables = metadata.variables || {};
+        console.log(`[QUEUE] Email metadata:`, JSON.stringify(metadata, null, 2));
 
         // Send the email
+        console.log(`[QUEUE] Calling sendEmail for ${queuedEmail.subscriber.email}...`);
         const success = await sendEmail({
           to: queuedEmail.subscriber.email,
           subject: metadata.subject,
@@ -55,7 +68,10 @@ export async function GET(request: NextRequest) {
           unsubscribeUrl: generateUnsubscribeUrl(queuedEmail.subscriberId)
         });
 
+        console.log(`[QUEUE] sendEmail returned: ${success}`);
+
         if (success) {
+          console.log(`[QUEUE] ✅ SUCCESS - Deleting queue entry and updating stats`);
           // Mark as sent by deleting the queue entry
           await prisma.emailEvent.delete({
             where: { id: queuedEmail.id }
@@ -74,8 +90,9 @@ export async function GET(request: NextRequest) {
           }
 
           sent++;
-          console.log(`[QUEUE] Sent email to ${queuedEmail.subscriber.email}`);
+          console.log(`[QUEUE] Successfully sent email to ${queuedEmail.subscriber.email}`);
         } else {
+          console.log(`[QUEUE] ❌ FAILED - sendEmail returned false for ${queuedEmail.subscriber.email}`);
           // Retry logic: increment retry count
           const retryCount = (metadata.retryCount || 0) + 1;
 
