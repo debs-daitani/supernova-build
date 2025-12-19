@@ -113,6 +113,33 @@ export default function CampaignsPage() {
     }
   };
 
+  const handleResend = async (campaignId: string, campaignName: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+
+    const subscriberCount = campaign.sentCount || 0;
+    if (!confirm(`Resend "${campaignName}" to all active subscribers?`)) return;
+
+    try {
+      const response = await fetch(`/api/email/campaigns/${campaignId}/send`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        alert('Campaign is being sent! Emails are being queued and will be sent automatically.');
+        await fetchCampaigns();
+        setOpenMenuId(null);
+        setMenuPosition(null);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to send campaign');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to send campaign');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'DRAFT': return 'text-gray-400';
@@ -245,12 +272,20 @@ export default function CampaignsPage() {
                     {(campaigns.find(c => c.id === openMenuId)?.status === 'sent' ||
                       campaigns.find(c => c.id === openMenuId)?.status === 'SENT' ||
                       campaigns.find(c => c.id === openMenuId)?.status === 'sending') && (
-                      <button
-                        onClick={() => handleResetToDraft(openMenuId)}
-                        className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-hot-pink/20 transition-all"
-                      >
-                        🔄 Reset to Draft
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleResend(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
+                          className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-hot-pink/20 transition-all"
+                        >
+                          📧 Resend
+                        </button>
+                        <button
+                          onClick={() => handleResetToDraft(openMenuId)}
+                          className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-hot-pink/20 transition-all"
+                        >
+                          🔄 Reset to Draft
+                        </button>
+                      </>
                     )}
 
                     <button

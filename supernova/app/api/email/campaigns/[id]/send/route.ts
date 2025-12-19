@@ -16,9 +16,8 @@ export async function POST(
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    if (campaign.status === 'sent') {
-      return NextResponse.json({ error: 'Campaign already sent' }, { status: 400 });
-    }
+    // Allow resending - removed the check that prevents sending already-sent campaigns
+    // Users can now resend campaigns without having to reset to draft first
 
     // Get all active subscribers
     const subscribers = await prisma.emailSubscriber.findMany({
