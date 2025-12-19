@@ -95,25 +95,21 @@ export default function CampaignDetailPage() {
   }
 
   const resetToDraft = async () => {
-    if (!confirm('Reset this campaign to draft status? This will allow you to edit and resend it.')) return
+    if (!confirm('Reset this campaign to draft status? This will allow you to edit and resend it. Any queued or unsent emails will be cleared.')) return
     setSaving(true)
     try {
-      const response = await fetch(`/api/email/campaigns/${params.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'draft',
-          sentCount: 0,
-          openCount: 0,
-          clickCount: 0,
-          sentAt: null,
-        }),
+      const response = await fetch(`/api/email/campaigns/${params.id}/reset`, {
+        method: 'POST',
       })
       if (response.ok) {
         await fetchCampaign()
+        setEditing(true)
+      } else {
+        alert('Failed to reset campaign')
       }
     } catch (error) {
       console.error('Error:', error)
+      alert('Failed to reset campaign')
     } finally {
       setSaving(false)
     }
@@ -182,7 +178,7 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {(campaign.status === 'SENT' || campaign.status === 'sent') && (
+      {(campaign.status === 'SENT' || campaign.status === 'sent' || campaign.status === 'sending') && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {stats.map((stat) => {
