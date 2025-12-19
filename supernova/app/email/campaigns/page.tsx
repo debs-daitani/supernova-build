@@ -20,7 +20,22 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const router = useRouter();
+
+  const handleMenuClick = (campaignId: string, event: React.MouseEvent<HTMLButtonElement>) => {
+    if (openMenuId === campaignId) {
+      setOpenMenuId(null);
+      setMenuPosition(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + window.scrollY,
+        right: window.innerWidth - rect.right
+      });
+      setOpenMenuId(campaignId);
+    }
+  };
 
   useEffect(() => {
     fetchCampaigns();
@@ -142,7 +157,7 @@ export default function CampaignsPage() {
         </div>
 
         {/* Campaigns Table */}
-        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl overflow-hidden">
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl overflow-x-auto">
           <table className="w-full">
             <thead className="bg-white/5">
               <tr>
@@ -176,59 +191,12 @@ export default function CampaignsPage() {
                     <span className="text-green-400 font-semibold">{getOpenRate(campaign)}%</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenMenuId(openMenuId === campaign.id ? null : campaign.id)}
-                        className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all"
-                      >
-                        Actions ▾
-                      </button>
-
-                      {openMenuId === campaign.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setOpenMenuId(null)}
-                          />
-                          <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-hot-pink/30 rounded-lg shadow-2xl z-50">
-                            <div className="py-2">
-                              <Link
-                                href={`/email/campaigns/${campaign.id}`}
-                                className="block px-4 py-2 text-sm text-white hover:bg-hot-pink/20 transition-all"
-                                onClick={() => setOpenMenuId(null)}
-                              >
-                                {campaign.status === 'draft' || campaign.status === 'DRAFT' ? '✏️ Edit' : '👁️ View'}
-                              </Link>
-
-                              {(campaign.status === 'sent' || campaign.status === 'SENT' || campaign.status === 'sending') && (
-                                <button
-                                  onClick={() => handleResetToDraft(campaign.id)}
-                                  className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-hot-pink/20 transition-all"
-                                >
-                                  🔄 Reset to Draft
-                                </button>
-                              )}
-
-                              <button
-                                onClick={() => handleDuplicate(campaign.id)}
-                                className="w-full text-left px-4 py-2 text-sm text-light-teal hover:bg-hot-pink/20 transition-all"
-                              >
-                                📋 Duplicate
-                              </button>
-
-                              <div className="border-t border-white/10 my-1"></div>
-
-                              <button
-                                onClick={() => handleDelete(campaign.id, campaign.name)}
-                                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-all"
-                              >
-                                🗑️ Delete
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <button
+                      onClick={(e) => handleMenuClick(campaign.id, e)}
+                      className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-all"
+                    >
+                      Actions ▾
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -241,6 +209,71 @@ export default function CampaignsPage() {
             </div>
           )}
         </div>
+
+        {/* Dropdown Menu Portal */}
+        {openMenuId && menuPosition && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => {
+                setOpenMenuId(null);
+                setMenuPosition(null);
+              }}
+            />
+            <div
+              className="fixed w-48 bg-gray-900 border border-hot-pink/30 rounded-lg shadow-2xl z-50"
+              style={{
+                top: `${menuPosition.top}px`,
+                right: `${menuPosition.right}px`
+              }}
+            >
+              <div className="py-2">
+                {campaigns.find(c => c.id === openMenuId) && (
+                  <>
+                    <Link
+                      href={`/email/campaigns/${openMenuId}`}
+                      className="block px-4 py-2 text-sm text-white hover:bg-hot-pink/20 transition-all"
+                      onClick={() => {
+                        setOpenMenuId(null);
+                        setMenuPosition(null);
+                      }}
+                    >
+                      {campaigns.find(c => c.id === openMenuId)?.status === 'draft' ||
+                       campaigns.find(c => c.id === openMenuId)?.status === 'DRAFT' ? '✏️ Edit' : '👁️ View'}
+                    </Link>
+
+                    {(campaigns.find(c => c.id === openMenuId)?.status === 'sent' ||
+                      campaigns.find(c => c.id === openMenuId)?.status === 'SENT' ||
+                      campaigns.find(c => c.id === openMenuId)?.status === 'sending') && (
+                      <button
+                        onClick={() => handleResetToDraft(openMenuId)}
+                        className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-hot-pink/20 transition-all"
+                      >
+                        🔄 Reset to Draft
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleDuplicate(openMenuId)}
+                      className="w-full text-left px-4 py-2 text-sm text-light-teal hover:bg-hot-pink/20 transition-all"
+                    >
+                      📋 Duplicate
+                    </button>
+
+                    <div className="border-t border-white/10 my-1"></div>
+
+                    <button
+                      onClick={() => handleDelete(openMenuId, campaigns.find(c => c.id === openMenuId)?.name || '')}
+                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-all"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
